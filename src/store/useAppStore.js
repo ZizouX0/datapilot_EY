@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { INDICATORS, DIMENSIONS } from '../data/indicators';
 
 const MATURITY_LEVELS = [
@@ -9,7 +10,9 @@ const MATURITY_LEVELS = [
   { level: 5, cmmi: 'Optimized', gartner: 'Transformative', color: '#0D47A1', bg: '#E3F2FD', min: 4.20, max: 5.00 },
 ];
 
-const useAppStore = create((set, get) => ({
+const useAppStore = create(
+  persist(
+    (set, get) => ({
   // ── State ──────────────────────────────────────────────────────────
   profile: { bankName: '', date: '', respondentName: '', role: '' },
   answers: {},
@@ -252,7 +255,22 @@ const useAppStore = create((set, get) => ({
       activeSubDim: '1.1',
     });
   },
-}));
+    }),
+    {
+      name: 'datapilot-assessment',
+      version: 1,
+      storage: createJSONStorage(() => localStorage),
+      // Only persist user data — selectors/actions are recreated by the store.
+      partialize: (state) => ({
+        profile: state.profile,
+        answers: state.answers,
+        targetLevel: state.targetLevel,
+        activeDimension: state.activeDimension,
+        activeSubDim: state.activeSubDim,
+      }),
+    }
+  )
+);
 
 export { MATURITY_LEVELS };
 export default useAppStore;

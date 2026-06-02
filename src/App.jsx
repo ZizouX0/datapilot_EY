@@ -1,14 +1,25 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import Welcome from './pages/Welcome';
-import Profile from './pages/Profile';
-import Questionnaire from './pages/Questionnaire';
-import Results from './pages/Results';
-import GapAnalysis from './pages/GapAnalysis';
-import Compliance from './pages/Compliance';
 import Topbar from './components/layout/Topbar';
 import NavBar from './components/layout/NavBar';
 import ProgressBar from './components/layout/ProgressBar';
 import useAppStore from './store/useAppStore';
+
+// Route-based code splitting — each page (and its heavy chart deps) loads on demand.
+const Welcome = lazy(() => import('./pages/Welcome'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Questionnaire = lazy(() => import('./pages/Questionnaire'));
+const Results = lazy(() => import('./pages/Results'));
+const GapAnalysis = lazy(() => import('./pages/GapAnalysis'));
+const Compliance = lazy(() => import('./pages/Compliance'));
+
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center py-32 text-gray-400">
+      <span className="animate-pulse">Loading…</span>
+    </div>
+  );
+}
 
 function RequireComplete({ children }) {
   const isComplete = useAppStore(s => s.isAssessmentComplete());
@@ -34,6 +45,7 @@ function Layout({ children }) {
 
 function AppRoutes() {
   return (
+    <Suspense fallback={<PageLoader />}>
     <Routes>
       <Route path="/" element={<Welcome />} />
       <Route path="/profile" element={<Layout><Profile /></Layout>} />
@@ -52,6 +64,7 @@ function AppRoutes() {
       />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   );
 }
 
