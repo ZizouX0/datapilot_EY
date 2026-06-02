@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useAppStore, { MATURITY_LEVELS } from '../store/useAppStore';
+import useAppStore from '../store/useAppStore';
 import { INDICATORS, DIMENSIONS, SUBDIM_NAMES } from '../data/indicators';
 import BCTBadge from '../components/ui/BCTBadge';
 import ProxyBadge from '../components/ui/ProxyBadge';
@@ -8,7 +8,6 @@ import ProxyBadge from '../components/ui/ProxyBadge';
 const LEVEL_NAMES = ['Initial', 'Emerging', 'Defined', 'Managed', 'Optimized'];
 const GARTNER = ['Unaware', 'Aware', 'Active', 'Effective', 'Transformative'];
 const LEVEL_COLORS = ['#B71C1C', '#E65100', '#827717', '#1B5E20', '#0D47A1'];
-const LEVEL_BG = ['#FDECEA', '#FFF3E0', '#FFFDE7', '#E8F5E9', '#E3F2FD'];
 
 export default function Questionnaire() {
   const navigate = useNavigate();
@@ -29,7 +28,6 @@ export default function Questionnaire() {
   const isEvidenceCapped = useAppStore(s => s.isEvidenceCapped);
   const getAnsweredCount = useAppStore(s => s.getAnsweredCount);
   const getCappedCount = useAppStore(s => s.getCappedCount);
-  const isDimensionComplete = useAppStore(s => s.isDimensionComplete);
   const isAssessmentComplete = useAppStore(s => s.isAssessmentComplete());
   const getDimStatus = useAppStore(s => s.getDimStatus);
 
@@ -40,12 +38,6 @@ export default function Questionnaire() {
   const currentDimData = DIMENSIONS[activeDimension];
   const subDims = currentDimData.subDims;
   const currentInds = INDICATORS.filter(i => i.sub === activeSubDim);
-
-  const allDimInds = INDICATORS.filter(i => i.dim === activeDimension);
-  const answeredInDim = allDimInds.filter(i => {
-    const ans = answers[i.id];
-    return ans && (ans.skipped || ans.score !== null);
-  }).length;
 
   function scrollTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -212,7 +204,6 @@ export default function Questionnaire() {
             const rubricOpen = openRubrics[ind.id] ?? false;
             const skipCount = getSkipCount(ind.dim);
             const skipLimit = getSkipLimit(ind.dim);
-            const canSkip = !ind.bct && skipCount < skipLimit;
             const atSkipLimit = !ind.bct && skipCount >= skipLimit && !skipped;
 
             return (

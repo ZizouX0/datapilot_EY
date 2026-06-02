@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import useAppStore from '../store/useAppStore';
 import { DIMENSIONS } from '../data/indicators';
 
@@ -27,10 +27,17 @@ export default function Profile() {
     respondentName: profile.respondentName || '',
     role: profile.role || ROLES[0],
   });
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   function handleSave() {
     setProfile(form);
     navigate('/assessment');
+  }
+
+  function handleReset() {
+    resetAll();
+    setForm({ bankName: '', date: DEFAULT_DATE, respondentName: '', role: ROLES[0] });
+    setShowResetConfirm(false);
   }
 
   return (
@@ -114,7 +121,7 @@ export default function Profile() {
               Save & Start Assessment →
             </button>
             <button
-              onClick={() => { resetAll(); setForm({ bankName: '', date: DEFAULT_DATE, respondentName: '', role: ROLES[0] }); }}
+              onClick={() => setShowResetConfirm(true)}
               className="px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
             >
               Reset All
@@ -122,6 +129,38 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {showResetConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          onClick={() => setShowResetConfirm(false)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6"
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Reset everything?</h3>
+            <p className="text-sm text-gray-500 mb-6">
+              This permanently deletes the bank profile and all questionnaire answers,
+              including saved progress. This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowResetConfirm(false)}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReset}
+                className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg text-sm hover:bg-red-700"
+              >
+                Reset All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

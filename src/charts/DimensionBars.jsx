@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DIMENSIONS, INDICATORS, SUBDIM_NAMES } from '../data/indicators';
+import { DIMENSIONS, SUBDIM_NAMES } from '../data/indicators';
 import useAppStore from '../store/useAppStore';
 
 export default function DimensionBars({ showGap = false, targetLevel = 3, expandable = false }) {

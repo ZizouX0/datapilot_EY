@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import useAppStore from '../store/useAppStore';
-import { DIMENSIONS, INDICATORS } from '../data/indicators';
 import ScoreBadge from '../components/ui/ScoreBadge';
 import DimensionPill from '../components/ui/DimensionPill';
 
