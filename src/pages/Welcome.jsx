@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import useAppStore from '../store/useAppStore';
 import { DIMENSIONS } from '../data/indicators';
+import { TUNISIAN_BANKS } from '../data/tunisianBanks';
+import BankAutocomplete from '../components/ui/BankAutocomplete';
 
 const ROLES = [
   'Chief Data Officer',
@@ -12,8 +14,8 @@ const ROLES = [
   'Other',
 ];
 
-const now = new Date();
-const DEFAULT_DATE = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+// Default the assessment date to today (YYYY-MM-DD for the native date input).
+const DEFAULT_DATE = new Date().toISOString().slice(0, 10);
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -89,11 +91,11 @@ export default function Welcome() {
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
                 Bank name
               </label>
-              <input
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow focus:border-transparent"
-                placeholder="e.g. Banque Nationale de Tunisie"
+              <BankAutocomplete
+                options={TUNISIAN_BANKS}
+                placeholder="Start typing, e.g. BIAT…"
                 value={form.bankName}
-                onChange={e => setForm(f => ({ ...f, bankName: e.target.value }))}
+                onChange={val => setForm(f => ({ ...f, bankName: val }))}
               />
             </div>
 
@@ -102,6 +104,7 @@ export default function Welcome() {
                 Assessment date
               </label>
               <input
+                type="date"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow focus:border-transparent"
                 value={form.date}
                 onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
