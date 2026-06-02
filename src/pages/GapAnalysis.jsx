@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import useAppStore from '../store/useAppStore';
-import { DIMENSIONS, INDICATORS, SUBDIM_NAMES } from '../data/indicators';
-import { RECOMMENDATIONS, getBand, getBandLabel } from '../data/recommendations';
+import { DIMENSIONS, SUBDIM_NAMES } from '../data/indicators';
+import { RECOMMENDATIONS, getBand } from '../data/recommendations';
 import DimensionPill from '../components/ui/DimensionPill';
 
 const PHASE_CONFIG = [
@@ -39,7 +39,6 @@ export default function GapAnalysis() {
   const getDimScore = useAppStore(s => s.getDimScore);
   const getSubDimScore = useAppStore(s => s.getSubDimScore);
   const getCriticalGapsCount = useAppStore(s => s.getCriticalGapsCount);
-  const targetLevel = useAppStore(s => s.targetLevel);
 
   const [selectedDim, setSelectedDim] = useState('D1');
 
@@ -102,7 +101,6 @@ export default function GapAnalysis() {
             </div>
             {rows.map(row => {
               const chip = getPriorityChip(row.score);
-              const gap = row.score !== null ? parseFloat((targetLevel - row.score).toFixed(2)) : null;
               return (
                 <div
                   key={row.sd}

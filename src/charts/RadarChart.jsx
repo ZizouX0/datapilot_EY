@@ -34,7 +34,7 @@ export default function RadarChart({ data }) {
         />
         <Legend
           iconSize={10}
-          formatter={(value, entry) => (
+          formatter={(value) => (
             <span style={{ fontSize: 11, color: '#666', fontFamily: 'DM Sans, sans-serif' }}>
               {value}
             </span>

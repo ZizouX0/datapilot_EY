@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import useAppStore, { MATURITY_LEVELS } from '../store/useAppStore';
-import { DIMENSIONS, INDICATORS, SUBDIM_NAMES } from '../data/indicators';
+import { DIMENSIONS, INDICATORS } from '../data/indicators';
 import RadarChart from '../charts/RadarChart';
 import DimensionBars from '../charts/DimensionBars';
 import MaturityBadge from '../components/ui/MaturityBadge';
@@ -44,8 +44,6 @@ export default function Results() {
     current: getDimScore(key) ?? 0,
     target: targetLevel,
   }));
-
-  const currentLevelIdx = lvl.level - 1;
 
   return (
     <div ref={printRef}>

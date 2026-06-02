@@ -1,7 +1,6 @@
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useState } from 'react';
 import useAppStore from '../../store/useAppStore';
-import { INDICATORS } from '../../data/indicators';
 
 const TABS = [
   { label: 'Bank Profile', path: '/profile', locked: false },
