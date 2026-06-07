@@ -3,6 +3,7 @@ import { useReactToPrint } from 'react-to-print';
 import useAppStore from '../store/useAppStore';
 import ScoreBadge from '../components/ui/ScoreBadge';
 import DimensionPill from '../components/ui/DimensionPill';
+import ReportCover from '../components/ReportCover';
 
 function getArticleRef(id) {
   const bcbs = ['D1.3-03'];
@@ -16,8 +17,12 @@ export default function Compliance() {
   const getBCTIndicators = useAppStore(s => s.getBCTIndicators);
   const getEffectiveScore = useAppStore(s => s.getEffectiveScore);
   const answers = useAppStore(s => s.answers);
+  const profile = useAppStore(s => s.profile);
 
-  const handlePrint = useReactToPrint({ contentRef: printRef });
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `DataPilot - ${profile.bankName || 'Bank'} - BCT Compliance`,
+  });
 
   const bctInds = getBCTIndicators();
   const bctData = getBCTCompliance();
@@ -33,6 +38,12 @@ export default function Compliance() {
 
   return (
     <div ref={printRef}>
+      <ReportCover
+        title="BCT Regulatory Compliance"
+        subtitle="Circulaire N°2025-08 & BCBS 239 alignment"
+        profile={profile}
+      />
+      <div className="print-content">
       {/* Title */}
       <div className="mb-4">
         <h2 className="text-xl font-bold text-gray-800">BCT Regulatory Compliance</h2>
@@ -172,6 +183,7 @@ export default function Compliance() {
         >
           Export BCT Evidence Package
         </button>
+      </div>
       </div>
     </div>
   );
