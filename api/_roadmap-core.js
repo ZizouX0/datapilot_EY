@@ -2,12 +2,17 @@
 // Shared by the Vite dev middleware (local `npm run dev`) and the Vercel
 // serverless function (`api/roadmap.js`) so there is exactly one code path.
 //
-// The Anthropic API key is read from the ANTHROPIC_API_KEY environment variable
-// and never leaves the server. The SDK is imported lazily so the dev server and
-// build still work when the dependency or key is absent — the feature simply
-// degrades to the static recommendations on the client.
+// Provider-agnostic: talks to any OpenAI-compatible /chat/completions endpoint.
+// Defaults to Google Gemini's free tier. Switch to Groq / OpenRouter / etc. by
+// changing AI_BASE_URL + AI_MODEL + AI_API_KEY — no code change required.
+//
+// The API key is read from the environment server-side and never reaches the
+// browser. When unset, the endpoint returns 503 and the client falls back to
+// the built-in static recommendations.
 
-const MODEL = process.env.ANTHROPIC_MODEL || 'claude-opus-4-8';
+const API_KEY = process.env.AI_API_KEY || process.env.GEMINI_API_KEY;
+const BASE_URL = (process.env.AI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta/openai').replace(/\/$/, '');
+const MODEL = process.env.AI_MODEL || 'gemini-2.5-flash';
 
 const SYSTEM_PROMPT = `You are a data-governance advisor for Tunisian banks, working inside EY's DataPilot maturity tool. You write the "improvement roadmap" actions a bank must take to close maturity gaps.
 
@@ -20,31 +25,10 @@ For each sub-dimension you are given, write 2–3 concrete, specific, actionable
 - Each action is a single imperative sentence (start with a verb), max ~22 words.
 - For sub-dimensions with regulatory (BCT) gaps, the FIRST action must directly remediate the regulatory requirement.
 - Larger gaps warrant more foundational actions; small gaps warrant optimization/automation actions.
-- No preamble, no numbering inside the strings.`;
+- No preamble, no numbering inside the strings.
 
-const OUTPUT_SCHEMA = {
-  type: 'object',
-  additionalProperties: false,
-  properties: {
-    items: {
-      type: 'array',
-      items: {
-        type: 'object',
-        additionalProperties: false,
-        properties: {
-          sd: { type: 'string', description: 'The sub-dimension id, echoed back exactly.' },
-          actions: {
-            type: 'array',
-            items: { type: 'string' },
-            description: '2 to 3 recommended actions.',
-          },
-        },
-        required: ['sd', 'actions'],
-      },
-    },
-  },
-  required: ['items'],
-};
+Return ONLY valid JSON, no markdown fences, of exactly this shape:
+{"items":[{"sd":"<sub-dimension id, echoed exactly>","actions":["action 1","action 2"]}]}`;
 
 function buildUserPrompt({ bankName, targetLevel, items }) {
   const lines = items.map(it => {
@@ -60,45 +44,72 @@ Write roadmap actions for each of the following ${items.length} sub-dimensions. 
 ${lines.join('\n')}`;
 }
 
+// Strip accidental ```json fences some models add around JSON.
+function extractJson(text) {
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const raw = fenced ? fenced[1] : text;
+  const start = raw.indexOf('{');
+  const end = raw.lastIndexOf('}');
+  return start >= 0 && end > start ? raw.slice(start, end + 1) : raw;
+}
+
 /**
- * Generate tailored actions. Returns { items: [{ sd, actions }] }.
+ * Generate tailored actions. Returns { actionsBySd, model }.
  * Throws an Error with a `.statusCode` property on configuration/API failure.
  */
 export async function generateRoadmapActions(payload) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    const err = new Error('ANTHROPIC_API_KEY is not configured on the server.');
+  if (!API_KEY) {
+    const err = new Error('No AI key configured. Set GEMINI_API_KEY (or AI_API_KEY) on the server.');
     err.statusCode = 503;
     throw err;
   }
 
   const items = Array.isArray(payload?.items) ? payload.items : [];
-  if (items.length === 0) return { items: [] };
+  if (items.length === 0) return { actionsBySd: {}, model: MODEL };
 
-  let Anthropic;
+  let response;
   try {
-    ({ default: Anthropic } = await import('@anthropic-ai/sdk'));
-  } catch {
-    const err = new Error('The @anthropic-ai/sdk package is not installed. Run `npm install`.');
-    err.statusCode = 503;
+    response = await fetch(`${BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        temperature: 0.4,
+        max_tokens: 2048,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: buildUserPrompt(payload) },
+        ],
+      }),
+    });
+  } catch (e) {
+    const err = new Error(`Could not reach the AI provider: ${e.message}`);
+    err.statusCode = 502;
     throw err;
   }
 
-  const client = new Anthropic({ apiKey });
+  if (!response.ok) {
+    const body = await response.text().catch(() => '');
+    const err = new Error(`AI provider returned ${response.status}: ${body.slice(0, 300)}`);
+    err.statusCode = response.status === 429 ? 429 : 502;
+    throw err;
+  }
 
-  const response = await client.messages.create({
-    model: MODEL,
-    max_tokens: 4000,
-    system: SYSTEM_PROMPT,
-    output_config: { format: { type: 'json_schema', schema: OUTPUT_SCHEMA } },
-    messages: [{ role: 'user', content: buildUserPrompt(payload) }],
-  });
+  const data = await response.json();
+  const content = data?.choices?.[0]?.message?.content;
+  if (!content) throw new Error('AI provider returned no content.');
 
-  const textBlock = response.content.find(b => b.type === 'text');
-  if (!textBlock) throw new Error('Model returned no text content.');
+  let parsed;
+  try {
+    parsed = JSON.parse(extractJson(content));
+  } catch {
+    throw new Error('AI response was not valid JSON.');
+  }
 
-  const parsed = JSON.parse(textBlock.text);
-  // Normalize into a sd -> actions map for easy client consumption.
   const actionsBySd = {};
   for (const it of parsed.items || []) {
     if (it && it.sd && Array.isArray(it.actions)) {
