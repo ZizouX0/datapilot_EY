@@ -51,7 +51,9 @@ function ProgressBar({ current, target, color }) {
   );
 }
 
-function RoadmapCard({ item }) {
+function RoadmapCard({ item, aiActions }) {
+  const usingAi = Array.isArray(aiActions) && aiActions.length > 0;
+  const actions = usingAi ? aiActions : item.actions;
   return (
     <div
       className="rounded-lg border border-gray-200 border-l-4 bg-white p-3"
@@ -117,7 +119,14 @@ function RoadmapCard({ item }) {
 
       {/* Recommended actions */}
       <div className="flex flex-col gap-1">
-        {item.actions.map((a, i) => (
+        {usingAi && (
+          <div className="flex items-center gap-1 mb-0.5">
+            <span className="text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">
+              ✦ AI-tailored
+            </span>
+          </div>
+        )}
+        {actions.map((a, i) => (
           <div key={i} className="flex items-start gap-1.5">
             <span
               className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0"
@@ -142,6 +151,8 @@ export default function GapAnalysis() {
   const profile = useAppStore(s => s.profile);
 
   const [selectedDim, setSelectedDim] = useState('D1');
+  const [aiActions, setAiActions] = useState(null); // { [sd]: string[] }
+  const [aiState, setAiState] = useState({ loading: false, error: null });
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
@@ -183,6 +194,32 @@ export default function GapAnalysis() {
   const { phases, summary } = buildRoadmap({ getSubDimScore, getEffectiveScore, targetLevel });
   const targetLvl = MATURITY_LEVELS.find(l => l.level === summary.target) || MATURITY_LEVELS[2];
   const globalScore = getGlobalScore();
+
+  async function generateAiActions() {
+    setAiState({ loading: true, error: null });
+    const items = phases.flat().map(it => ({
+      sd: it.sd,
+      dimName: it.dimName,
+      sdName: it.sdName,
+      current: it.current,
+      gap: it.gap,
+      weight: it.weight,
+      bctGaps: it.bctGaps.map(g => ({ ref: g.ref, q: g.q })),
+    }));
+    try {
+      const res = await fetch('/api/roadmap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bankName: profile.bankName, targetLevel: summary.target, items }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Request failed (${res.status}).`);
+      setAiActions(data.actionsBySd || {});
+      setAiState({ loading: false, error: null });
+    } catch (err) {
+      setAiState({ loading: false, error: err.message });
+    }
+  }
 
   return (
     <div ref={printRef}>
@@ -315,10 +352,26 @@ export default function GapAnalysis() {
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="text-sm font-semibold text-gray-800">Recommended improvement roadmap</div>
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-semibold text-gray-800">Recommended improvement roadmap</div>
+                {summary.totalActions > 0 && (
+                  <button
+                    onClick={generateAiActions}
+                    disabled={aiState.loading}
+                    className="no-print text-[11px] font-semibold px-2 py-1 rounded border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 disabled:opacity-50"
+                  >
+                    {aiState.loading ? 'Generating…' : aiActions ? '✦ Regenerate AI actions' : '✦ Generate AI actions'}
+                  </button>
+                )}
+              </div>
               <div className="text-xs text-gray-400 mt-0.5">
                 Sequenced by regulatory risk and business impact (weight × gap)
               </div>
+              {aiState.error && (
+                <div className="text-[11px] text-red-600 mt-1 no-print">
+                  AI unavailable: {aiState.error} — showing standard recommendations.
+                </div>
+              )}
             </div>
             {/* Summary stats */}
             <div className="flex items-center gap-5">
@@ -364,7 +417,9 @@ export default function GapAnalysis() {
                     {phases[phaseIdx].length === 0 ? (
                       <div className="text-xs text-gray-400 italic py-2 text-center">No actions in this phase</div>
                     ) : (
-                      phases[phaseIdx].map(item => <RoadmapCard key={item.sd} item={item} />)
+                      phases[phaseIdx].map(item => (
+                        <RoadmapCard key={item.sd} item={item} aiActions={aiActions?.[item.sd]} />
+                      ))
                     )}
                   </div>
                 </div>
