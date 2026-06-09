@@ -27,7 +27,7 @@ export default function Results() {
   const getBCTCompliance = useAppStore(s => s.getBCTCompliance);
   const getBCTIndicators = useAppStore(s => s.getBCTIndicators);
   const getEffectiveScore = useAppStore(s => s.getEffectiveScore);
-  const getAnsweredCount = useAppStore(s => s.getAnsweredCount);
+  const getScoredCount = useAppStore(s => s.getScoredCount);
   const getTotalSkipCount = useAppStore(s => s.getTotalSkipCount);
   const getCriticalGapsCount = useAppStore(s => s.getCriticalGapsCount);
   const getFormulaString = useAppStore(s => s.getFormulaString);
@@ -142,13 +142,13 @@ export default function Results() {
       <div className="grid grid-cols-4 gap-3 mb-6">
         {[
           {
-            num: `${getAnsweredCount()} / ${INDICATORS.length}`,
-            label: 'Indicators answered',
-            sub: 'Full evaluation',
+            num: `${getScoredCount()} / ${INDICATORS.length}`,
+            label: 'Indicators scored',
+            sub: `${Math.round((getScoredCount() / INDICATORS.length) * 100)}% coverage`,
             color: '#3D108A',
           },
           {
-            num: getTotalSkipCount(),
+            num: `${getTotalSkipCount()} / ${INDICATORS.length}`,
             label: 'Indicators skipped',
             sub: 'Excluded from scoring',
             color: '#188CE5',

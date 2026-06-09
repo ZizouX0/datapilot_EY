@@ -117,6 +117,16 @@ const useAppStore = create(
     }).length;
   },
 
+  // Scored = answered with an actual score, excluding skipped. Used in Results
+  // so that scored + skipped reconcile to the total indicator count.
+  getScoredCount() {
+    const { answers } = get();
+    return INDICATORS.filter(i => {
+      const ans = answers[i.id];
+      return ans && !ans.skipped && ans.score !== null && ans.score !== undefined;
+    }).length;
+  },
+
   getTotalSkipCount() {
     const { answers } = get();
     return INDICATORS.filter(i => answers[i.id]?.skipped).length;
