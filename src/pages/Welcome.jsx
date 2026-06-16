@@ -11,6 +11,7 @@ const ROLES = [
   'Risk Manager',
   'Data Analyst',
   'Compliance Officer',
+  'Consultant',
   'Other',
 ];
 
@@ -63,14 +64,21 @@ export default function Welcome() {
     role: ROLES[0],
     email: authEmail,
   });
+  // When "Other" is selected, the actual role is typed here.
+  const [customRole, setCustomRole] = useState('');
+
+  const isOther = form.role === 'Other';
+  const effectiveRole = isOther ? customRole.trim() : form.role;
+
   const emailValid = EMAIL_RE.test(form.email.trim());
   const canStart =
-    form.bankName.trim() && form.respondentName.trim() && form.role.trim() && emailValid;
+    form.bankName.trim() && form.respondentName.trim() && effectiveRole && emailValid;
 
   function handleStart() {
     if (!canStart) return;
     // Always stamp the date automatically at the moment the session starts.
-    setProfile({ ...form, date: TODAY, email: form.email.trim() });
+    // Persist the typed role (not the literal "Other") when applicable.
+    setProfile({ ...form, role: effectiveRole, date: TODAY, email: form.email.trim() });
     navigate('/assessment');
   }
 
@@ -180,6 +188,17 @@ export default function Welcome() {
               >
                 {ROLES.map(r => <option key={r}>{r}</option>)}
               </select>
+
+              {/* Free-text role shown only when "Other" is selected. */}
+              {isOther && (
+                <input
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-ey-yellow focus:border-transparent"
+                  placeholder="Please specify your role"
+                  value={customRole}
+                  onChange={e => setCustomRole(e.target.value)}
+                  autoFocus
+                />
+              )}
             </div>
 
             {/* Assessment date — captured automatically, read-only */}
