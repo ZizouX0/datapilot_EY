@@ -1,4 +1,4 @@
-export const DIMENSIONS = {
+const DEFAULT_DIMENSIONS = {
   D1: { name: 'Governance', weight: 0.25, color: '#3D108A', subDims: ['1.1', '1.2', '1.3'] },
   D2: { name: 'Data Quality', weight: 0.20, color: '#188CE5', subDims: ['2.1', '2.2', '2.3'] },
   D3: { name: 'Architecture & Access', weight: 0.20, color: '#27ACAA', subDims: ['3.1', '3.2'] },
@@ -6,7 +6,7 @@ export const DIMENSIONS = {
   D5: { name: 'Skills & Culture', weight: 0.15, color: '#750E5C', subDims: ['5.1', '5.2'], proxy: true },
 };
 
-export const SUBDIM_NAMES = {
+const DEFAULT_SUBDIM_NAMES = {
   '1.1': 'Strategy & data policy',
   '1.2': 'Ownership & responsibilities',
   '1.3': 'Regulatory compliance',
@@ -21,7 +21,7 @@ export const SUBDIM_NAMES = {
   '5.2': 'Culture & adoption (proxy)',
 };
 
-export const INDICATORS = [
+const DEFAULT_INDICATORS = [
   // ═══════════════════════════════════════════════════
   // D1 — Governance (25%) — 12 indicators
   // ═══════════════════════════════════════════════════
@@ -818,3 +818,57 @@ export const INDICATORS = [
     ],
   },
 ];
+
+// ── Live, mutable content the app reads from ────────────────────────────────
+// These begin as deep copies of the bundled defaults. When an admin has edited
+// the questionnaire in Supabase, hydrateContent() replaces their contents at
+// boot. We mutate IN PLACE so any module that imported these bindings keeps
+// seeing the current content without needing to re-import.
+export const DIMENSIONS = structuredClone(DEFAULT_DIMENSIONS);
+export const SUBDIM_NAMES = structuredClone(DEFAULT_SUBDIM_NAMES);
+export const INDICATORS = structuredClone(DEFAULT_INDICATORS);
+
+// Pristine bundled defaults — used to seed an empty database and as the
+// always-available fallback when Supabase is unconfigured or unreachable.
+export const DEFAULT_CONTENT = {
+  dimensions: DEFAULT_DIMENSIONS,
+  subDimNames: DEFAULT_SUBDIM_NAMES,
+  indicators: DEFAULT_INDICATORS,
+};
+
+// Replace the live content in place from Supabase rows. Each dimension's
+// ordered sub-dimension list and the sub-dimension name map are derived from
+// the indicator rows, so only the two tables need to be persisted.
+export function hydrateContent(dimRows, indRows) {
+  const dims = [...dimRows].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+  const inds = [...indRows].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+
+  INDICATORS.length = 0;
+  inds.forEach(r => INDICATORS.push({
+    id: r.id,
+    dim: r.dim,
+    sub: r.sub,
+    subName: r.sub_name,
+    bct: !!r.bct,
+    q: r.q,
+    hint: r.hint || '',
+    rubric: Array.isArray(r.rubric) ? r.rubric : [],
+    sort_order: r.sort_order ?? 0,
+  }));
+
+  Object.keys(SUBDIM_NAMES).forEach(k => delete SUBDIM_NAMES[k]);
+  inds.forEach(r => { if (r.sub && r.sub_name) SUBDIM_NAMES[r.sub] = r.sub_name; });
+
+  Object.keys(DIMENSIONS).forEach(k => delete DIMENSIONS[k]);
+  dims.forEach(d => {
+    const subDims = [];
+    inds.forEach(i => { if (i.dim === d.code && !subDims.includes(i.sub)) subDims.push(i.sub); });
+    DIMENSIONS[d.code] = {
+      name: d.name,
+      weight: Number(d.weight) || 0,
+      color: d.color,
+      proxy: !!d.proxy,
+      subDims,
+    };
+  });
+}

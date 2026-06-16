@@ -18,14 +18,31 @@ const ROLES = [
 const TODAY = new Date().toISOString().slice(0, 10);
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Plain-language explanation of the 5-step workflow, shown so a first-time
-// user understands the whole journey before starting.
+// Plain-language explanation of the 5-step workflow, written so that someone
+// with no data or technical background understands the whole journey before
+// starting. Each step explains *what happens* and *why it matters* in everyday
+// words, and defines any term the first time it appears.
 const WORKFLOW = [
-  { title: 'Sign in & set up', desc: 'Identify your bank and yourself by email.' },
-  { title: 'Assess', desc: 'Answer 47 evidence-based questions across 5 dimensions.' },
-  { title: 'Get your score', desc: 'See your CMMI maturity level, radar and dimension breakdown.' },
-  { title: 'Close the gaps', desc: 'Receive a prioritized, AI-assisted improvement roadmap.' },
-  { title: 'Check compliance & export', desc: 'Verify BCT 2025-08 / BCBS 239 status and download branded PDF reports.' },
+  {
+    title: 'Sign in & set up',
+    desc: "Tell us your bank's name and your role. There's nothing to install — this just puts your name on the report.",
+  },
+  {
+    title: 'Answer simple questions',
+    desc: "Go through 47 short questions about how your bank handles its data — how it's organised, kept accurate, protected and actually used. The questions are grouped into 5 themes (we call them “dimensions”).",
+  },
+  {
+    title: 'Get your score',
+    desc: "DataPilot instantly turns your answers into a maturity score from 1 (just getting started) to 5 (best-in-class), shown in easy-to-read charts so you can see your strong and weak areas at a glance.",
+  },
+  {
+    title: 'See what to fix first',
+    desc: "It points out your biggest weak spots and builds a clear, prioritised to-do list — a practical action plan (with AI help) showing what to improve first for the fastest progress.",
+  },
+  {
+    title: 'Check the rules & share',
+    desc: "See whether your bank meets the Tunisian central bank's data rules (BCT) and international banking standards, then download a polished PDF report to share with management.",
+  },
 ];
 
 function formatToday() {
@@ -68,8 +85,14 @@ export default function Welcome() {
           <div className="text-gray-400 text-sm mt-1">Data Maturity Steering Tool</div>
 
           <p className="text-sm text-gray-300 leading-relaxed mt-6 max-w-sm">
-            DataPilot measures how mature your bank's data management is, benchmarks it against
-            Tunisian regulation, and hands you a concrete plan to improve — in five guided steps.
+            DataPilot is a simple, guided check-up of how well your bank manages its
+            data — what experts call its <span className="text-white font-medium">“data maturity.”</span>{' '}
+            You answer a set of plain questions and the tool does the analysis for you:
+            it scores your bank, shows where it stands against banking regulations, and
+            gives you a step-by-step plan to improve.
+          </p>
+          <p className="text-xs text-gray-400 leading-relaxed mt-3 max-w-sm">
+            No technical background needed — just answer honestly and follow the five steps below.
           </p>
 
           {/* How it works — numbered workflow */}
