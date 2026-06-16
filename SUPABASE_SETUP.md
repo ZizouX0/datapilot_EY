@@ -72,9 +72,25 @@ Sign out and back in — you'll see the **Admin** tab and badge.
    You can also **add or remove** indicators, sub-dimensions and whole dimensions
    from the editor (deletes ask for confirmation). Changes are read by the app the
    next time the assessment loads.
-4. **Admin → Users & roles**: see everyone who has signed in and change their
-   role (analyst ↔ admin). Inviting brand-new people is still done from the
-   dashboard (Authentication → Users → Invite); they appear here after first sign-in.
+4. (Optional) Run [`supabase/phase2c.sql`](./supabase/phase2c.sql) to add the
+   per-dimension `description` column (a short phrase shown to users on the
+   assessment). Editable in Admin → Questionnaire.
+5. **Admin → Users & roles**: see everyone who has signed in, change roles
+   (analyst ↔ admin), and **invite new users by email** directly from the page.
+
+### Enabling in-app invites (the service_role key)
+Inviting users creates accounts, which requires Supabase's privileged
+**service_role** ("secret") key. It must stay server-side — never in the browser:
+- **Local dev:** add it to your `.env` (no `VITE_` prefix):
+  `SUPABASE_SERVICE_ROLE_KEY=sb_secret_...` (Dashboard → Project Settings → API
+  Keys → Secret keys → reveal & copy), then restart `npm run dev`.
+- **Production (Vercel/Netlify/etc.):** set `SUPABASE_SERVICE_ROLE_KEY` as a
+  server environment variable in the host's dashboard.
+- The endpoint verifies the caller is an admin before inviting. Without the key,
+  the invite box reports "not configured" and you can fall back to the dashboard
+  (Authentication → Users → Invite user).
+- Invited users land on `/set-password` from the email link to choose a password,
+  then join as an **analyst**.
 
 ### How content loading works (so nothing ever breaks)
 - At startup the app tries to load the questionnaire from Supabase. If the tables

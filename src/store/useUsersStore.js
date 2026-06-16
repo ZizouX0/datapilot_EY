@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 // row via RLS) and lets an admin change a user's role. Creating brand-new
 // accounts requires the privileged service_role key, so inviting is done from
 // the Supabase dashboard for now (see SUPABASE_SETUP.md).
-const useUsersStore = create((set) => ({
+const useUsersStore = create((set, get) => ({
   users: [],
   loading: false,
   error: null,
@@ -28,6 +28,32 @@ const useUsersStore = create((set) => ({
     if (error) return { error: error.message };
     // Reflect the change locally without a refetch.
     set(s => ({ users: s.users.map(u => (u.id === id ? { ...u, role } : u)) }));
+    return { error: null };
+  },
+
+  // Invite a new user by email. Calls the server endpoint (which holds the
+  // service_role key and verifies we're an admin) with our access token.
+  async inviteUser(email) {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    if (!token) return { error: 'Your session has expired — sign in again.' };
+
+    let res, body;
+    try {
+      res = await fetch('/api/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          email: email.trim(),
+          redirectTo: `${window.location.origin}/set-password`,
+        }),
+      });
+      body = await res.json();
+    } catch {
+      return { error: 'Could not reach the invite service.' };
+    }
+    if (!res.ok) return { error: body?.error || 'Invitation failed.' };
+    await get().listUsers(); // surface the newly invited user
     return { error: null };
   },
 }));

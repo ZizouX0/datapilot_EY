@@ -9,6 +9,7 @@ import useContentStore from './store/useContentStore';
 
 // Route-based code splitting — each page (and its heavy chart deps) loads on demand.
 const Login = lazy(() => import('./pages/Login'));
+const SetPassword = lazy(() => import('./pages/SetPassword'));
 const Welcome = lazy(() => import('./pages/Welcome'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Questionnaire = lazy(() => import('./pages/Questionnaire'));
@@ -76,8 +77,10 @@ function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
     <Routes>
-      {/* Public — the only route reachable without a session. */}
+      {/* Public — reachable without an existing session. */}
       <Route path="/login" element={<Login />} />
+      {/* Invited users land here from the email link (session set from the URL). */}
+      <Route path="/set-password" element={<SetPassword />} />
 
       {/* Everything below requires authentication. */}
       <Route path="/" element={<RequireAuth><Welcome /></RequireAuth>} />
