@@ -5,6 +5,7 @@ import NavBar from './components/layout/NavBar';
 import ProgressBar from './components/layout/ProgressBar';
 import useAppStore from './store/useAppStore';
 import useAuthStore from './store/useAuthStore';
+import useContentStore from './store/useContentStore';
 
 // Route-based code splitting — each page (and its heavy chart deps) loads on demand.
 const Login = lazy(() => import('./pages/Login'));
@@ -107,16 +108,30 @@ function AppRoutes() {
   );
 }
 
+// Holds the app render until both the auth session check and the initial
+// questionnaire content load have resolved, so pages never render against a
+// half-known session or before remote content has had a chance to load.
+function Boot({ children }) {
+  const authLoading = useAuthStore(s => s.loading);
+  const contentLoading = useContentStore(s => s.loading);
+  if (authLoading || contentLoading) return <PageLoader />;
+  return children;
+}
+
 export default function App() {
-  // Wire up the auth session listener once for the app's lifetime.
+  // Wire up the auth session listener and load questionnaire content once for
+  // the app's lifetime.
   useEffect(() => {
     const unsubscribe = useAuthStore.getState().init();
+    useContentStore.getState().loadContent();
     return unsubscribe;
   }, []);
 
   return (
     <BrowserRouter>
-      <AppRoutes />
+      <Boot>
+        <AppRoutes />
+      </Boot>
     </BrowserRouter>
   );
 }

@@ -58,7 +58,27 @@ Sign out and back in — you'll see the **Admin** tab and badge.
 - Roles are **not** user-writable — promotion happens only via the dashboard
   (or a future Phase 2 server endpoint using the service_role key).
 
-## What's next (Phase 2)
-- Move the questionnaire (indicators / rubrics / weights) into Supabase and
-  build the admin editor.
-- Build the in-app **Users & roles** management screen (invite + promote).
+## Phase 2 — editable questionnaire + user management
+1. In **SQL Editor → New query**, paste all of
+   [`supabase/phase2.sql`](./supabase/phase2.sql) and **Run**. This adds the
+   `dimensions` and `indicators` tables, an `is_admin()` helper, and the RLS
+   policies (everyone signed in can read the questionnaire; only admins can edit;
+   admins can manage user roles).
+2. Sign in as an admin → **Admin** tab → **Questionnaire** →
+   **"Load defaults into database"**. This copies the built-in questionnaire
+   (5 dimensions, 47 indicators) into the tables so you can edit it. Until you do
+   this, the app simply runs on its bundled defaults — nothing breaks.
+3. Edit questions, guidance, the BCT flag, 5-level rubrics, and dimension weights.
+   Changes are read by the app the next time the assessment loads.
+4. **Admin → Users & roles**: see everyone who has signed in and change their
+   role (analyst ↔ admin). Inviting brand-new people is still done from the
+   dashboard (Authentication → Users → Invite); they appear here after first sign-in.
+
+### How content loading works (so nothing ever breaks)
+- At startup the app tries to load the questionnaire from Supabase. If the tables
+  are empty, not migrated, or unreachable, it silently falls back to the bundled
+  default questionnaire. The app is therefore always usable, online or not.
+
+## What's next (later phases)
+- Centralized submissions (store each analyst's answers server-side).
+- Editable recommendation library.
