@@ -24,6 +24,7 @@ export default function ReportCover({ title, subtitle, profile = {} }) {
         ? `${profile.respondentName}${profile.role ? ' · ' + profile.role : ''}`
         : '',
     ],
+    ['Email', profile.email],
     ['Report generated', generated],
   ];
 

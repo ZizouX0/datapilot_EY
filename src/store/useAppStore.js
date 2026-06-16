@@ -14,7 +14,7 @@ const useAppStore = create(
   persist(
     (set, get) => ({
   // ── State ──────────────────────────────────────────────────────────
-  profile: { bankName: '', date: '', respondentName: '', role: '' },
+  profile: { bankName: '', date: '', respondentName: '', role: '', email: '' },
   answers: {},
   targetLevel: 3,
   activeDimension: 'D1',
@@ -284,7 +284,7 @@ const useAppStore = create(
 
   resetAll() {
     set({
-      profile: { bankName: '', date: '', respondentName: '', role: '' },
+      profile: { bankName: '', date: '', respondentName: '', role: '', email: '' },
       answers: {},
       targetLevel: 3,
       activeDimension: 'D1',
