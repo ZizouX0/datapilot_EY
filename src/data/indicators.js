@@ -1,9 +1,9 @@
 const DEFAULT_DIMENSIONS = {
-  D1: { name: 'Governance', weight: 0.25, color: '#3D108A', subDims: ['1.1', '1.2', '1.3'] },
-  D2: { name: 'Data Quality', weight: 0.20, color: '#188CE5', subDims: ['2.1', '2.2', '2.3'] },
-  D3: { name: 'Architecture & Access', weight: 0.20, color: '#27ACAA', subDims: ['3.1', '3.2'] },
-  D4: { name: 'Analytics & Tools', weight: 0.20, color: '#2DB757', subDims: ['4.1', '4.2'] },
-  D5: { name: 'Skills & Culture', weight: 0.15, color: '#750E5C', subDims: ['5.1', '5.2'], proxy: true },
+  D1: { name: 'Governance', weight: 0.25, color: '#3D108A', subDims: ['1.1', '1.2', '1.3'], desc: 'How data is steered — strategy, ownership, accountability and regulatory compliance.' },
+  D2: { name: 'Data Quality', weight: 0.20, color: '#188CE5', subDims: ['2.1', '2.2', '2.3'], desc: "How accurate, complete, timely and traceable the bank's data is." },
+  D3: { name: 'Architecture & Access', weight: 0.20, color: '#27ACAA', subDims: ['3.1', '3.2'], desc: 'How data is centralised, integrated and made available through pipelines and controlled access.' },
+  D4: { name: 'Analytics & Tools', weight: 0.20, color: '#2DB757', subDims: ['4.1', '4.2'], desc: 'The maturity of analytics/BI tools and how far decisions are genuinely driven by data.' },
+  D5: { name: 'Skills & Culture', weight: 0.15, color: '#750E5C', subDims: ['5.1', '5.2'], proxy: true, desc: 'The people side — data skills, talent and a data-driven culture (assessed via proxy signals).' },
 };
 
 const DEFAULT_SUBDIM_NAMES = {
@@ -868,6 +868,7 @@ export function hydrateContent(dimRows, indRows) {
       weight: Number(d.weight) || 0,
       color: d.color,
       proxy: !!d.proxy,
+      desc: d.description || '',
       subDims,
     };
   });

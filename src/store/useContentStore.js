@@ -87,6 +87,7 @@ const useContentStore = create((set, get) => ({
       weight: d.weight,
       color: d.color,
       proxy: !!d.proxy,
+      description: d.desc || '',
       sort_order: i,
     }));
     const indRows = indicators.map((ind, i) => ({

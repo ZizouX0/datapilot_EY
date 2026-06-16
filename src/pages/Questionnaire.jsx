@@ -183,6 +183,16 @@ export default function Questionnaire() {
       <div className="flex gap-4 items-start">
         {/* Indicator cards */}
         <div className="flex-1 flex flex-col gap-4">
+          {/* Dimension description — brief plain-language explanation */}
+          {currentDimData.desc && (
+            <div className="bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-stretch gap-3">
+              <span className="w-1.5 rounded-full flex-shrink-0" style={{ background: currentDimData.color }} />
+              <div>
+                <div className="text-sm font-semibold text-gray-800">{activeDimension} · {currentDimData.name}</div>
+                <p className="text-xs text-gray-500 leading-relaxed mt-0.5">{currentDimData.desc}</p>
+              </div>
+            </div>
+          )}
           {/* D5 proxy notice */}
           {activeDimension === 'D5' && (
             <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 flex items-start gap-3">
