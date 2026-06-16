@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import useAppStore from '../store/useAppStore';
-import { DIMENSIONS } from '../data/indicators';
+import useAuthStore from '../store/useAuthStore';
+import { TUNISIAN_BANKS } from '../data/tunisianBanks';
+import BankAutocomplete from '../components/ui/BankAutocomplete';
 
 const ROLES = [
   'Chief Data Officer',
@@ -12,99 +14,112 @@ const ROLES = [
   'Other',
 ];
 
-const now = new Date();
-const DEFAULT_DATE = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+// The assessment date is captured automatically — the user never types it.
+const TODAY = new Date().toISOString().slice(0, 10);
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Plain-language explanation of the 5-step workflow, shown so a first-time
+// user understands the whole journey before starting.
+const WORKFLOW = [
+  { title: 'Sign in & set up', desc: 'Identify your bank and yourself by email.' },
+  { title: 'Assess', desc: 'Answer 47 evidence-based questions across 5 dimensions.' },
+  { title: 'Get your score', desc: 'See your CMMI maturity level, radar and dimension breakdown.' },
+  { title: 'Close the gaps', desc: 'Receive a prioritized, AI-assisted improvement roadmap.' },
+  { title: 'Check compliance & export', desc: 'Verify BCT 2025-08 / BCBS 239 status and download branded PDF reports.' },
+];
+
+function formatToday() {
+  return new Date(TODAY).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+}
 
 export default function Welcome() {
   const navigate = useNavigate();
   const setProfile = useAppStore(s => s.setProfile);
+  // Identity is established by authentication — the assessment email is the
+  // signed-in user's email, pre-filled and not editable here.
+  const authEmail = useAuthStore(s => s.user?.email) || '';
 
   const [form, setForm] = useState({
     bankName: '',
-    date: DEFAULT_DATE,
+    date: TODAY,
     respondentName: '',
     role: ROLES[0],
+    email: authEmail,
   });
+  const emailValid = EMAIL_RE.test(form.email.trim());
+  const canStart =
+    form.bankName.trim() && form.respondentName.trim() && form.role.trim() && emailValid;
 
   function handleStart() {
-    setProfile(form);
+    if (!canStart) return;
+    // Always stamp the date automatically at the moment the session starts.
+    setProfile({ ...form, date: TODAY, email: form.email.trim() });
     navigate('/assessment');
   }
 
-  const dims = Object.entries(DIMENSIONS);
-
   return (
-    <div className="flex h-screen">
-      {/* Left panel */}
-      <div className="w-[40%] min-w-[340px] bg-ey-charcoal flex flex-col justify-between p-12">
+    <div className="flex min-h-screen">
+      {/* Left panel — branding + plain-language workflow */}
+      <div className="w-[42%] min-w-[360px] bg-ey-charcoal flex flex-col justify-between p-12">
         <div>
           <div className="text-6xl font-bold text-ey-yellow leading-none">EY</div>
           <div className="w-16 h-1 bg-ey-yellow my-4" />
           <div className="text-3xl font-light text-white">DataPilot</div>
           <div className="text-gray-400 text-sm mt-1">Data Maturity Steering Tool</div>
 
-          <div className="mt-1 border-t border-gray-600 pt-6">
-            <div className="flex flex-col gap-4 mt-2">
-              {[
-                '5 dimensions, 47 evidence-based indicators',
-                'CMMI 5-level scoring with per-indicator rubrics',
-                'BCT Circulaire N°2025-08 and BCBS 239 compliance mapping',
-                'Automated gap analysis and improvement roadmap',
-              ].map(f => (
-                <div key={f} className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full bg-ey-yellow flex-shrink-0 mt-1.5" />
-                  <span className="text-sm text-gray-300 leading-snug">{f}</span>
+          <p className="text-sm text-gray-300 leading-relaxed mt-6 max-w-sm">
+            DataPilot measures how mature your bank's data management is, benchmarks it against
+            Tunisian regulation, and hands you a concrete plan to improve — in five guided steps.
+          </p>
+
+          {/* How it works — numbered workflow */}
+          <div className="mt-8">
+            <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-ey-yellow mb-4">
+              How it works
+            </div>
+            <div className="flex flex-col">
+              {WORKFLOW.map((step, i) => (
+                <div key={step.title} className="flex gap-4">
+                  {/* Number + connecting line */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-7 h-7 rounded-full bg-ey-yellow text-ey-charcoal text-xs font-bold flex items-center justify-center flex-shrink-0">
+                      {i + 1}
+                    </div>
+                    {i < WORKFLOW.length - 1 && <div className="w-px flex-1 bg-gray-600 my-1" />}
+                  </div>
+                  <div className={i < WORKFLOW.length - 1 ? 'pb-4' : ''}>
+                    <div className="text-sm font-semibold text-white leading-tight">{step.title}</div>
+                    <div className="text-xs text-gray-400 leading-snug mt-0.5">{step.desc}</div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
-
-          {/* Dimension pills */}
-          <div className="flex flex-wrap gap-2 mt-8">
-            {dims.map(([key, d]) => (
-              <span
-                key={key}
-                className="px-2 py-1 rounded text-xs font-semibold text-white"
-                style={{ background: d.color }}
-              >
-                {key} · {Math.round(d.weight * 100)}%
-              </span>
-            ))}
-          </div>
         </div>
 
-        <div className="text-gray-500 text-xs">
+        <div className="text-gray-500 text-xs mt-8">
           EY Advisory Tunisia · PFE 2026 Internship Project
         </div>
       </div>
 
-      {/* Right panel */}
+      {/* Right panel — sign-in / profile form */}
       <div className="flex-1 bg-gray-50 flex items-center justify-center p-10">
         <div className="bg-white rounded-xl border border-gray-200 p-8 w-full max-w-md shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-800 mb-1">Start your evaluation</h2>
-          <p className="text-sm text-gray-500 mb-6">Fill in the profile details to begin your assessment session.</p>
+          <h2 className="text-xl font-semibold text-gray-800 mb-1">Set up your assessment</h2>
+          <p className="text-sm text-gray-500 mb-6">
+            Confirm your details to begin. Your account email identifies this assessment session.
+          </p>
 
           <div className="flex flex-col gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
                 Bank name
               </label>
-              <input
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow focus:border-transparent"
-                placeholder="e.g. Banque Nationale de Tunisie"
+              <BankAutocomplete
+                options={TUNISIAN_BANKS}
+                placeholder="Start typing, e.g. BIAT…"
                 value={form.bankName}
-                onChange={e => setForm(f => ({ ...f, bankName: e.target.value }))}
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                Assessment date
-              </label>
-              <input
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow focus:border-transparent"
-                value={form.date}
-                onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+                onChange={val => setForm(f => ({ ...f, bankName: val }))}
               />
             </div>
 
@@ -120,6 +135,17 @@ export default function Welcome() {
               />
             </div>
 
+            {/* Email — taken from the signed-in account, shown read-only. */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                Email
+              </label>
+              <div className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600 flex items-center justify-between">
+                <span>{form.email}</span>
+                <span className="text-[10px] text-gray-400 uppercase tracking-wide">Signed in</span>
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
                 Role / function
@@ -133,9 +159,20 @@ export default function Welcome() {
               </select>
             </div>
 
+            {/* Assessment date — captured automatically, read-only */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                Assessment date
+              </label>
+              <div className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600 flex items-center justify-between">
+                <span>{formatToday()}</span>
+                <span className="text-[10px] text-gray-400 uppercase tracking-wide">Set automatically</span>
+              </div>
+            </div>
+
             <button
               onClick={handleStart}
-              disabled={!form.bankName.trim() || !form.date.trim() || !form.respondentName.trim() || !form.role.trim()}
+              disabled={!canStart}
               className="mt-2 w-full bg-ey-yellow text-ey-charcoal font-semibold rounded-lg py-3 text-sm hover:bg-yellow-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Start Evaluation →

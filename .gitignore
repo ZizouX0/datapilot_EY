@@ -4,3 +4,7 @@ dist/
 *.log
 .env
 .env.local
+
+# Local-only PDF review artifacts and the throwaway generation script
+*.pdf
+/scripts/

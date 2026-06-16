@@ -6,6 +6,7 @@ import RadarChart from '../charts/RadarChart';
 import DimensionBars from '../charts/DimensionBars';
 import MaturityBadge from '../components/ui/MaturityBadge';
 import ScoreBadge from '../components/ui/ScoreBadge';
+import ReportCover from '../components/ReportCover';
 
 const INTERP = [
   { range: '1.0–1.79', action: 'Assign data owners and document all processes' },
@@ -26,13 +27,17 @@ export default function Results() {
   const getBCTCompliance = useAppStore(s => s.getBCTCompliance);
   const getBCTIndicators = useAppStore(s => s.getBCTIndicators);
   const getEffectiveScore = useAppStore(s => s.getEffectiveScore);
-  const getAnsweredCount = useAppStore(s => s.getAnsweredCount);
+  const getScoredCount = useAppStore(s => s.getScoredCount);
   const getTotalSkipCount = useAppStore(s => s.getTotalSkipCount);
   const getCriticalGapsCount = useAppStore(s => s.getCriticalGapsCount);
   const getFormulaString = useAppStore(s => s.getFormulaString);
   const answers = useAppStore(s => s.answers);
+  const profile = useAppStore(s => s.profile);
 
-  const handlePrint = useReactToPrint({ contentRef: printRef });
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `DataPilot - ${profile.bankName || 'Bank'} - Maturity Report`,
+  });
 
   const lvl = getMaturityLevel(globalScore);
   const pct = getPercentage(globalScore);
@@ -47,6 +52,12 @@ export default function Results() {
 
   return (
     <div ref={printRef}>
+      <ReportCover
+        title="Data Maturity Assessment"
+        subtitle="Global maturity & dimension scoring"
+        profile={profile}
+      />
+      <div className="print-content">
       {/* Export button */}
       <div className="flex justify-end mb-4 no-print">
         <button
@@ -131,13 +142,13 @@ export default function Results() {
       <div className="grid grid-cols-4 gap-3 mb-6">
         {[
           {
-            num: `${getAnsweredCount()} / ${INDICATORS.length}`,
-            label: 'Indicators answered',
-            sub: 'Full evaluation',
+            num: `${getScoredCount()} / ${INDICATORS.length}`,
+            label: 'Indicators scored',
+            sub: `${Math.round((getScoredCount() / INDICATORS.length) * 100)}% coverage`,
             color: '#3D108A',
           },
           {
-            num: getTotalSkipCount(),
+            num: `${getTotalSkipCount()} / ${INDICATORS.length}`,
             label: 'Indicators skipped',
             sub: 'Excluded from scoring',
             color: '#188CE5',
@@ -256,6 +267,7 @@ export default function Results() {
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   );

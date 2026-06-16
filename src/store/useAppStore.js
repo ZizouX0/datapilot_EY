@@ -14,7 +14,7 @@ const useAppStore = create(
   persist(
     (set, get) => ({
   // ── State ──────────────────────────────────────────────────────────
-  profile: { bankName: '', date: '', respondentName: '', role: '' },
+  profile: { bankName: '', date: '', respondentName: '', role: '', email: '' },
   answers: {},
   targetLevel: 3,
   activeDimension: 'D1',
@@ -114,6 +114,16 @@ const useAppStore = create(
     return INDICATORS.filter(i => {
       const ans = answers[i.id];
       return ans && (ans.skipped || ans.score !== null);
+    }).length;
+  },
+
+  // Scored = answered with an actual score, excluding skipped. Used in Results
+  // so that scored + skipped reconcile to the total indicator count.
+  getScoredCount() {
+    const { answers } = get();
+    return INDICATORS.filter(i => {
+      const ans = answers[i.id];
+      return ans && !ans.skipped && ans.score !== null && ans.score !== undefined;
     }).length;
   },
 
@@ -246,9 +256,35 @@ const useAppStore = create(
     set({ activeSubDim: sub });
   },
 
+  // DEV ONLY — fills every indicator with a random score so the app can be
+  // tested without answering the full questionnaire. Remove/hide before release.
+  fillRandomAnswers() {
+    const answers = {};
+    INDICATORS.forEach(ind => {
+      const score = 1 + Math.floor(Math.random() * 5); // 1..5
+      answers[ind.id] = {
+        score,
+        skipped: false,
+        // Scores >= 3 need evidence or they get capped to 2 by getEffectiveScore.
+        evidence: score >= 3 ? 'Auto-generated test evidence.' : '',
+      };
+    });
+    set(state => ({
+      answers,
+      profile: state.profile.bankName
+        ? state.profile
+        : {
+            bankName: 'Demo Bank (test data)',
+            date: new Date().toISOString().slice(0, 10),
+            respondentName: 'Test User',
+            role: 'Chief Data Officer',
+          },
+    }));
+  },
+
   resetAll() {
     set({
-      profile: { bankName: '', date: '', respondentName: '', role: '' },
+      profile: { bankName: '', date: '', respondentName: '', role: '', email: '' },
       answers: {},
       targetLevel: 3,
       activeDimension: 'D1',
