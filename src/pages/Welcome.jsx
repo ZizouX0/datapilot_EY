@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import useAppStore from '../store/useAppStore';
+import useAuthStore from '../store/useAuthStore';
 import { TUNISIAN_BANKS } from '../data/tunisianBanks';
 import BankAutocomplete from '../components/ui/BankAutocomplete';
 
@@ -34,18 +35,18 @@ function formatToday() {
 export default function Welcome() {
   const navigate = useNavigate();
   const setProfile = useAppStore(s => s.setProfile);
+  // Identity is established by authentication — the assessment email is the
+  // signed-in user's email, pre-filled and not editable here.
+  const authEmail = useAuthStore(s => s.user?.email) || '';
 
   const [form, setForm] = useState({
     bankName: '',
     date: TODAY,
     respondentName: '',
     role: ROLES[0],
-    email: '',
+    email: authEmail,
   });
-  const [emailTouched, setEmailTouched] = useState(false);
-
   const emailValid = EMAIL_RE.test(form.email.trim());
-  const emailError = emailTouched && form.email.trim() !== '' && !emailValid;
   const canStart =
     form.bankName.trim() && form.respondentName.trim() && form.role.trim() && emailValid;
 
@@ -104,9 +105,9 @@ export default function Welcome() {
       {/* Right panel — sign-in / profile form */}
       <div className="flex-1 bg-gray-50 flex items-center justify-center p-10">
         <div className="bg-white rounded-xl border border-gray-200 p-8 w-full max-w-md shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-800 mb-1">Sign in to start</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-1">Set up your assessment</h2>
           <p className="text-sm text-gray-500 mb-6">
-            Enter your details to begin. Your email identifies this assessment session.
+            Confirm your details to begin. Your account email identifies this assessment session.
           </p>
 
           <div className="flex flex-col gap-4">
@@ -134,25 +135,15 @@ export default function Welcome() {
               />
             </div>
 
+            {/* Email — taken from the signed-in account, shown read-only. */}
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
                 Email
               </label>
-              <input
-                type="email"
-                className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-transparent ${
-                  emailError
-                    ? 'border-red-300 focus:ring-red-300'
-                    : 'border-gray-300 focus:ring-ey-yellow'
-                }`}
-                placeholder="name@bank.com.tn"
-                value={form.email}
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                onBlur={() => setEmailTouched(true)}
-              />
-              {emailError && (
-                <p className="text-[11px] text-red-600 mt-1">Enter a valid email address.</p>
-              )}
+              <div className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600 flex items-center justify-between">
+                <span>{form.email}</span>
+                <span className="text-[10px] text-gray-400 uppercase tracking-wide">Signed in</span>
+              </div>
             </div>
 
             <div>
@@ -184,7 +175,7 @@ export default function Welcome() {
               disabled={!canStart}
               className="mt-2 w-full bg-ey-yellow text-ey-charcoal font-semibold rounded-lg py-3 text-sm hover:bg-yellow-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              Sign in & Start Evaluation →
+              Start Evaluation →
             </button>
           </div>
         </div>

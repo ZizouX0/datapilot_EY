@@ -1,8 +1,20 @@
+import { useNavigate } from 'react-router-dom';
 import useAppStore from '../../store/useAppStore';
+import useAuthStore from '../../store/useAuthStore';
 
 export default function Topbar() {
+  const navigate = useNavigate();
   const profile = useAppStore(s => s.profile);
   const fillRandomAnswers = useAppStore(s => s.fillRandomAnswers);
+
+  const user = useAuthStore(s => s.user);
+  const role = useAuthStore(s => s.role);
+  const signOut = useAuthStore(s => s.signOut);
+
+  async function handleSignOut() {
+    await signOut();
+    navigate('/login', { replace: true });
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-ey-charcoal flex items-center px-6 gap-4 no-print">
@@ -22,13 +34,29 @@ export default function Topbar() {
         >
           ⚡ Skip evaluation
         </button>
-        {profile.respondentName && (
-          <span className="text-gray-300">{profile.respondentName}</span>
-        )}
+
         {profile.bankName && (
           <span className="bg-gray-700 text-gray-200 px-3 py-1 rounded text-xs">
             🏦 {profile.bankName}
           </span>
+        )}
+
+        {/* Authenticated identity + role badge + sign out. */}
+        {user && (
+          <>
+            <span className="text-gray-300 hidden md:inline">{user.email}</span>
+            {role === 'admin' && (
+              <span className="bg-ey-purple text-white px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide">
+                Admin
+              </span>
+            )}
+            <button
+              onClick={handleSignOut}
+              className="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded text-xs font-medium"
+            >
+              Sign out
+            </button>
+          </>
         )}
       </div>
     </header>

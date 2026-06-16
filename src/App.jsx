@@ -1,17 +1,20 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Topbar from './components/layout/Topbar';
 import NavBar from './components/layout/NavBar';
 import ProgressBar from './components/layout/ProgressBar';
 import useAppStore from './store/useAppStore';
+import useAuthStore from './store/useAuthStore';
 
 // Route-based code splitting — each page (and its heavy chart deps) loads on demand.
+const Login = lazy(() => import('./pages/Login'));
 const Welcome = lazy(() => import('./pages/Welcome'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Questionnaire = lazy(() => import('./pages/Questionnaire'));
 const Results = lazy(() => import('./pages/Results'));
 const GapAnalysis = lazy(() => import('./pages/GapAnalysis'));
 const Compliance = lazy(() => import('./pages/Compliance'));
+const Admin = lazy(() => import('./pages/Admin'));
 
 function PageLoader() {
   return (
@@ -19,6 +22,31 @@ function PageLoader() {
       <span className="animate-pulse">Loading…</span>
     </div>
   );
+}
+
+// Blocks access until a session is confirmed. While the initial session check
+// is in flight we show the loader rather than flashing the login screen.
+function RequireAuth({ children }) {
+  const loading = useAuthStore(s => s.loading);
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated());
+  const location = useLocation();
+
+  if (loading) return <PageLoader />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+  return children;
+}
+
+// Admin-only gate. Analysts (or anyone whose role hasn't resolved to admin)
+// are redirected home rather than shown a forbidden page.
+function RequireAdmin({ children }) {
+  const loading = useAuthStore(s => s.loading);
+  const isAdmin = useAuthStore(s => s.isAdmin());
+
+  if (loading) return <PageLoader />;
+  if (!isAdmin) return <Navigate to="/" replace />;
+  return children;
 }
 
 function RequireComplete({ children }) {
@@ -47,21 +75,32 @@ function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
     <Routes>
-      <Route path="/" element={<Welcome />} />
-      <Route path="/profile" element={<Layout><Profile /></Layout>} />
-      <Route path="/assessment" element={<Layout><Questionnaire /></Layout>} />
+      {/* Public — the only route reachable without a session. */}
+      <Route path="/login" element={<Login />} />
+
+      {/* Everything below requires authentication. */}
+      <Route path="/" element={<RequireAuth><Welcome /></RequireAuth>} />
+      <Route path="/profile" element={<RequireAuth><Layout><Profile /></Layout></RequireAuth>} />
+      <Route path="/assessment" element={<RequireAuth><Layout><Questionnaire /></Layout></RequireAuth>} />
       <Route
         path="/results"
-        element={<Layout><RequireComplete><Results /></RequireComplete></Layout>}
+        element={<RequireAuth><Layout><RequireComplete><Results /></RequireComplete></Layout></RequireAuth>}
       />
       <Route
         path="/gap-analysis"
-        element={<Layout><RequireComplete><GapAnalysis /></RequireComplete></Layout>}
+        element={<RequireAuth><Layout><RequireComplete><GapAnalysis /></RequireComplete></Layout></RequireAuth>}
       />
       <Route
         path="/compliance"
-        element={<Layout><RequireComplete><Compliance /></RequireComplete></Layout>}
+        element={<RequireAuth><Layout><RequireComplete><Compliance /></RequireComplete></Layout></RequireAuth>}
       />
+
+      {/* Admin-only. */}
+      <Route
+        path="/admin"
+        element={<RequireAuth><RequireAdmin><Layout><Admin /></Layout></RequireAdmin></RequireAuth>}
+      />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     </Suspense>
@@ -69,6 +108,12 @@ function AppRoutes() {
 }
 
 export default function App() {
+  // Wire up the auth session listener once for the app's lifetime.
+  useEffect(() => {
+    const unsubscribe = useAuthStore.getState().init();
+    return unsubscribe;
+  }, []);
+
   return (
     <BrowserRouter>
       <AppRoutes />

@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useState } from 'react';
 import useAppStore from '../../store/useAppStore';
+import useAuthStore from '../../store/useAuthStore';
 
 const TABS = [
   { label: 'Bank Profile', path: '/profile', locked: false },
@@ -13,7 +14,11 @@ const TABS = [
 export default function NavBar() {
   const profile = useAppStore(s => s.profile);
   const isAssessmentComplete = useAppStore(s => s.isAssessmentComplete());
+  const isAdmin = useAuthStore(s => s.isAdmin());
   const [tooltip, setTooltip] = useState(null);
+
+  // The Admin tab is only ever rendered for administrators; analysts never see it.
+  const tabs = isAdmin ? [...TABS, { label: 'Admin', path: '/admin', locked: false }] : TABS;
 
   const profileDone = !!(profile.bankName && profile.respondentName);
 
@@ -28,7 +33,7 @@ export default function NavBar() {
   return (
     <nav className="fixed top-14 left-0 right-0 z-40 bg-white border-b border-gray-200 no-print">
       <div className="flex items-center px-6">
-        {TABS.map(tab => {
+        {tabs.map(tab => {
           const isLocked = tab.locked && !isAssessmentComplete;
           const isDone = doneMap[tab.path];
 
