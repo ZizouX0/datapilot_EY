@@ -69,7 +69,9 @@ Sign out and back in — you'll see the **Admin** tab and badge.
    (5 dimensions, 47 indicators) into the tables so you can edit it. Until you do
    this, the app simply runs on its bundled defaults — nothing breaks.
 3. Edit questions, guidance, the BCT flag, 5-level rubrics, and dimension weights.
-   Changes are read by the app the next time the assessment loads.
+   You can also **add or remove** indicators, sub-dimensions and whole dimensions
+   from the editor (deletes ask for confirmation). Changes are read by the app the
+   next time the assessment loads.
 4. **Admin → Users & roles**: see everyone who has signed in and change their
    role (analyst ↔ admin). Inviting brand-new people is still done from the
    dashboard (Authentication → Users → Invite); they appear here after first sign-in.

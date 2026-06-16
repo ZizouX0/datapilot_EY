@@ -853,6 +853,7 @@ export function hydrateContent(dimRows, indRows) {
     q: r.q,
     hint: r.hint || '',
     rubric: Array.isArray(r.rubric) ? r.rubric : [],
+    sort_order: r.sort_order ?? 0,
   }));
 
   Object.keys(SUBDIM_NAMES).forEach(k => delete SUBDIM_NAMES[k]);
