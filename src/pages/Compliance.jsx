@@ -27,6 +27,14 @@ export default function Compliance() {
   const bctInds = getBCTIndicators();
   const bctData = getBCTCompliance();
 
+  // Items needing attention, for the "action required" summary.
+  const nonCompliantItems = bctInds.filter(ind => {
+    const e = getEffectiveScore(ind.id);
+    return e !== null && e < 3;
+  });
+  const pendingItems = bctInds.filter(ind => getEffectiveScore(ind.id) === null);
+  const actionItems = nonCompliantItems.length + pendingItems.length;
+
   const exposureColor =
     bctData.exposure === 'Low' ? { color: '#1B5E20', bg: '#E8F5E9' } :
     bctData.exposure === 'Medium' ? { color: '#E65100', bg: '#FFF3E0' } :
@@ -92,6 +100,66 @@ export default function Compliance() {
           </div>
         ))}
       </div>
+
+      {/* Compliance rules note */}
+      <p className="text-[11px] text-gray-400 -mt-3 mb-5">
+        Compliant = effective score ≥ 3 / 5. Regulatory exposure: Low ≥ 80% compliant ·
+        Medium 50–79% · High below 50%.
+      </p>
+
+      {/* Action required — non-compliant + pending items, with remediation */}
+      {actionItems > 0 ? (
+        <div className="report-table rounded-xl border border-red-200 overflow-hidden mb-6">
+          <div className="px-4 py-3 bg-red-50 border-b border-red-100">
+            <div className="text-sm font-bold text-red-800">
+              Action required — {actionItems} item{actionItems > 1 ? 's' : ''} to address
+            </div>
+            <div className="text-xs text-red-600 mt-0.5">
+              Close these to raise BCT compliance and reduce regulatory exposure.
+            </div>
+          </div>
+
+          {nonCompliantItems.map(ind => {
+            const eff = getEffectiveScore(ind.id);
+            const fix = (Array.isArray(ind.rubric) && ind.rubric[2]) || ind.hint || '';
+            return (
+              <div key={ind.id} className="px-4 py-3 border-t border-red-100">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <span className="font-mono text-[10px] text-gray-500">{ind.id}</span>
+                  <span className="px-2 py-0.5 rounded bg-red-100 text-red-700 text-[10px] font-semibold">
+                    Non-compliant · {eff}/5
+                  </span>
+                  <span className="font-mono text-[10px] text-ey-purple">{getArticleRef(ind.id)}</span>
+                </div>
+                <div className="text-xs font-medium text-gray-800 leading-snug">{ind.q}</div>
+                {fix && (
+                  <div className="text-[11px] text-gray-600 mt-1 leading-snug">
+                    <span className="font-semibold text-gray-500">To reach compliance:</span> {fix}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {pendingItems.map(ind => (
+            <div key={ind.id} className="px-4 py-3 border-t border-red-100">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <span className="font-mono text-[10px] text-gray-500">{ind.id}</span>
+                <span className="px-2 py-0.5 rounded bg-gray-200 text-gray-600 text-[10px] font-semibold">Pending</span>
+                <span className="font-mono text-[10px] text-ey-purple">{getArticleRef(ind.id)}</span>
+              </div>
+              <div className="text-xs font-medium text-gray-800 leading-snug">{ind.q}</div>
+              <div className="text-[11px] text-gray-500 mt-1 italic">
+                Not yet assessed — answer this indicator to determine compliance.
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 mb-6 text-sm font-medium text-green-800">
+          ✓ All {bctData.total} mandatory BCT indicators are compliant. No outstanding actions.
+        </div>
+      )}
 
       {/* Compliance table */}
       <div className="report-table bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
