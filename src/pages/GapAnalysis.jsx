@@ -255,7 +255,7 @@ export default function GapAnalysis() {
           {/* Left: gap table */}
           <div className="flex-1">
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              <div className="grid text-[10px] font-bold uppercase tracking-wide text-gray-400 border-b border-gray-100 px-4 py-2"
+              <div className="grid text-[10px] font-bold uppercase tracking-wide text-gray-500 bg-gray-50 border-b border-gray-200 px-4 py-2.5"
                 style={{ gridTemplateColumns: '56px 64px 1fr 64px 100px' }}>
                 <div>Dim</div><div>Sub-dim</div><div>Sub-dimension name</div><div>Score</div><div>Priority</div>
               </div>
