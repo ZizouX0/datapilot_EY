@@ -1,0 +1,446 @@
+% =====================================================================
+%  DataPilot — Rapport de Projet de Fin d'Études
+%  Compilation : pdflatex (x2 pour la table des matières / références)
+%      pdflatex DataPilot_PFE_Rapport.tex
+%      pdflatex DataPilot_PFE_Rapport.tex
+% =====================================================================
+\documentclass[11pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[french]{babel}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+
+% --- Couleurs de marque EY ---
+\definecolor{eyyellow}{HTML}{FFE600}
+\definecolor{eycharcoal}{HTML}{2E2E38}
+\definecolor{eypurple}{HTML}{3D108A}
+\definecolor{lightgray}{HTML}{F2F2F2}
+
+% --- En-têtes / pieds de page ---
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headheight}{14pt}
+\fancyhead[L]{\small\textsc{DataPilot}}
+\fancyhead[R]{\small Évaluation de la maturité data bancaire}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Style des listings (code / SQL) ---
+\lstdefinestyle{code}{
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{eypurple}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{teal},
+  backgroundcolor=\color{lightgray},
+  frame=single, rulecolor=\color{gray!40},
+  breaklines=true, showstringspaces=false,
+  numbers=left, numberstyle=\tiny\color{gray}, numbersep=8pt,
+  captionpos=b, tabsize=2,
+}
+\lstset{style=code}
+
+\renewcommand{\arraystretch}{1.3}
+
+% =====================================================================
+\begin{document}
+
+% ----------------------------- PAGE DE GARDE -----------------------------
+\begin{titlepage}
+\centering
+\vspace*{1cm}
+
+{\Huge\bfseries\color{eycharcoal} EY \;}\rule{2pt}{1.5em}\; {\Large DataPilot}\\[0.3cm]
+{\large\itshape Data Maturity Steering Tool}\\[2cm]
+
+\rule{\linewidth}{0.5mm}\\[0.5cm]
+{\LARGE\bfseries Conception et réalisation d'un outil web d'évaluation\\[0.2cm]
+de la maturité de la gestion des données bancaires}\\[0.4cm]
+\rule{\linewidth}{0.5mm}\\[1.5cm]
+
+{\large
+\begin{tabular}{rl}
+\textbf{Projet de Fin d'Études} & 2026\\[0.3cm]
+\textbf{Organisme d'accueil} & EY Advisory Tunisie\\[0.3cm]
+\textbf{Domaine} & Gouvernance \& maturité des données\\[0.3cm]
+\textbf{Conformité} & BCT Circulaire N\textsuperscript{o}2025-08, BCBS 239\\
+\end{tabular}}
+
+\vfill
+{\large Élaboré par : \textbf{Aziz Dardouri}}\\[0.3cm]
+{\normalsize Encadré par : votre encadrant académique \& votre encadrant professionnel}\\[1cm]
+{\small Année universitaire 2025--2026}
+
+\end{titlepage}
+
+% ----------------------------- RÉSUMÉ -----------------------------
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+
+\textbf{DataPilot} est une application web qui permet aux banques tunisiennes
+d'évaluer objectivement la maturité de leur gestion des données. À partir d'un
+questionnaire structuré de 47 indicateurs répartis sur 5 dimensions pondérées,
+l'outil calcule un score de maturité aligné sur les référentiels CMMI et
+Gartner, le confronte aux exigences réglementaires de la Banque Centrale de
+Tunisie (Circulaire N\textsuperscript{o}2025-08) et au standard BCBS~239, puis
+génère une analyse d'écarts ainsi qu'une feuille de route d'amélioration
+priorisée. La solution intègre une authentification sécurisée sur invitation,
+une gestion des rôles, un back-office d'administration permettant d'éditer
+intégralement le questionnaire, et l'export de rapports PDF de qualité
+professionnelle.\\
+
+\textbf{Mots-clés :} maturité des données, gouvernance des données, conformité
+bancaire, BCT, BCBS 239, CMMI, React, Supabase.\\
+
+\noindent\textbf{Abstract.} \textit{DataPilot is a web application enabling
+Tunisian banks to objectively assess their data-management maturity. From a
+structured questionnaire of 47 indicators across 5 weighted dimensions, it
+computes a CMMI/Gartner-aligned maturity score, benchmarks it against the
+Central Bank of Tunisia regulation (Circular 2025-08) and the BCBS~239 standard,
+and produces a gap analysis and a prioritised improvement roadmap. The solution
+features invite-only authentication, role management, a full content-editing
+back-office, and professional PDF report export.}
+
+\tableofcontents
+
+% ===================================================================
+\chapter{Introduction générale}
+
+\section{Contexte}
+La donnée est devenue un actif stratégique du secteur bancaire. Sa bonne
+gouvernance conditionne la qualité du reporting réglementaire, la maîtrise des
+risques et la capacité d'innovation. En Tunisie, la \emph{Circulaire BCT
+N\textsuperscript{o}2025-08} impose aux établissements de crédit un ensemble
+d'obligations en matière d'organisation, de qualité et de traçabilité des
+données, en cohérence avec le standard international \emph{BCBS~239} relatif à
+l'agrégation des données de risque.
+
+\section{Problématique}
+Malgré ces exigences, les banques manquent souvent d'un outil structuré pour
+\textbf{mesurer objectivement} leur niveau de maturité, \textbf{identifier} leurs
+écarts par rapport à la réglementation et \textbf{prioriser} leurs actions de
+remédiation. Les évaluations restent fréquemment informelles, non reproductibles
+et difficilement comparables dans le temps.
+
+\section{Objectifs}
+Le présent projet vise à concevoir et réaliser \textbf{DataPilot}, un outil web
+qui :
+\begin{itemize}[noitemsep]
+  \item structure l'évaluation autour d'un référentiel d'indicateurs pondérés ;
+  \item calcule un score de maturité reproductible et traçable ;
+  \item mesure la conformité réglementaire (BCT, BCBS~239) ;
+  \item produit une analyse d'écarts et une feuille de route d'amélioration ;
+  \item génère des rapports PDF exportables et de qualité professionnelle ;
+  \item offre un back-office d'administration sécurisé et paramétrable.
+\end{itemize}
+
+\section{Organisation du rapport}
+Le chapitre~2 présente le cadre du projet et l'état de l'art. Le chapitre~3
+détaille la méthodologie d'évaluation. Le chapitre~4 décrit la conception et
+l'architecture. Le chapitre~5 expose la réalisation. Le chapitre~6 présente les
+fonctionnalités obtenues. Le chapitre~7 conclut et ouvre des perspectives.
+
+% ===================================================================
+\chapter{Cadre du projet et état de l'art}
+
+\section{Organisme d'accueil}
+Le projet est réalisé au sein d'\textbf{EY Advisory Tunisie}, entité de conseil
+du cabinet EY, intervenant notamment sur la transformation data et la conformité
+réglementaire du secteur financier.
+
+\section{La maturité des données}
+La \emph{maturité des données} désigne le degré auquel une organisation gère ses
+données de manière structurée, fiable et orientée valeur. Elle est usuellement
+mesurée sur une échelle de cinq niveaux, ici alignée sur deux référentiels
+reconnus :
+\begin{itemize}[noitemsep]
+  \item \textbf{CMMI} : Initial, Emerging, Defined, Managed, Optimized ;
+  \item \textbf{Gartner} : Unaware, Aware, Active, Effective, Transformative.
+\end{itemize}
+
+\section{Cadre réglementaire}
+\begin{itemize}[noitemsep]
+  \item \textbf{Circulaire BCT N\textsuperscript{o}2025-08} : obligations
+  d'organisation, de qualité, de propriété et de traçabilité des données.
+  \item \textbf{BCBS~239} : principes d'agrégation et de reporting des données de
+  risque (notamment le Principe~2 — traçabilité / lignage des données).
+\end{itemize}
+
+\section{Positionnement}
+Contrairement aux audits ponctuels, DataPilot fournit un instrument
+\textbf{reproductible} et \textbf{auto-administrable}, dont le référentiel peut
+évoluer dans le temps sans dépendre d'un prestataire externe.
+
+% ===================================================================
+\chapter{Méthodologie d'évaluation}
+
+\section{Les cinq dimensions}
+L'évaluation s'articule autour de cinq dimensions pondérées, déclinées en
+sous-dimensions et en indicateurs.
+
+\begin{table}[h]
+\centering
+\caption{Dimensions, pondérations et nombre d'indicateurs (configuration par défaut).}
+\begin{tabular}{clcc}
+\toprule
+\textbf{Dim.} & \textbf{Intitulé} & \textbf{Poids} & \textbf{Indicateurs}\\
+\midrule
+D1 & Gouvernance & 25\,\% & 12 \\
+D2 & Qualité des données & 20\,\% & 11 \\
+D3 & Architecture \& Accès & 20\,\% & 8 \\
+D4 & Analytique \& Outils & 20\,\% & 8 \\
+D5 & Compétences \& Culture (proxy) & 15\,\% & 8 \\
+\midrule
+\multicolumn{2}{r}{\textbf{Total}} & 100\,\% & \textbf{47}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Grille de notation}
+Chaque indicateur est noté de 1 à 5 selon une grille (\emph{rubric}) décrivant
+précisément l'état attendu à chaque niveau. Le score d'une sous-dimension est la
+moyenne de ses indicateurs ; le score d'une dimension la moyenne de ses
+sous-dimensions ; et le \textbf{score global} la moyenne \emph{pondérée}
+(normalisée) des dimensions effectivement renseignées :
+\[
+S_{global} = \frac{\sum_{d} w_d \cdot S_d}{\sum_{d} w_d}, \qquad
+S_d \in [1,5].
+\]
+
+\section{Règles métier}
+Afin de garantir la crédibilité du diagnostic, plusieurs règles sont appliquées
+(tableau~\ref{tab:rules}).
+
+\begin{table}[h]
+\centering
+\caption{Règles de notation appliquées par le moteur d'évaluation.}
+\label{tab:rules}
+\begin{tabular}{p{4.5cm} p{9.5cm}}
+\toprule
+\textbf{Règle} & \textbf{Description}\\
+\midrule
+Plafonnement par preuve & Un score $\geq 3$ non justifié par une preuve
+documentée est plafonné à 2/5.\\
+Limite de saut & Au plus 20\,\% des indicateurs d'une dimension peuvent être
+ignorés.\\
+Indicateurs BCT & Les indicateurs réglementaires (BCT) sont obligatoires et ne
+peuvent pas être ignorés.\\
+Dimension proxy & La dimension \og Compétences \& Culture \fg{} est évaluée par
+des indicateurs \emph{proxy} (signaux objectifs) plutôt que par auto-déclaration.\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Conformité réglementaire}
+Un sous-ensemble d'indicateurs est marqué \textbf{BCT}. Un indicateur est jugé
+\emph{conforme} si son score effectif est $\geq 3$. Le taux de conformité
+détermine l'exposition réglementaire : \emph{Faible} ($\geq 80\,\%$),
+\emph{Moyenne} (50--79\,\%) ou \emph{Élevée} ($< 50\,\%$).
+
+% ===================================================================
+\chapter{Conception et architecture}
+
+\section{Vue d'ensemble}
+DataPilot adopte une architecture web moderne : une application monopage (SPA)
+React communiquant avec une base de données managée Supabase (PostgreSQL +
+authentification), complétée de fonctions serverless pour les opérations
+sensibles (génération IA de la feuille de route, invitation d'utilisateurs).
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  node distance=1.1cm and 1.8cm,
+  box/.style={rectangle, rounded corners, draw=eycharcoal, very thick,
+    fill=lightgray, text width=3.2cm, align=center, minimum height=1.3cm},
+  db/.style={cylinder, shape border rotate=90, aspect=0.25, draw=eypurple,
+    very thick, fill=eyyellow!30, text width=2.6cm, align=center, minimum height=1.4cm},
+  arr/.style={-{Latex[length=2.5mm]}, thick}
+]
+\node[box] (browser) {Navigateur\\\textbf{React SPA}\\(Vite, Tailwind, Zustand)};
+\node[box, right=of browser] (api) {Fonctions\\\textbf{Serverless}\\/api/invite, /api/roadmap};
+\node[db, right=of api] (supa) {\textbf{Supabase}\\PostgreSQL\\+ Auth + RLS};
+\node[box, below=of api] (ai) {Service IA\\(endpoint compatible\\OpenAI)};
+
+\draw[arr] (browser) -- node[above,font=\scriptsize]{HTTPS} (api);
+\draw[arr] (browser.south) to[bend right=15] node[below,font=\scriptsize]{anon key} (supa.south west);
+\draw[arr] (api) -- node[above,font=\scriptsize]{service\_role} (supa);
+\draw[arr] (api) -- (ai);
+\end{tikzpicture}
+\caption{Architecture technique de DataPilot.}
+\end{figure}
+
+\section{Pile technologique}
+\begin{itemize}[noitemsep]
+  \item \textbf{Front-end} : React~19, Vite, Tailwind CSS, Zustand (gestion
+  d'état), React Router, Recharts (visualisations), \texttt{react-to-print}.
+  \item \textbf{Back-end} : Supabase (PostgreSQL managé, région UE,
+  authentification), fonctions serverless (style Vercel) avec équivalent en
+  middleware de développement Vite.
+  \item \textbf{IA} : génération de recommandations via un endpoint compatible
+  OpenAI (Gemini, palier gratuit), avec repli sur des recommandations statiques.
+\end{itemize}
+
+\section{Justification du choix de Supabase}
+Supabase regroupe en un seul service la base de données, l'authentification et la
+sécurité au niveau ligne (RLS). Gratuit, open-source et donc \textbf{portable}
+(un déploiement on-premise reste une simple reconfiguration), il convient à un
+projet de fin d'études tout en demeurant industrialisable.
+
+\section{Modèle de données}
+Trois tables principales structurent le domaine (en plus des tables
+d'authentification gérées par Supabase) :
+\begin{itemize}[noitemsep]
+  \item \texttt{profiles}(id, email, full\_name, \textbf{role}, created\_at) ;
+  \item \texttt{dimensions}(code, name, weight, color, proxy, description,
+  sort\_order) ;
+  \item \texttt{indicators}(id, dim, sub, sub\_name, bct, q, hint,
+  \textbf{rubric} (jsonb), sort\_order).
+\end{itemize}
+Les sous-dimensions sont dérivées des indicateurs, ce qui permet une gestion
+souple du contenu (ajout/suppression de dimensions, sous-dimensions et
+indicateurs).
+
+\section{Sécurité}
+La sécurité repose sur plusieurs piliers :
+\begin{itemize}[noitemsep]
+  \item \textbf{Accès sur invitation} : l'inscription publique est désactivée ;
+  \item \textbf{Rôles} : \texttt{admin} et \texttt{analyst} ;
+  \item \textbf{Row Level Security (RLS)} : chaque accès passe par une politique
+  explicite ; la lecture du questionnaire est ouverte aux utilisateurs
+  authentifiés, l'écriture est réservée aux administrateurs ;
+  \item \textbf{Clé \texttt{service\_role}} : strictement cantonnée au serveur,
+  jamais exposée au navigateur.
+\end{itemize}
+
+La fonction \texttt{is\_admin()} (en \emph{security definer}) évite la récursion
+des politiques RLS sur la table \texttt{profiles} :
+
+\begin{lstlisting}[language=SQL, caption={Fonction de vérification du rôle administrateur.}]
+create or replace function public.is_admin()
+returns boolean language sql stable
+security definer set search_path = public as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'admin'
+  );
+$$;
+\end{lstlisting}
+
+% ===================================================================
+\chapter{Réalisation}
+
+Le développement a été conduit de manière incrémentale, en phases livrables.
+
+\section{Phase 1 — Authentification et rôles}
+Mise en place de l'authentification Supabase (e-mail / mot de passe), du modèle
+de rôles \texttt{admin}/\texttt{analyst}, de la protection des routes
+(\emph{guards} \texttt{RequireAuth} et \texttt{RequireAdmin}) et d'un mécanisme
+de dégradation gracieuse lorsque le backend n'est pas configuré.
+
+\section{Phase 2 — Back-office d'administration}
+\begin{itemize}[noitemsep]
+  \item \textbf{Questionnaire éditable} : édition des questions, des guides, du
+  drapeau BCT, des grilles de notation (1--5), des pondérations et des
+  descriptions de dimensions ; \textbf{ajout/suppression} d'indicateurs, de
+  sous-dimensions et de dimensions.
+  \item \textbf{Gestion des utilisateurs} : liste des comptes, changement de
+  rôle, et \textbf{invitation par e-mail} directement depuis l'application
+  (via une fonction serverless utilisant la clé \texttt{service\_role} après
+  vérification du rôle administrateur de l'appelant).
+\end{itemize}
+
+Le contenu est chargé depuis Supabase au démarrage, avec repli automatique sur le
+questionnaire intégré si la base est vide ou inaccessible : l'application reste
+ainsi toujours fonctionnelle.
+
+\section{Génération des rapports PDF}
+Trois rapports brandés EY sont produits via le moteur d'impression natif du
+navigateur (rendu vectoriel net) :
+\begin{itemize}[noitemsep]
+  \item \textbf{Rapport de maturité} (Results) : résumé exécutif, radar des
+  dimensions, scores pondérés, grille d'interprétation, statut de conformité
+  BCT, \textbf{feuille de route} et annexe méthodologique ;
+  \item \textbf{Analyse d'écarts} (Gap Analysis) : matrice effort/impact et
+  feuille de route en trois phases, avec actions assistées par IA ;
+  \item \textbf{Rapport de conformité} (Compliance) : synthèse des actions
+  requises, indicateurs non conformes / en attente avec piste de remédiation,
+  et tableau détaillé des indicateurs BCT.
+\end{itemize}
+
+\section{Feuille de route assistée par IA}
+Pour chaque sous-dimension en écart, une fonction serverless interroge un modèle
+de langage afin de produire des recommandations concrètes et priorisées, en
+traitant en priorité les obligations réglementaires (BCT). En l'absence de
+configuration IA, des recommandations standard prennent le relais.
+
+% ===================================================================
+\chapter{Fonctionnalités et résultats}
+
+\section{Parcours utilisateur}
+Le parcours se déroule en cinq étapes guidées : (1) connexion et configuration,
+(2) réponse au questionnaire, (3) obtention du score, (4) analyse des écarts et
+feuille de route, (5) vérification de la conformité et export PDF.
+
+\section{Tableau de bord des résultats}
+L'utilisateur visualise l'indice global de maturité (en \% et sur 5), un radar
+comparant le score courant à la cible, le détail par dimension, ainsi que les
+indicateurs clés (indicateurs notés, ignorés, conformité BCT, écarts critiques).
+
+\section{Administration du contenu}
+L'administrateur dispose d'un back-office lui permettant de faire évoluer
+intégralement le référentiel sans intervention de développement, garantissant la
+pérennité de l'outil.
+
+\section{Cohérence et robustesse}
+Les libellés et les figures sont dérivés du contenu vivant : le nombre
+d'indicateurs et de dimensions, le radar et les barres s'adaptent automatiquement
+aux modifications apportées par l'administrateur.
+
+% ===================================================================
+\chapter{Conclusion et perspectives}
+
+\section{Bilan}
+DataPilot répond à un besoin concret du secteur bancaire tunisien : disposer d'un
+instrument fiable, reproductible et conforme pour piloter la maturité de la
+gestion des données. La solution livrée couvre l'évaluation, le scoring, l'analyse
+d'écarts, la conformité et l'export de rapports, le tout sécurisé par une
+authentification sur invitation et une gestion fine des droits.
+
+\section{Perspectives}
+\begin{itemize}[noitemsep]
+  \item \textbf{Centralisation des soumissions} : stockage serveur des
+  évaluations pour une vue consolidée et des comparaisons inter-banques ;
+  \item \textbf{Bibliothèque de recommandations} éditable par l'administrateur ;
+  \item \textbf{Tableau de bord analytique} pour le suivi dans le temps ;
+  \item \textbf{Déploiement on-premise} pour les données bancaires sensibles ;
+  \item \textbf{Références réglementaires précises} (article par article) dans le
+  rapport de conformité.
+\end{itemize}
+
+% ===================================================================
+\begin{thebibliography}{9}
+\addcontentsline{toc}{chapter}{Bibliographie}
+\bibitem{bct} Banque Centrale de Tunisie, \emph{Circulaire N\textsuperscript{o}2025-08
+relative à la gouvernance et à la gestion des données}, 2025.
+\bibitem{bcbs} Comité de Bâle sur le contrôle bancaire, \emph{BCBS 239 —
+Principles for effective risk data aggregation and risk reporting}, 2013.
+\bibitem{cmmi} CMMI Institute, \emph{Capability Maturity Model Integration},
+ISACA.
+\bibitem{react} Meta, \emph{React — A JavaScript library for building user
+interfaces}, \url{https://react.dev}.
+\bibitem{supabase} Supabase, \emph{The open source Firebase alternative},
+\url{https://supabase.com}.
+\end{thebibliography}
+
+\end{document}
