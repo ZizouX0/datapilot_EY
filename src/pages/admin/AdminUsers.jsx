@@ -3,16 +3,36 @@ import useUsersStore from '../../store/useUsersStore';
 import useAuthStore from '../../store/useAuthStore';
 
 const ROLES = ['analyst', 'admin'];
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function AdminUsers() {
-  const { users, loading, error, listUsers, setUserRole } = useUsersStore();
+  const { users, loading, error, listUsers, setUserRole, inviteUser } = useUsersStore();
   const currentUserId = useAuthStore(s => s.user?.id);
   const [busyId, setBusyId] = useState(null);
   const [rowError, setRowError] = useState(null);
 
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviting, setInviting] = useState(false);
+  const [inviteMsg, setInviteMsg] = useState(null); // { ok, text }
+
   useEffect(() => {
     listUsers();
   }, [listUsers]);
+
+  async function handleInvite(e) {
+    e.preventDefault();
+    if (!EMAIL_RE.test(inviteEmail.trim())) return;
+    setInviting(true);
+    setInviteMsg(null);
+    const { error: err } = await inviteUser(inviteEmail);
+    setInviting(false);
+    if (err) {
+      setInviteMsg({ ok: false, text: err });
+    } else {
+      setInviteMsg({ ok: true, text: `Invitation sent to ${inviteEmail.trim()}.` });
+      setInviteEmail('');
+    }
+  }
 
   async function handleRoleChange(id, role) {
     setBusyId(id);
@@ -40,13 +60,46 @@ export default function AdminUsers() {
         </button>
       </div>
 
-      {/* Inviting brand-new accounts needs the privileged service key, so it's
-          done from the dashboard for now. */}
-      <div className="mb-5 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-800">
-        To invite a <strong>new</strong> person: Supabase dashboard → Authentication →
-        Users → <strong>Invite user</strong>. They'll appear here as an analyst after
-        their first sign-in, and you can promote them below.
-      </div>
+      {/* Invite a new user by email. */}
+      <form onSubmit={handleInvite} className="mb-5 rounded-xl border border-gray-200 bg-white p-4">
+        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+          Invite a new user
+        </label>
+        <div className="flex gap-2">
+          <input
+            type="email"
+            value={inviteEmail}
+            onChange={e => setInviteEmail(e.target.value)}
+            placeholder="name@bank.com.tn"
+            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
+          />
+          <button
+            type="submit"
+            disabled={inviting || !EMAIL_RE.test(inviteEmail.trim())}
+            className="bg-ey-yellow text-ey-charcoal font-semibold rounded-lg px-4 py-2 text-sm hover:bg-yellow-400 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {inviting ? 'Sending…' : 'Send invite'}
+          </button>
+        </div>
+        <p className="text-xs text-gray-400 mt-2">
+          They'll get an email to set their password and join as an <strong>analyst</strong>.
+          Promote them below if needed.
+        </p>
+        {inviteMsg && (
+          <p className={`text-sm mt-2 rounded-lg px-3 py-2 border ${
+            inviteMsg.ok
+              ? 'text-green-700 bg-green-50 border-green-200'
+              : 'text-red-600 bg-red-50 border-red-200'
+          }`}>
+            {inviteMsg.text}
+            {!inviteMsg.ok && inviteMsg.text.includes('not configured') && (
+              <span className="block mt-1 text-xs text-gray-500">
+                Fallback: Supabase dashboard → Authentication → Users → Invite user.
+              </span>
+            )}
+          </p>
+        )}
+      </form>
 
       {error && (
         <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4">

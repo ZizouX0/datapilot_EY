@@ -92,6 +92,17 @@ body {
     break-inside: avoid;
   }
 
+  /* Large tables are allowed to flow across pages (so they start right after the
+     preceding content instead of being pushed whole to a new page, leaving a
+     gap), but individual rows must never be split across a page boundary.
+     Higher specificity than the rule above so it wins for tagged tables. */
+  .print-content > .report-table {
+    break-inside: auto;
+  }
+  .report-table > div {
+    break-inside: avoid;
+  }
+
   /* The analytics row (score / radar / bars) is too narrow at A4 width and the
      fixed-size Recharts SVGs overflow their columns — stack it full width. */
   .print-content [class*="grid-cols-3"] {

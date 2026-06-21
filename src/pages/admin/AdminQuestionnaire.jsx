@@ -8,50 +8,63 @@ function DimensionRow({ code, dim, totalWeight, onSave, onDelete }) {
   const [name, setName] = useState(dim.name);
   const [weight, setWeight] = useState(String(dim.weight));
   const [color, setColor] = useState(dim.color || '#888888');
+  const [desc, setDesc] = useState(dim.desc || '');
   const [status, setStatus] = useState('idle');
   const [err, setErr] = useState(null);
 
   const pct = totalWeight > 0 ? Math.round((Number(weight) / totalWeight) * 100) : 0;
-  const dirty = name !== dim.name || Number(weight) !== dim.weight || color !== (dim.color || '#888888');
+  const dirty =
+    name !== dim.name ||
+    Number(weight) !== dim.weight ||
+    color !== (dim.color || '#888888') ||
+    desc !== (dim.desc || '');
 
   async function save() {
     setStatus('saving'); setErr(null);
-    const { error } = await onSave(code, { name, weight: Number(weight), color });
+    const { error } = await onSave(code, { name, weight: Number(weight), color, description: desc });
     if (error) { setStatus('error'); setErr(error); return; }
     setStatus('saved'); setTimeout(() => setStatus('idle'), 1500);
   }
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2.5">
+    <div className="px-4 py-2.5 flex flex-col gap-2">
+      <div className="flex items-center gap-3">
+        <input
+          type="color" value={color} onChange={e => setColor(e.target.value)}
+          className="w-7 h-7 rounded cursor-pointer border border-gray-200 flex-shrink-0"
+          title="Dimension colour"
+        />
+        <span className="text-xs font-mono text-gray-400 w-7">{code}</span>
+        <input
+          value={name} onChange={e => setName(e.target.value)}
+          className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
+        />
+        <input
+          type="number" step="0.05" min="0" value={weight} onChange={e => setWeight(e.target.value)}
+          className="w-20 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
+        />
+        <span className="text-xs text-gray-500 w-10 text-right">{pct}%</span>
+        <button
+          onClick={save} disabled={!dirty || status === 'saving'}
+          className="text-xs font-semibold rounded-lg px-3 py-1.5 bg-ey-charcoal text-white hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved ✓' : 'Save'}
+        </button>
+        <button
+          onClick={() => onDelete(code, dim.name)}
+          className="text-xs font-medium rounded-lg px-2.5 py-1.5 text-red-600 hover:bg-red-50"
+          title="Delete this dimension and all its indicators"
+        >
+          🗑
+        </button>
+      </div>
       <input
-        type="color" value={color} onChange={e => setColor(e.target.value)}
-        className="w-7 h-7 rounded cursor-pointer border border-gray-200 flex-shrink-0"
-        title="Dimension colour"
+        value={desc}
+        onChange={e => setDesc(e.target.value)}
+        placeholder="Short description shown to users for this dimension…"
+        className="ml-10 border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-ey-yellow"
       />
-      <span className="text-xs font-mono text-gray-400 w-7">{code}</span>
-      <input
-        value={name} onChange={e => setName(e.target.value)}
-        className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
-      />
-      <input
-        type="number" step="0.05" min="0" value={weight} onChange={e => setWeight(e.target.value)}
-        className="w-20 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
-      />
-      <span className="text-xs text-gray-500 w-10 text-right">{pct}%</span>
-      <button
-        onClick={save} disabled={!dirty || status === 'saving'}
-        className="text-xs font-semibold rounded-lg px-3 py-1.5 bg-ey-charcoal text-white hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
-      >
-        {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved ✓' : 'Save'}
-      </button>
-      <button
-        onClick={() => onDelete(code, dim.name)}
-        className="text-xs font-medium rounded-lg px-2.5 py-1.5 text-red-600 hover:bg-red-50"
-        title="Delete this dimension and all its indicators"
-      >
-        🗑
-      </button>
-      {err && <span className="text-xs text-red-600">{err}</span>}
+      {err && <span className="text-xs text-red-600 ml-10">{err}</span>}
     </div>
   );
 }

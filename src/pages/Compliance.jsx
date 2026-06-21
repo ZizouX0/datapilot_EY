@@ -94,7 +94,7 @@ export default function Compliance() {
       </div>
 
       {/* Compliance table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
+      <div className="report-table bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
         <div
           className="grid text-[10px] font-bold uppercase tracking-wide text-gray-400 border-b border-gray-100 px-4 py-2"
           style={{ gridTemplateColumns: '1.6fr 0.7fr 0.7fr 0.5fr 0.8fr 1.4fr' }}

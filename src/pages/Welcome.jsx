@@ -11,6 +11,7 @@ const ROLES = [
   'Risk Manager',
   'Data Analyst',
   'Compliance Officer',
+  'Consultant',
   'Other',
 ];
 
@@ -55,6 +56,12 @@ export default function Welcome() {
   // Identity is established by authentication — the assessment email is the
   // signed-in user's email, pre-filled and not editable here.
   const authEmail = useAuthStore(s => s.user?.email) || '';
+  const signOut = useAuthStore(s => s.signOut);
+
+  async function handleSignOut() {
+    await signOut();
+    navigate('/login', { replace: true });
+  }
 
   const [form, setForm] = useState({
     bankName: '',
@@ -63,14 +70,21 @@ export default function Welcome() {
     role: ROLES[0],
     email: authEmail,
   });
+  // When "Other" is selected, the actual role is typed here.
+  const [customRole, setCustomRole] = useState('');
+
+  const isOther = form.role === 'Other';
+  const effectiveRole = isOther ? customRole.trim() : form.role;
+
   const emailValid = EMAIL_RE.test(form.email.trim());
   const canStart =
-    form.bankName.trim() && form.respondentName.trim() && form.role.trim() && emailValid;
+    form.bankName.trim() && form.respondentName.trim() && effectiveRole && emailValid;
 
   function handleStart() {
     if (!canStart) return;
     // Always stamp the date automatically at the moment the session starts.
-    setProfile({ ...form, date: TODAY, email: form.email.trim() });
+    // Persist the typed role (not the literal "Other") when applicable.
+    setProfile({ ...form, role: effectiveRole, date: TODAY, email: form.email.trim() });
     navigate('/assessment');
   }
 
@@ -128,7 +142,15 @@ export default function Welcome() {
       {/* Right panel — sign-in / profile form */}
       <div className="flex-1 bg-gray-50 flex items-center justify-center p-10">
         <div className="bg-white rounded-xl border border-gray-200 p-8 w-full max-w-md shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-800 mb-1">Set up your assessment</h2>
+          <div className="flex items-start justify-between mb-1">
+            <h2 className="text-xl font-semibold text-gray-800">Set up your assessment</h2>
+            <button
+              onClick={handleSignOut}
+              className="text-xs font-medium text-gray-400 hover:text-gray-700 flex-shrink-0 mt-1"
+            >
+              Sign out
+            </button>
+          </div>
           <p className="text-sm text-gray-500 mb-6">
             Confirm your details to begin. Your account email identifies this assessment session.
           </p>
@@ -180,6 +202,17 @@ export default function Welcome() {
               >
                 {ROLES.map(r => <option key={r}>{r}</option>)}
               </select>
+
+              {/* Free-text role shown only when "Other" is selected. */}
+              {isOther && (
+                <input
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-ey-yellow focus:border-transparent"
+                  placeholder="Please specify your role"
+                  value={customRole}
+                  onChange={e => setCustomRole(e.target.value)}
+                  autoFocus
+                />
+              )}
             </div>
 
             {/* Assessment date — captured automatically, read-only */}
