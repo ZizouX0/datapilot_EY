@@ -91,8 +91,10 @@ body {
     padding: 14mm;
   }
 
-  /* Avoid slicing cards across page boundaries. */
+  /* Avoid slicing cards across page boundaries. The legacy page-break-inside is
+     required for Safari/WebKit, which ignores the modern break-inside in print. */
   .print-content > div {
+    page-break-inside: avoid;
     break-inside: avoid;
   }
 
@@ -101,12 +103,14 @@ body {
      gap), but individual rows must never be split across a page boundary.
      Higher specificity than the rule above so it wins for tagged tables. */
   .print-content > .report-table {
+    page-break-inside: auto;
     break-inside: auto;
     /* `overflow: hidden` (used on screen for rounded corners) suppresses page
        fragmentation in some browsers — restore visible flow for printing. */
     overflow: visible;
   }
   .report-table > div {
+    page-break-inside: avoid;
     break-inside: avoid;
   }
 
@@ -116,20 +120,24 @@ body {
      not orphaned at a page bottom, and (b) never split an individual card. */
   .print-content > .roadmap-print,
   .roadmap-print {
+    page-break-inside: auto;
     break-inside: auto;
     overflow: visible;
   }
-  /* Keep each phase's header glued to its first card (reliable break-inside),
-     so a phase header is never left orphaned at the bottom of a page. */
+  /* Keep each phase's header glued to its first card so it is never orphaned.
+     page-break-inside is the property Safari actually honors for printing. */
   .roadmap-phase-lead {
+    page-break-inside: avoid;
     break-inside: avoid;
   }
   .roadmap-card {
+    page-break-inside: avoid;
     break-inside: avoid;
   }
 
   /* Never split a table row across a page boundary. */
   tr {
+    page-break-inside: avoid;
     break-inside: avoid;
   }
 
