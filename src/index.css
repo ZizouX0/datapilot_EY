@@ -98,8 +98,16 @@ body {
      Higher specificity than the rule above so it wins for tagged tables. */
   .print-content > .report-table {
     break-inside: auto;
+    /* `overflow: hidden` (used on screen for rounded corners) suppresses page
+       fragmentation in some browsers — restore visible flow for printing. */
+    overflow: visible;
   }
   .report-table > div {
+    break-inside: avoid;
+  }
+
+  /* Never split an individual roadmap action card across a page boundary. */
+  .roadmap-card {
     break-inside: avoid;
   }
 

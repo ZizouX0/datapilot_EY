@@ -230,13 +230,16 @@ export default function GapAnalysis() {
       />
       <div className="print-content flex flex-col gap-4">
         {/* Export button */}
-        <div className="flex justify-end no-print">
+        <div className="flex flex-col items-end gap-1 no-print">
           <button
             onClick={handlePrint}
             className="px-4 py-2 bg-ey-yellow text-ey-charcoal font-semibold rounded-lg text-sm hover:bg-yellow-400"
           >
-            Export PDF
+            ⤓ Save as PDF
           </button>
+          <span className="text-[11px] text-gray-400">
+            Opens your browser's save window — choose "Save as PDF" to download the file.
+          </span>
         </div>
 
         {/* Alert banner */}

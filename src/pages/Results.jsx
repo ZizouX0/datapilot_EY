@@ -7,6 +7,7 @@ import DimensionBars from '../charts/DimensionBars';
 import MaturityBadge from '../components/ui/MaturityBadge';
 import ScoreBadge from '../components/ui/ScoreBadge';
 import ReportCover from '../components/ReportCover';
+import RoadmapSection from '../components/report/RoadmapSection';
 
 const INTERP = [
   { range: '1.0–1.79', action: 'Assign data owners and document all processes' },
@@ -50,6 +51,14 @@ export default function Results() {
     target: targetLevel,
   }));
 
+  // Rank scored dimensions to drive the executive summary + strengths/priorities.
+  const rankedDims = Object.entries(DIMENSIONS)
+    .map(([key, d]) => ({ key, name: d.name, color: d.color, score: getDimScore(key) }))
+    .filter(d => d.score !== null)
+    .sort((a, b) => b.score - a.score);
+  const strengths = rankedDims.slice(0, 2);
+  const priorities = [...rankedDims].reverse().slice(0, 2);
+
   return (
     <div ref={printRef}>
       <ReportCover
@@ -59,14 +68,70 @@ export default function Results() {
       />
       <div className="print-content">
       {/* Export button */}
-      <div className="flex justify-end mb-4 no-print">
+      <div className="flex flex-col items-end gap-1 mb-4 no-print">
         <button
           onClick={handlePrint}
           className="px-4 py-2 bg-ey-yellow text-ey-charcoal font-semibold rounded-lg text-sm hover:bg-yellow-400"
         >
-          Export PDF
+          ⤓ Save as PDF
         </button>
+        <span className="text-[11px] text-gray-400">
+          Opens your browser's save window — choose "Save as PDF" to download the file.
+        </span>
       </div>
+
+      {/* Executive summary — auto-written verdict for a non-technical reader */}
+      {globalScore !== null && (
+        <div className="bg-white rounded-xl border border-gray-200 border-l-4 border-l-ey-purple p-5 mb-6">
+          <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-2">
+            Executive Summary
+          </div>
+          <p className="text-sm text-gray-700 leading-relaxed">
+            <strong>{profile.bankName || 'The bank'}</strong> scores <strong>{pct}%</strong>{' '}
+            ({globalScore.toFixed(2)} / 5), placing it at maturity{' '}
+            <strong>Level {lvl.level} — {lvl.cmmi}</strong> ({lvl.gartner}).
+            {strengths[0] && (
+              <> Its strongest area is <strong>{strengths[0].name}</strong> ({strengths[0].score.toFixed(2)}/5).</>
+            )}
+            {priorities[0] && (
+              <> The largest gap is <strong>{priorities[0].name}</strong> ({priorities[0].score.toFixed(2)}/5),
+              which should be prioritised.</>
+            )}
+            {' '}BCT regulatory exposure is <strong>{bctData.exposure}</strong>, with {bctData.compliant} of{' '}
+            {bctData.total} mandatory indicators compliant.
+          </p>
+        </div>
+      )}
+
+      {/* Strengths & priority focus areas */}
+      {rankedDims.length > 0 && (
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          {[
+            { title: 'Top Strengths', items: strengths, accent: '#1B5E20', label: 'strongest' },
+            { title: 'Priority Focus Areas', items: priorities, accent: '#B71C1C', label: 'biggest gaps' },
+          ].map(col => (
+            <div key={col.title} className="bg-white rounded-xl border border-gray-200 p-5">
+              <div className="text-[9px] font-bold tracking-widest uppercase mb-3" style={{ color: col.accent }}>
+                {col.title}
+              </div>
+              <div className="flex flex-col gap-3">
+                {col.items.map(d => (
+                  <div key={d.key} className="flex items-center gap-3">
+                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: d.color }} />
+                    <span className="text-sm text-gray-700 flex-1">{d.name}</span>
+                    <div className="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${(d.score / 5) * 100}%`, background: d.color }} />
+                    </div>
+                    <span className="text-sm font-bold tabular-nums w-10 text-right" style={{ color: d.color }}>
+                      {d.score.toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Top 3 cards */}
       <div className="grid grid-cols-3 gap-4 mb-6">
@@ -267,6 +332,28 @@ export default function Results() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Improvement roadmap — appended so one PDF covers diagnosis + plan */}
+      <div className="mt-6">
+        <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-3">
+          Improvement Roadmap
+        </div>
+        <RoadmapSection />
+      </div>
+
+      {/* Methodology & references appendix */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mt-6 text-xs text-gray-600 leading-relaxed">
+        <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-3">
+          Methodology &amp; References
+        </div>
+        <ul className="flex flex-col gap-1.5 list-disc pl-4">
+          <li>Maturity is scored 1–5 on a CMMI-aligned scale; the global index is a weighted average of the five dimensions.</li>
+          <li>A score of 3 or above requires documented evidence; without it the score is capped at 2/5.</li>
+          <li>Up to 20% of indicators per dimension may be skipped; BCT-flagged indicators are mandatory and cannot be skipped.</li>
+          <li>Dimension 5 (Skills &amp; Culture) is assessed through objective proxy signals rather than direct self-declaration.</li>
+          <li>Regulatory references: BCT Circulaire N°2025-08 and BCBS 239 (risk data aggregation &amp; reporting).</li>
+        </ul>
       </div>
       </div>
     </div>
