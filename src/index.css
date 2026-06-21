@@ -43,12 +43,10 @@ body {
 @media print {
   @page {
     size: A4;
-    /* Consistent margin on every content page (professional, and stops content
-       touching the page edges on pages 2+). */
-    margin: 14mm;
-  }
-  /* The branded cover is the first printed page and must stay full-bleed. */
-  @page :first {
+    /* Zero page margin so the branded cover can bleed to the edges. Content
+       pages get their inner margin from .print-content padding below. Per-page
+       @page margins were tried but Safari ignores @page :first, which made the
+       full-height cover overflow onto a second page. */
     margin: 0;
   }
 
@@ -79,20 +77,18 @@ body {
     print-color-adjust: exact !important;
   }
 
-  /* Full A4 branded cover; the report then starts on a fresh page. Height is a
-     hair under A4 (297mm) so sub-pixel rounding never spills a trailing blank
-     page after the cover. */
+  /* Full A4 branded cover; the report then starts on a fresh page. */
   .report-cover {
     width: 100%;
-    height: 296mm;
+    height: 297mm;
     overflow: hidden;
     page-break-after: always;
     break-after: page;
   }
 
-  /* Page margins now come from @page, so the content needs no extra padding. */
+  /* Inner margin for the report pages (the cover stays full-bleed). */
   .print-content {
-    padding: 0;
+    padding: 14mm;
   }
 
   /* Avoid slicing cards across page boundaries. */
@@ -114,8 +110,25 @@ body {
     break-inside: avoid;
   }
 
-  /* Never split an individual roadmap action card across a page boundary. */
+  /* Roadmap: the whole section may flow across pages, but each phase (its dark
+     header + its cards) is kept together so a phase header is never orphaned at
+     the bottom of a page, and a single action card is never split.
+     Two selectors cover both placements: direct child of .print-content
+     (Gap Analysis) and nested (Results). */
+  .print-content > .roadmap-print,
+  .roadmap-print {
+    break-inside: auto;
+    overflow: visible;
+  }
+  .roadmap-phase {
+    break-inside: avoid;
+  }
   .roadmap-card {
+    break-inside: avoid;
+  }
+
+  /* Never split a table row across a page boundary. */
+  tr {
     break-inside: avoid;
   }
 
