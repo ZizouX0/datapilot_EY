@@ -56,6 +56,12 @@ export default function Welcome() {
   // Identity is established by authentication — the assessment email is the
   // signed-in user's email, pre-filled and not editable here.
   const authEmail = useAuthStore(s => s.user?.email) || '';
+  const signOut = useAuthStore(s => s.signOut);
+
+  async function handleSignOut() {
+    await signOut();
+    navigate('/login', { replace: true });
+  }
 
   const [form, setForm] = useState({
     bankName: '',
@@ -136,7 +142,15 @@ export default function Welcome() {
       {/* Right panel — sign-in / profile form */}
       <div className="flex-1 bg-gray-50 flex items-center justify-center p-10">
         <div className="bg-white rounded-xl border border-gray-200 p-8 w-full max-w-md shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-800 mb-1">Set up your assessment</h2>
+          <div className="flex items-start justify-between mb-1">
+            <h2 className="text-xl font-semibold text-gray-800">Set up your assessment</h2>
+            <button
+              onClick={handleSignOut}
+              className="text-xs font-medium text-gray-400 hover:text-gray-700 flex-shrink-0 mt-1"
+            >
+              Sign out
+            </button>
+          </div>
           <p className="text-sm text-gray-500 mb-6">
             Confirm your details to begin. Your account email identifies this assessment session.
           </p>
