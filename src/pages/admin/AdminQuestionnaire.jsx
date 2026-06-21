@@ -188,7 +188,7 @@ export default function AdminQuestionnaire() {
         <h2 className="text-lg font-semibold text-gray-800 mb-1">Start editing the questionnaire</h2>
         <p className="text-sm text-gray-500 mb-4">
           The content database is empty, so the app is using its built-in default
-          questionnaire (5 dimensions, {INDICATORS.length} indicators). Load those
+          questionnaire ({Object.keys(DIMENSIONS).length} dimensions, {INDICATORS.length} indicators). Load those
           defaults into the database to begin editing. This is safe — it won't change
           anything analysts have already answered.
         </p>
