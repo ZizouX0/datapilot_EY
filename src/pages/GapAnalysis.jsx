@@ -407,26 +407,40 @@ export default function GapAnalysis() {
             </div>
           ) : (
             <div className="grid grid-cols-3 divide-x divide-gray-100">
-              {PHASE_META.map((phase, phaseIdx) => (
-                <div key={phase.label} className="roadmap-phase">
+              {PHASE_META.map((phase, phaseIdx) => {
+                const items = phases[phaseIdx];
+                const header = (
                   <div className={`px-4 py-3 ${phase.headerClass}`}>
                     <div className="flex items-center justify-between">
                       <div className="font-bold text-sm">{phase.label} · {phase.sub}</div>
-                      <div className="text-xs font-bold opacity-90 tabular-nums">{phases[phaseIdx].length}</div>
+                      <div className="text-xs font-bold opacity-90 tabular-nums">{items.length}</div>
                     </div>
                     <div className="text-xs opacity-80 mt-0.5">{phase.desc}</div>
                   </div>
-                  <div className="p-3 flex flex-col gap-2 bg-gray-50/50 min-h-[80px]">
-                    {phases[phaseIdx].length === 0 ? (
-                      <div className="text-xs text-gray-400 italic py-2 text-center">No actions in this phase</div>
-                    ) : (
-                      phases[phaseIdx].map(item => (
-                        <RoadmapCard key={item.sd} item={item} aiActions={aiActions?.[item.sd]} />
-                      ))
+                );
+                return (
+                  <div key={phase.label} className="roadmap-phase">
+                    {/* Header + first card kept together so the header is never orphaned. */}
+                    <div className="roadmap-phase-lead">
+                      {header}
+                      <div className="px-3 pt-3 pb-2 bg-gray-50/50">
+                        {items.length === 0 ? (
+                          <div className="text-xs text-gray-400 italic py-2 text-center">No actions in this phase</div>
+                        ) : (
+                          <RoadmapCard item={items[0]} aiActions={aiActions?.[items[0].sd]} />
+                        )}
+                      </div>
+                    </div>
+                    {items.length > 1 && (
+                      <div className="px-3 pb-3 flex flex-col gap-2 bg-gray-50/50">
+                        {items.slice(1).map(item => (
+                          <RoadmapCard key={item.sd} item={item} aiActions={aiActions?.[item.sd]} />
+                        ))}
+                      </div>
                     )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

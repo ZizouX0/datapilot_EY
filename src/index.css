@@ -110,17 +110,18 @@ body {
     break-inside: avoid;
   }
 
-  /* Roadmap: the whole section may flow across pages, but each phase (its dark
-     header + its cards) is kept together so a phase header is never orphaned at
-     the bottom of a page, and a single action card is never split.
-     Two selectors cover both placements: direct child of .print-content
-     (Gap Analysis) and nested (Results). */
+  /* Roadmap: the section flows across pages and each phase flows naturally
+     (filling the page) so a phase taller than one page never leaves a big blank
+     gap. We only (a) keep a phase's header attached to its first card so it is
+     not orphaned at a page bottom, and (b) never split an individual card. */
   .print-content > .roadmap-print,
   .roadmap-print {
     break-inside: auto;
     overflow: visible;
   }
-  .roadmap-phase {
+  /* Keep each phase's header glued to its first card (reliable break-inside),
+     so a phase header is never left orphaned at the bottom of a page. */
+  .roadmap-phase-lead {
     break-inside: avoid;
   }
   .roadmap-card {
