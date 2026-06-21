@@ -170,19 +170,24 @@ export default function Compliance() {
       </div>
 
       {/* Export buttons */}
-      <div className="flex gap-3 no-print">
-        <button
-          onClick={handlePrint}
-          className="px-4 py-2 bg-ey-yellow text-ey-charcoal font-semibold rounded-lg text-sm hover:bg-yellow-400"
-        >
-          Export Compliance Report
-        </button>
-        <button
-          onClick={handlePrint}
-          className="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm hover:bg-gray-50"
-        >
-          Export BCT Evidence Package
-        </button>
+      <div className="flex flex-col gap-1.5 no-print">
+        <div className="flex gap-3">
+          <button
+            onClick={handlePrint}
+            className="px-4 py-2 bg-ey-yellow text-ey-charcoal font-semibold rounded-lg text-sm hover:bg-yellow-400"
+          >
+            ⤓ Save as PDF
+          </button>
+          <button
+            onClick={handlePrint}
+            className="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm hover:bg-gray-50"
+          >
+            Save BCT Evidence Package
+          </button>
+        </div>
+        <span className="text-[11px] text-gray-400">
+          Opens your browser's save window — choose "Save as PDF" to download the file.
+        </span>
       </div>
       </div>
     </div>
