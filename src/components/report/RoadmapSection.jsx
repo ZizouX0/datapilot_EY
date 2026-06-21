@@ -17,7 +17,7 @@ export default function RoadmapSection() {
   const globalScore = getGlobalScore();
 
   return (
-    <div className="report-table bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div className="roadmap-print bg-white rounded-xl border border-gray-200 overflow-hidden">
       {/* Header + summary stats */}
       <div className="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -58,7 +58,7 @@ export default function RoadmapSection() {
       ) : (
         <div className="grid grid-cols-3 divide-x divide-gray-100">
           {PHASE_META.map((phase, phaseIdx) => (
-            <div key={phase.label}>
+            <div key={phase.label} className="roadmap-phase">
               <div className={`px-4 py-3 ${phase.headerClass}`}>
                 <div className="flex items-center justify-between">
                   <div className="font-bold text-sm">{phase.label} · {phase.sub}</div>
