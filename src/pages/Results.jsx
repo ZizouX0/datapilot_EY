@@ -58,6 +58,8 @@ export default function Results() {
     .sort((a, b) => b.score - a.score);
   const strengths = rankedDims.slice(0, 2);
   const priorities = [...rankedDims].reverse().slice(0, 2);
+  const dimensionCount = Object.keys(DIMENSIONS).length;
+  const proxyDimNames = Object.values(DIMENSIONS).filter(d => d.proxy).map(d => d.name);
 
   return (
     <div ref={printRef}>
@@ -348,10 +350,12 @@ export default function Results() {
           Methodology &amp; References
         </div>
         <ul className="flex flex-col gap-1.5 list-disc pl-4">
-          <li>Maturity is scored 1–5 on a CMMI-aligned scale; the global index is a weighted average of the five dimensions.</li>
+          <li>Maturity is scored 1–5 on a CMMI-aligned scale; the global index is a weighted average of the {dimensionCount} dimensions.</li>
           <li>A score of 3 or above requires documented evidence; without it the score is capped at 2/5.</li>
           <li>Up to 20% of indicators per dimension may be skipped; BCT-flagged indicators are mandatory and cannot be skipped.</li>
-          <li>Dimension 5 (Skills &amp; Culture) is assessed through objective proxy signals rather than direct self-declaration.</li>
+          {proxyDimNames.length > 0 && (
+            <li>{proxyDimNames.join(', ')} {proxyDimNames.length > 1 ? 'are' : 'is'} assessed through objective proxy signals rather than direct self-declaration.</li>
+          )}
           <li>Regulatory references: BCT Circulaire N°2025-08 and BCBS 239 (risk data aggregation &amp; reporting).</li>
         </ul>
       </div>

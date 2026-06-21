@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import useAppStore from '../store/useAppStore';
 import useAuthStore from '../store/useAuthStore';
+import { INDICATORS, DIMENSIONS } from '../data/indicators';
 import { TUNISIAN_BANKS } from '../data/tunisianBanks';
 import BankAutocomplete from '../components/ui/BankAutocomplete';
 
@@ -21,30 +22,32 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Plain-language explanation of the 5-step workflow, written so that someone
 // with no data or technical background understands the whole journey before
-// starting. Each step explains *what happens* and *why it matters* in everyday
-// words, and defines any term the first time it appears.
-const WORKFLOW = [
-  {
-    title: 'Sign in & set up',
-    desc: "Tell us your bank's name and your role. There's nothing to install — this just puts your name on the report.",
-  },
-  {
-    title: 'Answer simple questions',
-    desc: "Go through 47 short questions about how your bank handles its data — how it's organised, kept accurate, protected and actually used. The questions are grouped into 5 themes (we call them “dimensions”).",
-  },
-  {
-    title: 'Get your score',
-    desc: "DataPilot instantly turns your answers into a maturity score from 1 (just getting started) to 5 (best-in-class), shown in easy-to-read charts so you can see your strong and weak areas at a glance.",
-  },
-  {
-    title: 'See what to fix first',
-    desc: "It points out your biggest weak spots and builds a clear, prioritised to-do list — a practical action plan (with AI help) showing what to improve first for the fastest progress.",
-  },
-  {
-    title: 'Check the rules & share',
-    desc: "See whether your bank meets the Tunisian central bank's data rules (BCT) and international banking standards, then download a polished PDF report to share with management.",
-  },
-];
+// starting. The question/theme counts are derived from the live questionnaire
+// so they stay correct even after an admin edits the content.
+function buildWorkflow(indicatorCount, dimensionCount) {
+  return [
+    {
+      title: 'Sign in & set up',
+      desc: "Tell us your bank's name and your role. There's nothing to install — this just puts your name on the report.",
+    },
+    {
+      title: 'Answer simple questions',
+      desc: `Go through ${indicatorCount} short questions about how your bank handles its data — how it's organised, kept accurate, protected and actually used. The questions are grouped into ${dimensionCount} themes (we call them “dimensions”).`,
+    },
+    {
+      title: 'Get your score',
+      desc: "DataPilot instantly turns your answers into a maturity score from 1 (just getting started) to 5 (best-in-class), shown in easy-to-read charts so you can see your strong and weak areas at a glance.",
+    },
+    {
+      title: 'See what to fix first',
+      desc: "It points out your biggest weak spots and builds a clear, prioritised to-do list — a practical action plan (with AI help) showing what to improve first for the fastest progress.",
+    },
+    {
+      title: 'Check the rules & share',
+      desc: "See whether your bank meets the Tunisian central bank's data rules (BCT) and international banking standards, then download a polished PDF report to share with management.",
+    },
+  ];
+}
 
 function formatToday() {
   return new Date(TODAY).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -57,6 +60,9 @@ export default function Welcome() {
   // signed-in user's email, pre-filled and not editable here.
   const authEmail = useAuthStore(s => s.user?.email) || '';
   const signOut = useAuthStore(s => s.signOut);
+
+  // Derived from live content so the copy matches the current questionnaire.
+  const WORKFLOW = buildWorkflow(INDICATORS.length, Object.keys(DIMENSIONS).length);
 
   async function handleSignOut() {
     await signOut();

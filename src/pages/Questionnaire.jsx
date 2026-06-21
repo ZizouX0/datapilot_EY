@@ -96,7 +96,7 @@ export default function Questionnaire() {
             </div>
             <div>
               <div className="text-sm font-semibold text-green-800">Assessment complete.</div>
-              <div className="text-xs text-green-600 mt-0.5">All 5 dimensions fully answered. Your results are ready.</div>
+              <div className="text-xs text-green-600 mt-0.5">All {dims.length} dimensions fully answered. Your results are ready.</div>
             </div>
           </div>
           <button
