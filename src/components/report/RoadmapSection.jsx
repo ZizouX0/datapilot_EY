@@ -56,7 +56,7 @@ export default function RoadmapSection() {
           No remediation actions required.
         </div>
       ) : (
-        <div className="grid grid-cols-3 divide-x divide-gray-100">
+        <div className="roadmap-phases grid grid-cols-3 divide-x divide-gray-100">
           {PHASE_META.map((phase, phaseIdx) => {
             const items = phases[phaseIdx];
             const header = (

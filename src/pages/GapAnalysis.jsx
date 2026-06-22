@@ -406,7 +406,7 @@ export default function GapAnalysis() {
               All assessed areas already meet the target maturity level of {summary.target.toFixed(1)}. No remediation actions required.
             </div>
           ) : (
-            <div className="grid grid-cols-3 divide-x divide-gray-100">
+            <div className="roadmap-phases grid grid-cols-3 divide-x divide-gray-100">
               {PHASE_META.map((phase, phaseIdx) => {
                 const items = phases[phaseIdx];
                 const header = (

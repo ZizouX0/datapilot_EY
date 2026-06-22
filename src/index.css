@@ -135,6 +135,14 @@ body {
     break-inside: avoid;
   }
 
+  /* CRITICAL for Safari: a CSS grid container suppresses page-break rules on its
+     descendants. Render the roadmap phases as normal block flow when printing so
+     page-break-inside actually takes effect (the columns already stack to one
+     per row at A4 width anyway). */
+  .roadmap-phases {
+    display: block !important;
+  }
+
   /* Never split a table row across a page boundary. */
   tr {
     page-break-inside: avoid;
