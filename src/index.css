@@ -80,7 +80,11 @@ body {
   /* Full A4 branded cover; the report then starts on a fresh page. */
   .report-cover {
     width: 100%;
-    height: 297mm;
+    /* A4 is 297mm, but Safari's "Save as PDF" only exposes ~284mm of printable
+       height (it does not honour @page margin:0 fully), so a full-height cover
+       spills its footer onto a 2nd page. Keep the cover safely within that area
+       so it stays a single page in Safari and Chrome alike. */
+    height: 282mm;
     overflow: hidden;
     page-break-after: always;
     break-after: page;
