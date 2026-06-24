@@ -130,5 +130,31 @@ Inviting users creates accounts, which requires Supabase's privileged
 `/api/invite` already needs) — no new secret. Without it, role changes report
 "not configured"; promote roles from the dashboard SQL editor as a fallback.
 
+## Phase 3b — post-centric accounts (functional emails)
+Banks buy the product, so privileged accounts should belong to a **position**,
+not a person — when the holder leaves, the bank keeps the account and hands it
+to their successor instead of losing access or migrating data.
+
+1. Run [`supabase/phase3b.sql`](./supabase/phase3b.sql) once. It adds a
+   `title` (position) column and a `disabled` flag to `profiles`, and extends
+   the new-user trigger to carry the title from the invitation.
+2. **Convention — use a functional mailbox for admin/super-admin posts**, e.g.
+   `datapilot-admin@bankX.tn`, `data-governance@bankX.tn` — a shared mailbox the
+   bank's IT owns, never `firstname.lastname@…`. The bank controls who reads it;
+   password resets go there; the DataPilot account survives staff turnover.
+3. **Inviting**: Admin → Users & roles → set the email **and Position/title**.
+   Edit a position later with the ✎ next to it.
+4. **Off-boarding (Super Admin only)**: each row has **Reset password** (sends a
+   recovery email — use it to hand a functional mailbox to a successor) and
+   **Disable / Re-enable** (blocks sign-in at the auth layer for a leaver's
+   personal account). `/api/manage-user` powers these and reuses the same
+   service-role key.
+
+> Trade-off to keep in mind: shared accounts weaken individual audit trails.
+> The mature pattern is **hybrid** — a functional mailbox for the top
+> Super-Admin/owner account (so the bank never loses control) plus personal
+> accounts for day-to-day analysts (so actions stay traceable), disabled on
+> departure.
+
 ## What's next (later phases)
 - Editable recommendation library.

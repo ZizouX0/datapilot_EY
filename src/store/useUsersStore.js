@@ -14,7 +14,7 @@ const useUsersStore = create((set, get) => ({
     set({ loading: true, error: null });
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, email, full_name, role, created_at')
+      .select('id, email, full_name, title, role, disabled, created_at')
       .order('created_at', { ascending: true });
     if (error) {
       set({ loading: false, error: error.message });
@@ -50,8 +50,9 @@ const useUsersStore = create((set, get) => ({
   },
 
   // Invite a new user by email. Calls the server endpoint (which holds the
-  // service_role key and verifies we're an admin) with our access token.
-  async inviteUser(email) {
+  // service_role key and verifies we're an admin) with our access token. The
+  // optional `title` describes the account's position (functional mailboxes).
+  async inviteUser(email, title) {
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
     if (!token) return { error: 'Your session has expired — sign in again.' };
@@ -63,6 +64,7 @@ const useUsersStore = create((set, get) => ({
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           email: email.trim(),
+          title: (title || '').trim() || undefined,
           redirectTo: `${window.location.origin}/set-password`,
         }),
       });
@@ -72,6 +74,54 @@ const useUsersStore = create((set, get) => ({
     }
     if (!res.ok) return { error: body?.error || 'Invitation failed.' };
     await get().listUsers(); // surface the newly invited user
+    return { error: null };
+  },
+
+  // Shared helper for the privileged account-management endpoint.
+  async _manageUser(payload) {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    if (!token) return { error: 'Your session has expired — sign in again.' };
+    let res, body;
+    try {
+      res = await fetch('/api/manage-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
+      body = await res.json();
+    } catch {
+      return { error: 'Could not reach the account service.' };
+    }
+    if (!res.ok) return { error: body?.error || 'Action failed.' };
+    return { body };
+  },
+
+  // Rename an account's position/title.
+  async setUserTitle(id, title) {
+    const { error } = await get()._manageUser({ action: 'set-title', targetId: id, title });
+    if (error) return { error };
+    set(s => ({ users: s.users.map(u => (u.id === id ? { ...u, title: (title || '').trim() || null } : u)) }));
+    return { error: null };
+  },
+
+  // Disable (off-board) or re-enable an account. Super-admin only (enforced
+  // server-side); blocks sign-in at the auth layer.
+  async setUserDisabled(id, disabled) {
+    const { error } = await get()._manageUser({ action: disabled ? 'disable' : 'enable', targetId: id });
+    if (error) return { error };
+    set(s => ({ users: s.users.map(u => (u.id === id ? { ...u, disabled } : u)) }));
+    return { error: null };
+  },
+
+  // Send a password-reset email to an account (e.g. to hand a functional
+  // mailbox to a successor). This is a plain Supabase recovery email — no
+  // privileged access needed — so it's done directly from the client.
+  async resetPassword(email) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/set-password`,
+    });
+    if (error) return { error: error.message };
     return { error: null };
   },
 }));

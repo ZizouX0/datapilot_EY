@@ -55,7 +55,7 @@ function inviteApiPlugin() {
           const auth = req.headers.authorization || ''
           const token = auth.startsWith('Bearer ') ? auth.slice(7) : ''
           const { inviteUserCore } = await import('./api/_invite-core.js')
-          const result = await inviteUserCore({ token, email: payload.email, redirectTo: payload.redirectTo })
+          const result = await inviteUserCore({ token, email: payload.email, redirectTo: payload.redirectTo, title: payload.title })
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify(result))
         } catch (err) {
@@ -99,6 +99,38 @@ function setRoleApiPlugin() {
   }
 }
 
+// Serves POST /api/manage-user during `npm run dev` (set title, disable/enable
+// accounts). Uses the server-side service_role key via manageUserCore().
+function manageUserApiPlugin() {
+  return {
+    name: 'manage-user-api-dev',
+    configureServer(server) {
+      server.middlewares.use('/api/manage-user', async (req, res) => {
+        if (req.method !== 'POST') {
+          res.statusCode = 405
+          res.end(JSON.stringify({ error: 'Method not allowed' }))
+          return
+        }
+        try {
+          const payload = await readJsonBody(req)
+          const auth = req.headers.authorization || ''
+          const token = auth.startsWith('Bearer ') ? auth.slice(7) : ''
+          const { manageUserCore } = await import('./api/_manage-user-core.js')
+          const result = await manageUserCore({
+            token, action: payload.action, targetId: payload.targetId, title: payload.title,
+          })
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(result))
+        } catch (err) {
+          res.statusCode = err.statusCode || 500
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ error: err.message || 'Failed to manage user.' }))
+        }
+      })
+    },
+  }
+}
+
 export default defineConfig(({ mode }) => {
   // Load .env (all keys, not just VITE_) and expose them to the dev-server
   // process so the API middlewares above can read server-side secrets like
@@ -109,6 +141,6 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    plugins: [react(), tailwindcss(), roadmapApiPlugin(), inviteApiPlugin(), setRoleApiPlugin()],
+    plugins: [react(), tailwindcss(), roadmapApiPlugin(), inviteApiPlugin(), setRoleApiPlugin(), manageUserApiPlugin()],
   }
 })

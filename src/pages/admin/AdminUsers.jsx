@@ -10,14 +10,19 @@ const ROLE_LABELS = { superadmin: 'Super Admin', admin: 'Admin', analyst: 'Analy
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function AdminUsers() {
-  const { users, loading, error, listUsers, setUserRole, inviteUser } = useUsersStore();
+  const {
+    users, loading, error, listUsers, setUserRole, inviteUser,
+    setUserTitle, setUserDisabled, resetPassword,
+  } = useUsersStore();
   const currentUserId = useAuthStore(s => s.user?.id);
   const isSuperAdmin = useAuthStore(s => s.isSuperAdmin());
   const assignableRoles = isSuperAdmin ? SUPERADMIN_ROLES : ADMIN_ROLES;
   const [busyId, setBusyId] = useState(null);
   const [rowError, setRowError] = useState(null);
+  const [rowMsg, setRowMsg] = useState(null);
 
   const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteTitle, setInviteTitle] = useState('');
   const [inviting, setInviting] = useState(false);
   const [inviteMsg, setInviteMsg] = useState(null); // { ok, text }
 
@@ -30,23 +35,52 @@ export default function AdminUsers() {
     if (!EMAIL_RE.test(inviteEmail.trim())) return;
     setInviting(true);
     setInviteMsg(null);
-    const { error: err } = await inviteUser(inviteEmail);
+    const { error: err } = await inviteUser(inviteEmail, inviteTitle);
     setInviting(false);
     if (err) {
       setInviteMsg({ ok: false, text: err });
     } else {
       setInviteMsg({ ok: true, text: `Invitation sent to ${inviteEmail.trim()}.` });
       setInviteEmail('');
+      setInviteTitle('');
     }
   }
 
   async function handleRoleChange(id, role) {
-    setBusyId(id);
-    setRowError(null);
+    setBusyId(id); setRowError(null); setRowMsg(null);
     const { error: err } = await setUserRole(id, role);
     setBusyId(null);
-    if (err) setRowError(`${id}: ${err}`);
+    if (err) setRowError(err);
   }
+
+  async function handleEditTitle(u) {
+    const next = window.prompt(`Position / title for ${u.email}:`, u.title || '');
+    if (next === null) return; // cancelled
+    setBusyId(u.id); setRowError(null); setRowMsg(null);
+    const { error: err } = await setUserTitle(u.id, next);
+    setBusyId(null);
+    if (err) setRowError(err);
+  }
+
+  async function handleToggleDisabled(u) {
+    const verb = u.disabled ? 'Re-enable' : 'Disable';
+    if (!window.confirm(`${verb} the account ${u.email}?`)) return;
+    setBusyId(u.id); setRowError(null); setRowMsg(null);
+    const { error: err } = await setUserDisabled(u.id, !u.disabled);
+    setBusyId(null);
+    if (err) setRowError(err);
+  }
+
+  async function handleResetPassword(u) {
+    if (!window.confirm(`Send a password-reset email to ${u.email}?`)) return;
+    setBusyId(u.id); setRowError(null); setRowMsg(null);
+    const { error: err } = await resetPassword(u.email);
+    setBusyId(null);
+    if (err) setRowError(err);
+    else setRowMsg(`Password-reset email sent to ${u.email}.`);
+  }
+
+  const colSpan = isSuperAdmin ? 5 : 4;
 
   return (
     <div>
@@ -54,8 +88,9 @@ export default function AdminUsers() {
         <div>
           <h2 className="text-lg font-semibold text-gray-800">Users &amp; roles</h2>
           <p className="text-sm text-gray-500">
-            Everyone who has signed in appears here. Change a role to grant or remove
-            admin access.
+            Accounts are identified by their <strong>position</strong> and email. Prefer a
+            functional mailbox (e.g. <code>datapilot-admin@bank.tn</code>) for admin posts so
+            access survives staff changes.
           </p>
         </div>
         <button
@@ -66,17 +101,24 @@ export default function AdminUsers() {
         </button>
       </div>
 
-      {/* Invite a new user by email. */}
+      {/* Invite a new user by email + position. */}
       <form onSubmit={handleInvite} className="mb-5 rounded-xl border border-gray-200 bg-white p-4">
         <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
           Invite a new user
         </label>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <input
             type="email"
             value={inviteEmail}
             onChange={e => setInviteEmail(e.target.value)}
-            placeholder="name@bank.com.tn"
+            placeholder="datapilot-admin@bank.com.tn"
+            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
+          />
+          <input
+            type="text"
+            value={inviteTitle}
+            onChange={e => setInviteTitle(e.target.value)}
+            placeholder="Position / title (optional)"
             className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
           />
           <button
@@ -117,71 +159,130 @@ export default function AdminUsers() {
           {rowError}
         </p>
       )}
+      {rowMsg && (
+        <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-4">
+          {rowMsg}
+        </p>
+      )}
 
       <div className="rounded-xl border border-gray-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
             <tr>
-              <th className="text-left font-semibold px-4 py-2.5">User</th>
+              <th className="text-left font-semibold px-4 py-2.5">Position &amp; account</th>
               <th className="text-left font-semibold px-4 py-2.5">Joined</th>
               <th className="text-left font-semibold px-4 py-2.5">Role</th>
+              <th className="text-left font-semibold px-4 py-2.5">Status</th>
+              {isSuperAdmin && <th className="text-right font-semibold px-4 py-2.5">Off-boarding</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {loading && (
-              <tr><td colSpan={3} className="px-4 py-6 text-center text-gray-400">Loading…</td></tr>
+              <tr><td colSpan={colSpan} className="px-4 py-6 text-center text-gray-400">Loading…</td></tr>
             )}
             {!loading && users.length === 0 && (
-              <tr><td colSpan={3} className="px-4 py-6 text-center text-gray-400">No users yet.</td></tr>
+              <tr><td colSpan={colSpan} className="px-4 py-6 text-center text-gray-400">No users yet.</td></tr>
             )}
-            {users.map(u => (
-              <tr key={u.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3">
-                  <div className="font-medium text-gray-800">
-                    {u.full_name || u.email}
-                    {u.id === currentUserId && (
-                      <span className="ml-2 text-[10px] text-gray-400 uppercase tracking-wide">you</span>
+            {users.map(u => {
+              const isSelf = u.id === currentUserId;
+              const lockedSuperadmin = u.role === 'superadmin' && !isSuperAdmin;
+              // A regular admin can't edit/off-board a super-admin's account.
+              const canManage = !lockedSuperadmin;
+              return (
+                <tr key={u.id} className={`hover:bg-gray-50 ${u.disabled ? 'opacity-60' : ''}`}>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-gray-800 flex items-center gap-1.5">
+                      {u.title || <span className="text-gray-400 italic font-normal">No position set</span>}
+                      {canManage && (
+                        <button
+                          onClick={() => handleEditTitle(u)}
+                          disabled={busyId === u.id}
+                          title="Edit position / title"
+                          className="text-gray-300 hover:text-gray-600 text-xs disabled:opacity-40"
+                        >
+                          ✎
+                        </button>
+                      )}
+                      {isSelf && (
+                        <span className="ml-1 text-[10px] text-gray-400 uppercase tracking-wide">you</span>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-400">{u.email}</div>
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {u.created_at ? new Date(u.created_at).toLocaleDateString('en-GB') : '—'}
+                  </td>
+                  <td className="px-4 py-3">
+                    {(() => {
+                      // Nobody can change their own role; a regular admin can't
+                      // touch a super-admin's row.
+                      const locked = isSelf || lockedSuperadmin;
+                      const options = assignableRoles.includes(u.role)
+                        ? assignableRoles
+                        : [u.role, ...assignableRoles];
+                      const title = isSelf
+                        ? "You can't change your own role"
+                        : lockedSuperadmin
+                          ? 'Only a super-admin can change a super-admin'
+                          : '';
+                      return (
+                        <select
+                          value={u.role}
+                          disabled={busyId === u.id || locked}
+                          onChange={e => handleRoleChange(u.id, e.target.value)}
+                          title={title}
+                          className="border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ey-yellow disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {options.map(r => (
+                            <option key={r} value={r}>{ROLE_LABELS[r] || r}</option>
+                          ))}
+                        </select>
+                      );
+                    })()}
+                  </td>
+                  <td className="px-4 py-3">
+                    {u.disabled ? (
+                      <span className="px-2 py-0.5 rounded bg-gray-200 text-gray-600 text-[10px] font-semibold uppercase tracking-wide">
+                        Disabled
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded bg-green-100 text-green-700 text-[10px] font-semibold uppercase tracking-wide">
+                        Active
+                      </span>
                     )}
-                  </div>
-                  {u.full_name && <div className="text-xs text-gray-400">{u.email}</div>}
-                </td>
-                <td className="px-4 py-3 text-gray-500">
-                  {u.created_at ? new Date(u.created_at).toLocaleDateString('en-GB') : '—'}
-                </td>
-                <td className="px-4 py-3">
-                  {(() => {
-                    // A regular admin cannot modify a super-admin's row, and
-                    // nobody can change their own role.
-                    const isSelf = u.id === currentUserId;
-                    const lockedSuperadmin = u.role === 'superadmin' && !isSuperAdmin;
-                    const locked = isSelf || lockedSuperadmin;
-                    // Always include the user's current role as an option so it
-                    // renders even if it's outside the assignable set.
-                    const options = assignableRoles.includes(u.role)
-                      ? assignableRoles
-                      : [u.role, ...assignableRoles];
-                    const title = isSelf
-                      ? "You can't change your own role"
-                      : lockedSuperadmin
-                        ? 'Only a super-admin can change a super-admin'
-                        : '';
-                    return (
-                      <select
-                        value={u.role}
-                        disabled={busyId === u.id || locked}
-                        onChange={e => handleRoleChange(u.id, e.target.value)}
-                        title={title}
-                        className="border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ey-yellow disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {options.map(r => (
-                          <option key={r} value={r}>{ROLE_LABELS[r] || r}</option>
-                        ))}
-                      </select>
-                    );
-                  })()}
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  {isSuperAdmin && (
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      {canManage ? (
+                        <div className="inline-flex items-center gap-3">
+                          <button
+                            onClick={() => handleResetPassword(u)}
+                            disabled={busyId === u.id}
+                            title="Send a password-reset email (e.g. to hand over a functional mailbox)"
+                            className="text-xs text-gray-600 hover:text-gray-900 disabled:opacity-40"
+                          >
+                            Reset password
+                          </button>
+                          {!isSelf && (
+                            <button
+                              onClick={() => handleToggleDisabled(u)}
+                              disabled={busyId === u.id}
+                              className={`text-xs disabled:opacity-40 ${
+                                u.disabled ? 'text-green-600 hover:text-green-800' : 'text-red-500 hover:text-red-700'
+                              }`}
+                            >
+                              {u.disabled ? 'Re-enable' : 'Disable'}
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-300">—</span>
+                      )}
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

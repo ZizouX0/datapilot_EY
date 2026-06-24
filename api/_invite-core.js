@@ -16,7 +16,7 @@ function fail(statusCode, message) {
   return err;
 }
 
-export async function inviteUserCore({ token, email, redirectTo }) {
+export async function inviteUserCore({ token, email, redirectTo, title }) {
   const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -43,9 +43,15 @@ export async function inviteUserCore({ token, email, redirectTo }) {
 
   // 3) Send the invitation. Creates the auth user (the DB trigger then creates
   //    their profile as an analyst) and emails them a link to set a password.
+  //    The optional title (account's position) is passed as user metadata; the
+  //    trigger copies it onto the profile.
+  const options = {};
+  if (redirectTo) options.redirectTo = redirectTo;
+  const cleanTitle = typeof title === 'string' ? title.trim() : '';
+  if (cleanTitle) options.data = { title: cleanTitle };
   const { data, error } = await admin.auth.admin.inviteUserByEmail(
     String(email).trim(),
-    redirectTo ? { redirectTo } : undefined,
+    Object.keys(options).length ? options : undefined,
   );
   if (error) throw fail(400, error.message);
 
