@@ -180,6 +180,24 @@ to their successor instead of losing access or migrating data.
    profile via `/api/update-self` (avatar_url is on the same whitelist as name
    and language). The avatar then appears in the top bar.
 
+## Phase 3e — org bank (per-inviter) + phone
+1. Run [`supabase/phase3e.sql`](./supabase/phase3e.sql) once. It adds
+   `profiles.bank_name` and `profiles.phone`, and extends the `handle_new_user`
+   trigger so invited users inherit the inviter's bank (passed as invite
+   metadata).
+2. **Set the super-admin's bank once** — either on **My account → Bank** (only a
+   super-admin sees an editable field) or via SQL:
+   ```sql
+   update public.profiles set bank_name = 'BIAT — Banque Internationale Arabe de Tunisie'
+   where id = '<super-admin-uuid>';
+   ```
+3. From then on the bank flows **down the invite tree**: super-admin → invited
+   admins → their invited analysts all share one bank. It is read-only for
+   everyone except a super-admin (enforced in `/api/update-self`), and it is the
+   bank shown on the assessment and in the top bar — analysts no longer type it.
+4. **Phone** is an optional recovery/contact number each user manages on their
+   account (saved via `/api/update-self`; no SMS is sent).
+
 ## What's next (later phases)
 - Full French translation of the assessment content and reports.
 - Editable recommendation library.

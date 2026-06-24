@@ -20,6 +20,8 @@ export default async function handler(req, res) {
       fullName: payload.fullName,
       language: payload.language,
       avatarUrl: payload.avatarUrl,
+      phone: payload.phone,
+      bankName: payload.bankName,
     });
     res.status(200).json(result);
   } catch (err) {

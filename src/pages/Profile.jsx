@@ -1,9 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import useAppStore from '../store/useAppStore';
+import useAuthStore from '../store/useAuthStore';
 import { DIMENSIONS } from '../data/indicators';
-import { TUNISIAN_BANKS } from '../data/tunisianBanks';
-import BankAutocomplete from '../components/ui/BankAutocomplete';
 
 const ROLES = [
   'Chief Data Officer',
@@ -31,9 +30,10 @@ export default function Profile() {
   const profile = useAppStore(s => s.profile);
   const setProfile = useAppStore(s => s.setProfile);
   const resetAll = useAppStore(s => s.resetAll);
+  // Bank is inherited from the account (set by the super-admin), read-only here.
+  const authBank = useAuthStore(s => s.bankName) || '';
 
   const [form, setForm] = useState({
-    bankName: profile.bankName || '',
     // Keep the original session date if one exists, otherwise stamp today.
     date: profile.date || DEFAULT_DATE,
     respondentName: profile.respondentName || '',
@@ -47,14 +47,14 @@ export default function Profile() {
   const emailError = emailTouched && form.email.trim() !== '' && !emailValid;
 
   function handleSave() {
-    if (!form.bankName.trim() || !form.respondentName.trim() || !emailValid) return;
-    setProfile({ ...form, email: form.email.trim() });
+    if (!form.respondentName.trim() || !emailValid) return;
+    setProfile({ ...form, bankName: authBank, email: form.email.trim() });
     navigate('/assessment');
   }
 
   function handleReset() {
     resetAll();
-    setForm({ bankName: '', date: DEFAULT_DATE, respondentName: '', role: ROLES[0], email: '' });
+    setForm({ date: DEFAULT_DATE, respondentName: '', role: ROLES[0], email: '' });
     setShowResetConfirm(false);
   }
 
@@ -69,12 +69,10 @@ export default function Profile() {
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
               Bank name
             </label>
-            <BankAutocomplete
-              options={TUNISIAN_BANKS}
-              placeholder="Start typing, e.g. BIAT…"
-              value={form.bankName}
-              onChange={val => setForm(f => ({ ...f, bankName: val }))}
-            />
+            <div className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600 flex items-center justify-between">
+              <span>{authBank || 'Not set — ask your administrator'}</span>
+              <span className="text-[10px] text-gray-400 uppercase tracking-wide">From your account</span>
+            </div>
           </div>
 
           <div>

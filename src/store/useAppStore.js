@@ -19,6 +19,10 @@ const useAppStore = create(
   targetLevel: 3,
   activeDimension: 'D1',
   activeSubDim: '1.1',
+  // Whether the "Skip evaluation" auto-fill is currently applied, plus a stash
+  // of the user's real answers so toggling it off restores their work.
+  autoFilled: false,
+  _preFillStash: null,
 
   // ── Computed / Selectors ───────────────────────────────────────────
 
@@ -283,9 +287,16 @@ const useAppStore = create(
     set({ activeSubDim: sub });
   },
 
-  // DEV ONLY — fills every indicator with a random score so the app can be
-  // tested without answering the full questionnaire. Remove/hide before release.
-  fillRandomAnswers() {
+  // "Skip evaluation" — a toggle. ON fills every indicator with a random score
+  // (stashing the user's real answers first); OFF removes the auto-fill and
+  // restores whatever the user had entered before. The bank is NOT touched — it
+  // is inherited from the user's account, not invented here.
+  toggleAutoFill() {
+    const state = get();
+    if (state.autoFilled) {
+      set({ answers: state._preFillStash || {}, autoFilled: false, _preFillStash: null });
+      return;
+    }
     const answers = {};
     INDICATORS.forEach(ind => {
       const score = 1 + Math.floor(Math.random() * 5); // 1..5
@@ -296,17 +307,7 @@ const useAppStore = create(
         evidence: score >= 3 ? 'Auto-generated test evidence.' : '',
       };
     });
-    set(state => ({
-      answers,
-      profile: state.profile.bankName
-        ? state.profile
-        : {
-            bankName: 'Demo Bank (test data)',
-            date: new Date().toISOString().slice(0, 10),
-            respondentName: 'Test User',
-            role: 'Chief Data Officer',
-          },
-    }));
+    set({ answers, autoFilled: true, _preFillStash: state.answers });
   },
 
   resetAll() {
@@ -316,6 +317,8 @@ const useAppStore = create(
       targetLevel: 3,
       activeDimension: 'D1',
       activeSubDim: '1.1',
+      autoFilled: false,
+      _preFillStash: null,
     });
   },
     }),
@@ -330,6 +333,8 @@ const useAppStore = create(
         targetLevel: state.targetLevel,
         activeDimension: state.activeDimension,
         activeSubDim: state.activeSubDim,
+        autoFilled: state.autoFilled,
+        _preFillStash: state._preFillStash,
       }),
     }
   )

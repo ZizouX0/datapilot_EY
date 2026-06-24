@@ -6,14 +6,17 @@ import Avatar from '../ui/Avatar';
 
 export default function Topbar() {
   const navigate = useNavigate();
-  const profile = useAppStore(s => s.profile);
-  const fillRandomAnswers = useAppStore(s => s.fillRandomAnswers);
+  const toggleAutoFill = useAppStore(s => s.toggleAutoFill);
+  const autoFilled = useAppStore(s => s.autoFilled);
 
   const user = useAuthStore(s => s.user);
   const role = useAuthStore(s => s.role);
   const isAdmin = useAuthStore(s => s.isAdmin());
   const fullName = useAuthStore(s => s.fullName);
   const avatarUrl = useAuthStore(s => s.avatarUrl);
+  // Bank is an account attribute (inherited from the inviter), not a per-session
+  // value the analyst types — so the chip reflects the signed-in user's bank.
+  const bankName = useAuthStore(s => s.bankName);
   const signOut = useAuthStore(s => s.signOut);
   const t = useSettingsStore(s => s.t);
 
@@ -35,18 +38,26 @@ export default function Topbar() {
         {/* Assessment-only chrome — hidden from admins, who don't run assessments. */}
         {!isAdmin && (
           <>
-            {/* DEV ONLY — quick fill for testing. Hide before release. */}
+            {/* Skip evaluation — a toggle. ON auto-fills every indicator; OFF
+                restores the answers the user had entered before. */}
             <button
-              onClick={fillRandomAnswers}
-              title="Fill all indicators with random scores (dev/test only)"
-              className="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded text-xs font-medium"
+              onClick={toggleAutoFill}
+              title={autoFilled
+                ? 'Auto-fill is ON — click to remove it and restore your answers'
+                : 'Auto-fill all indicators with random scores (skip the evaluation)'}
+              className={
+                (autoFilled
+                  ? 'bg-ey-yellow text-ey-charcoal hover:brightness-95'
+                  : 'bg-gray-700 hover:bg-gray-600 text-gray-200') +
+                ' px-3 py-1 rounded text-xs font-medium'
+              }
             >
-              ⚡ Skip evaluation
+              {autoFilled ? '✓ Evaluation skipped' : '⚡ Skip evaluation'}
             </button>
 
-            {profile.bankName && (
+            {bankName && (
               <span className="bg-gray-700 text-gray-200 px-3 py-1 rounded text-xs">
-                🏦 {profile.bankName}
+                🏦 {bankName}
               </span>
             )}
           </>

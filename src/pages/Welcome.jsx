@@ -3,8 +3,6 @@ import { useState } from 'react';
 import useAppStore from '../store/useAppStore';
 import useAuthStore from '../store/useAuthStore';
 import { INDICATORS, DIMENSIONS } from '../data/indicators';
-import { TUNISIAN_BANKS } from '../data/tunisianBanks';
-import BankAutocomplete from '../components/ui/BankAutocomplete';
 
 const ROLES = [
   'Chief Data Officer',
@@ -59,6 +57,9 @@ export default function Welcome() {
   // Identity is established by authentication — the assessment email is the
   // signed-in user's email, pre-filled and not editable here.
   const authEmail = useAuthStore(s => s.user?.email) || '';
+  // The bank is fixed by the user's account (inherited from whoever invited
+  // them), not chosen here. Read-only.
+  const authBank = useAuthStore(s => s.bankName) || '';
   const signOut = useAuthStore(s => s.signOut);
 
   // Derived from live content so the copy matches the current questionnaire.
@@ -70,7 +71,6 @@ export default function Welcome() {
   }
 
   const [form, setForm] = useState({
-    bankName: '',
     date: TODAY,
     respondentName: '',
     role: ROLES[0],
@@ -83,14 +83,16 @@ export default function Welcome() {
   const effectiveRole = isOther ? customRole.trim() : form.role;
 
   const emailValid = EMAIL_RE.test(form.email.trim());
-  const canStart =
-    form.bankName.trim() && form.respondentName.trim() && effectiveRole && emailValid;
+  // Bank is inherited (may be unset until the super-admin configures it), so it
+  // is not a gate to starting the assessment.
+  const canStart = form.respondentName.trim() && effectiveRole && emailValid;
 
   function handleStart() {
     if (!canStart) return;
     // Always stamp the date automatically at the moment the session starts.
-    // Persist the typed role (not the literal "Other") when applicable.
-    setProfile({ ...form, role: effectiveRole, date: TODAY, email: form.email.trim() });
+    // Persist the typed role (not the literal "Other") when applicable, and the
+    // bank inherited from the account.
+    setProfile({ ...form, bankName: authBank, role: effectiveRole, date: TODAY, email: form.email.trim() });
     navigate('/assessment');
   }
 
@@ -166,12 +168,10 @@ export default function Welcome() {
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
                 Bank name
               </label>
-              <BankAutocomplete
-                options={TUNISIAN_BANKS}
-                placeholder="Start typing, e.g. BIAT…"
-                value={form.bankName}
-                onChange={val => setForm(f => ({ ...f, bankName: val }))}
-              />
+              <div className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600 flex items-center justify-between">
+                <span>{authBank || 'Not set — ask your administrator'}</span>
+                <span className="text-[10px] text-gray-400 uppercase tracking-wide">From your account</span>
+              </div>
             </div>
 
             <div>

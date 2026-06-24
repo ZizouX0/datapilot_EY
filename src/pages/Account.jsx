@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import useAuthStore from '../store/useAuthStore';
 import useSettingsStore from '../store/useSettingsStore';
@@ -21,6 +22,7 @@ export default function Account() {
   const user = useAuthStore(s => s.user);
   const role = useAuthStore(s => s.role);
   const isAdmin = useAuthStore(s => s.isAdmin());
+  const isSuperAdmin = useAuthStore(s => s.isSuperAdmin());
   const avatarUrl = useAuthStore(s => s.avatarUrl);
   const language = useSettingsStore(s => s.language);
   const setLanguage = useSettingsStore(s => s.setLanguage);
@@ -28,6 +30,8 @@ export default function Account() {
 
   const [profile, setProfile] = useState(null);
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [bank, setBank] = useState(''); // editable only for super-admins
   const [savingInfo, setSavingInfo] = useState(false);
   const [infoMsg, setInfoMsg] = useState(null); // { ok, text }
 
@@ -49,13 +53,15 @@ export default function Account() {
     let alive = true;
     supabase
       .from('profiles')
-      .select('full_name, title, role, disabled, created_at')
+      .select('full_name, title, role, disabled, created_at, phone, bank_name')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
         if (!alive || !data) return;
         setProfile(data);
         setName(data.full_name || '');
+        setPhone(data.phone || '');
+        setBank(data.bank_name || '');
       });
     return () => { alive = false; };
   }, [user?.id]);
@@ -152,13 +158,20 @@ export default function Account() {
     e.preventDefault();
     setSavingInfo(true);
     setInfoMsg(null);
-    const { error } = await postUpdateSelf({ fullName: name, language });
+    const payload = { fullName: name, language, phone };
+    // Only super-admins may set the bank; the field is read-only for everyone else.
+    if (isSuperAdmin) payload.bankName = bank;
+    const { error } = await postUpdateSelf(payload);
     setSavingInfo(false);
     if (error) {
       setInfoMsg({ ok: false, text: error });
     } else {
-      // Reflect the new name in the shared store (top bar etc.).
-      useAuthStore.setState({ fullName: name.trim() || null });
+      // Reflect the new values in the shared store (top bar, assessment, etc.).
+      useAuthStore.setState({
+        fullName: name.trim() || null,
+        phone: phone.trim() || null,
+        ...(isSuperAdmin ? { bankName: bank.trim() || null } : {}),
+      });
       setInfoMsg({ ok: true, text: t('account.saved') });
     }
   }
@@ -191,8 +204,17 @@ export default function Account() {
   const inputCls = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow focus:border-transparent';
   const roCls = 'w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600';
 
+  // Where "back" goes: admins administer, analysts run assessments.
+  const homePath = isAdmin ? '/admin' : '/';
+
   return (
     <div className="max-w-xl mx-auto">
+      <Link
+        to={homePath}
+        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-4"
+      >
+        <span aria-hidden>←</span> {t('account.back')}
+      </Link>
       <h1 className="text-2xl font-semibold text-gray-800 mb-1">{t('account.title')}</h1>
       <p className="text-sm text-gray-500 mb-6">{t('account.subtitle')}</p>
 
@@ -248,6 +270,42 @@ export default function Account() {
               value={name}
               onChange={e => setName(e.target.value)}
             />
+          </div>
+
+          <div>
+            <label className={labelCls}>{t('account.phone')}</label>
+            <input
+              type="tel"
+              className={inputCls}
+              placeholder={t('account.phonePlaceholder')}
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+            />
+            <p className="text-[11px] text-gray-400 mt-1">{t('account.phoneHint')}</p>
+          </div>
+
+          {/* Bank — editable only by a super-admin; inherited and read-only for
+              admins and analysts. */}
+          <div>
+            <label className={labelCls}>{t('account.bank')}</label>
+            {isSuperAdmin ? (
+              <>
+                <input
+                  className={inputCls}
+                  placeholder={t('account.bankPlaceholder')}
+                  value={bank}
+                  onChange={e => setBank(e.target.value)}
+                />
+                <p className="text-[11px] text-gray-400 mt-1">{t('account.bankHintSuper')}</p>
+              </>
+            ) : (
+              <>
+                <div className={roCls}>
+                  {bank || <span className="text-gray-400 italic">{t('account.bankUnset')}</span>}
+                </div>
+                <p className="text-[11px] text-gray-400 mt-1">{t('account.bankHint')}</p>
+              </>
+            )}
           </div>
 
           {/* Read-only identity fields */}

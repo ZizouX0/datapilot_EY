@@ -10,6 +10,7 @@ import useContentStore from './store/useContentStore';
 // Route-based code splitting — each page (and its heavy chart deps) loads on demand.
 const Login = lazy(() => import('./pages/Login'));
 const SetPassword = lazy(() => import('./pages/SetPassword'));
+const Landing = lazy(() => import('./pages/Landing'));
 const Welcome = lazy(() => import('./pages/Welcome'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Questionnaire = lazy(() => import('./pages/Questionnaire'));
@@ -71,6 +72,20 @@ function RequireComplete({ children }) {
   return children;
 }
 
+// The root route. Anyone NOT signed in (any role, or none) sees the public
+// landing page that explains the tool. Signed-in admins go to the admin area;
+// signed-in analysts get the assessment Welcome/setup.
+function Home() {
+  const loading = useAuthStore(s => s.loading);
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated());
+  const isAdmin = useAuthStore(s => s.isAdmin());
+
+  if (loading) return <PageLoader />;
+  if (!isAuthenticated) return <Landing />;
+  if (isAdmin) return <Navigate to="/admin" replace />;
+  return <Welcome />;
+}
+
 function Layout({ children }) {
   const location = useLocation();
   const isAssessment = location.pathname === '/assessment';
@@ -96,9 +111,11 @@ function AppRoutes() {
       {/* Invited users land here from the email link (session set from the URL). */}
       <Route path="/set-password" element={<SetPassword />} />
 
+      {/* Root: public landing when signed out, role-aware home when signed in. */}
+      <Route path="/" element={<Home />} />
+
       {/* Everything below requires authentication. */}
       {/* The assessment workflow is analyst-only; admins are sent to /admin. */}
-      <Route path="/" element={<RequireAuth><RequireAnalyst><Welcome /></RequireAnalyst></RequireAuth>} />
       <Route path="/profile" element={<RequireAuth><RequireAnalyst><Layout><Profile /></Layout></RequireAnalyst></RequireAuth>} />
       <Route path="/assessment" element={<RequireAuth><RequireAnalyst><Layout><Questionnaire /></Layout></RequireAnalyst></RequireAuth>} />
       <Route

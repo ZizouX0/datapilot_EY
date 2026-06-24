@@ -35,25 +35,40 @@ export async function inviteUserCore({ token, email, redirectTo, title }) {
   const { data: userData, error: userErr } = await admin.auth.getUser(token);
   if (userErr || !userData?.user) throw fail(401, 'Invalid or expired session.');
 
-  // 2) Confirm the caller is an admin (service role bypasses RLS here).
+  // 2) Confirm the caller is an admin or super-admin. We also read the caller's
+  //    bank so the invitee inherits it (per-inviter tree: super-admin → admin →
+  //    analyst all share one bank).
   const { data: profile, error: profErr } = await admin
-    .from('profiles').select('role').eq('id', userData.user.id).single();
+    .from('profiles').select('role, bank_name').eq('id', userData.user.id).single();
   if (profErr) throw fail(403, 'Could not verify your permissions.');
-  if (profile?.role !== 'admin') throw fail(403, 'Administrator access required.');
+  if (profile?.role !== 'admin' && profile?.role !== 'superadmin') {
+    throw fail(403, 'Administrator access required.');
+  }
+  const inviterBank = profile?.bank_name || null;
 
   // 3) Send the invitation. Creates the auth user (the DB trigger then creates
   //    their profile as an analyst) and emails them a link to set a password.
-  //    The optional title (account's position) is passed as user metadata; the
-  //    trigger copies it onto the profile.
+  //    Title (position) and the inviter's bank are passed as user metadata; the
+  //    handle_new_user trigger copies both onto the new profile.
   const options = {};
   if (redirectTo) options.redirectTo = redirectTo;
   const cleanTitle = typeof title === 'string' ? title.trim() : '';
-  if (cleanTitle) options.data = { title: cleanTitle };
+  const meta = {};
+  if (cleanTitle) meta.title = cleanTitle;
+  if (inviterBank) meta.bank_name = inviterBank;
+  if (Object.keys(meta).length) options.data = meta;
   const { data, error } = await admin.auth.admin.inviteUserByEmail(
     String(email).trim(),
     Object.keys(options).length ? options : undefined,
   );
   if (error) throw fail(400, error.message);
 
-  return { ok: true, userId: data?.user?.id || null };
+  // Defensive: ensure the bank landed on the profile even if the trigger ran
+  // before the metadata was visible. No-op when already set by the trigger.
+  const newUserId = data?.user?.id || null;
+  if (newUserId && inviterBank) {
+    await admin.from('profiles').update({ bank_name: inviterBank }).eq('id', newUserId);
+  }
+
+  return { ok: true, userId: newUserId };
 }

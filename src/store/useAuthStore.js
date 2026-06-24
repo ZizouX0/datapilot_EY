@@ -23,6 +23,8 @@ const useAuthStore = create((set, get) => ({
   role: null,        // 'superadmin' | 'admin' | 'analyst' | null (until loaded)
   fullName: null,    // the signed-in user's display name (from profiles)
   avatarUrl: null,   // the signed-in user's avatar URL (from profiles)
+  bankName: null,    // the user's organisation bank (inherited from inviter)
+  phone: null,       // the user's recovery/contact phone (from profiles)
   loading: true,     // true until the initial session check resolves
   error: null,
   _initialized: false,
@@ -41,17 +43,17 @@ const useAuthStore = create((set, get) => ({
   // admin access by accident.
   async fetchRole(userId) {
     if (!userId) {
-      set({ role: null, fullName: null, avatarUrl: null });
+      set({ role: null, fullName: null, avatarUrl: null, bankName: null, phone: null });
       return;
     }
     const { data, error } = await supabase
       .from('profiles')
-      .select('role, full_name, language, avatar_url')
+      .select('role, full_name, language, avatar_url, bank_name, phone')
       .eq('id', userId)
       .single();
     if (error) {
       // Missing row or RLS issue — fail closed to the least-privileged role.
-      set({ role: 'analyst', fullName: null, avatarUrl: null });
+      set({ role: 'analyst', fullName: null, avatarUrl: null, bankName: null, phone: null });
       return;
     }
     // Accept only known roles; anything unexpected fails closed to 'analyst'.
@@ -59,6 +61,8 @@ const useAuthStore = create((set, get) => ({
       role: ROLES.includes(data?.role) ? data.role : 'analyst',
       fullName: data?.full_name || null,
       avatarUrl: data?.avatar_url || null,
+      bankName: data?.bank_name || null,
+      phone: data?.phone || null,
     });
     // Apply the user's saved language preference app-wide.
     if (data?.language) useSettingsStore.getState().setLanguage(data.language);
@@ -122,7 +126,7 @@ const useAuthStore = create((set, get) => ({
 
   async signOut() {
     if (isSupabaseConfigured) await supabase.auth.signOut();
-    set({ session: null, user: null, role: null, fullName: null, avatarUrl: null, error: null });
+    set({ session: null, user: null, role: null, fullName: null, avatarUrl: null, bankName: null, phone: null, error: null });
   },
 }));
 

@@ -16,7 +16,9 @@ function fail(statusCode, message) {
   return err;
 }
 
-export async function updateSelfCore({ token, fullName, language, avatarUrl }) {
+const PHONE_RE = /^\+?[0-9 ()-]{6,20}$/;
+
+export async function updateSelfCore({ token, fullName, language, avatarUrl, phone, bankName }) {
   const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -48,6 +50,21 @@ export async function updateSelfCore({ token, fullName, language, avatarUrl }) {
     const v = avatarUrl === null ? null : String(avatarUrl).trim();
     if (v && !/^https?:\/\//i.test(v)) throw fail(400, 'Invalid avatar URL.');
     patch.avatar_url = v || null;
+  }
+  if (phone !== undefined) {
+    const v = phone === null ? '' : String(phone).trim();
+    if (v && !PHONE_RE.test(v)) throw fail(400, 'Invalid phone number.');
+    patch.phone = v || null;
+  }
+  // bank_name is the organisation's bank. Inherited on invite and read-only for
+  // everyone EXCEPT a super-admin, who sets it for their tree. Gate it on role.
+  if (bankName !== undefined) {
+    const { data: caller } = await admin
+      .from('profiles').select('role').eq('id', callerId).single();
+    if (caller?.role !== 'superadmin') {
+      throw fail(403, 'Only a super-admin can change the bank.');
+    }
+    patch.bank_name = String(bankName).trim() || null;
   }
   if (Object.keys(patch).length === 0) throw fail(400, 'Nothing to update.');
 

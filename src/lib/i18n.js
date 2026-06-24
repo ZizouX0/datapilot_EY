@@ -48,6 +48,17 @@ const STRINGS = {
   'account.passwordChanged': { en: 'Password updated.', fr: 'Mot de passe mis à jour.' },
   'account.passwordMismatch': { en: 'Passwords do not match.', fr: 'Les mots de passe ne correspondent pas.' },
 
+  // Account — navigation, phone & bank
+  'account.back':          { en: 'Back to app',   fr: 'Retour à l’application' },
+  'account.phone':         { en: 'Phone number',  fr: 'Numéro de téléphone' },
+  'account.phonePlaceholder': { en: 'e.g. +216 20 123 456', fr: 'ex. +216 20 123 456' },
+  'account.phoneHint':     { en: 'Used as a recovery contact for your account.', fr: 'Utilisé comme contact de récupération pour votre compte.' },
+  'account.bank':          { en: 'Bank',          fr: 'Banque' },
+  'account.bankPlaceholder': { en: 'Your organisation’s bank', fr: 'La banque de votre organisation' },
+  'account.bankHint':      { en: 'Set by your administrator — shared across your team.', fr: 'Défini par votre administrateur — partagé avec votre équipe.' },
+  'account.bankHintSuper': { en: 'As super-admin, this bank is inherited by everyone you invite.', fr: 'En tant que super-admin, cette banque est héritée par toutes les personnes que vous invitez.' },
+  'account.bankUnset':     { en: 'Not set yet',   fr: 'Pas encore défini' },
+
   // Account — profile photo
   'account.photo':        { en: 'Profile photo',  fr: 'Photo de profil' },
   'account.changePhoto':  { en: 'Change photo',   fr: 'Changer la photo' },
