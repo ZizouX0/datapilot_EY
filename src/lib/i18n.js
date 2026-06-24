@@ -48,6 +48,16 @@ const STRINGS = {
   'account.passwordChanged': { en: 'Password updated.', fr: 'Mot de passe mis à jour.' },
   'account.passwordMismatch': { en: 'Passwords do not match.', fr: 'Les mots de passe ne correspondent pas.' },
 
+  // Account — my submissions
+  'account.section.submissions': { en: 'My submissions', fr: 'Mes évaluations' },
+  'account.sub.subtitle': { en: 'Assessments you have submitted for review.', fr: 'Évaluations que vous avez soumises pour revue.' },
+  'account.sub.bank':      { en: 'Bank',      fr: 'Banque' },
+  'account.sub.maturity':  { en: 'Maturity',  fr: 'Maturité' },
+  'account.sub.submitted': { en: 'Submitted', fr: 'Soumise le' },
+  'account.sub.delete':    { en: 'Delete',    fr: 'Supprimer' },
+  'account.sub.empty':     { en: 'You haven’t submitted any assessments yet.', fr: 'Vous n’avez encore soumis aucune évaluation.' },
+  'account.sub.confirmDelete': { en: 'Delete this submission? This cannot be undone.', fr: 'Supprimer cette soumission ? Action irréversible.' },
+
   // Roles / status (shared)
   'role.superadmin': { en: 'Super Admin', fr: 'Super Admin' },
   'role.admin':      { en: 'Admin',       fr: 'Admin' },

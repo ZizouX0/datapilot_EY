@@ -3,6 +3,13 @@ import { supabase } from '../lib/supabase';
 import useAuthStore from '../store/useAuthStore';
 import useSettingsStore from '../store/useSettingsStore';
 import { LANGUAGES } from '../lib/i18n';
+import { MATURITY_LEVELS } from '../store/useAppStore';
+
+function maturityColor(score) {
+  if (score === null || score === undefined) return '#9CA3AF';
+  const lvl = MATURITY_LEVELS.find(l => score >= l.min && score <= l.max) || MATURITY_LEVELS[4];
+  return lvl.color;
+}
 
 // Account settings, available to every role. Users can edit their display name
 // and language, and change their password. Email, position, role and status are
@@ -10,6 +17,7 @@ import { LANGUAGES } from '../lib/i18n';
 export default function Account() {
   const user = useAuthStore(s => s.user);
   const role = useAuthStore(s => s.role);
+  const isAdmin = useAuthStore(s => s.isAdmin());
   const language = useSettingsStore(s => s.language);
   const setLanguage = useSettingsStore(s => s.setLanguage);
   const t = useSettingsStore(s => s.t);
@@ -23,6 +31,10 @@ export default function Account() {
   const [pwd2, setPwd2] = useState('');
   const [savingPwd, setSavingPwd] = useState(false);
   const [pwdMsg, setPwdMsg] = useState(null); // { ok, text }
+
+  // The caller's own submissions (analysts only). Scoped to analyst_id so an
+  // admin viewing their own account never sees the whole org's submissions.
+  const [mySubs, setMySubs] = useState([]);
 
   // Load the signed-in user's own profile row (allowed by RLS: select own).
   useEffect(() => {
@@ -40,6 +52,25 @@ export default function Account() {
       });
     return () => { alive = false; };
   }, [user?.id]);
+
+  // Load my own submissions (only relevant for analysts; admins don't assess).
+  useEffect(() => {
+    if (!user?.id || isAdmin) return;
+    let alive = true;
+    supabase
+      .from('submissions')
+      .select('id, bank_name, global_score, bct_rate, created_at')
+      .eq('analyst_id', user.id)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => { if (alive) setMySubs(data || []); });
+    return () => { alive = false; };
+  }, [user?.id, isAdmin]);
+
+  async function handleDeleteSub(id) {
+    if (!window.confirm(t('account.sub.confirmDelete'))) return;
+    const { error } = await supabase.from('submissions').delete().eq('id', id);
+    if (!error) setMySubs(subs => subs.filter(s => s.id !== id));
+  }
 
   async function postUpdateSelf(payload) {
     const { data: { session } } = await supabase.auth.getSession();
@@ -232,6 +263,64 @@ export default function Account() {
           </div>
         </div>
       </form>
+
+      {/* My submissions — analysts only. */}
+      {!isAdmin && (
+        <div className="bg-white rounded-xl border border-gray-200 p-6 mt-5">
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+            {t('account.section.submissions')}
+          </h2>
+          <p className="text-sm text-gray-500 mb-4">{t('account.sub.subtitle')}</p>
+
+          {mySubs.length === 0 ? (
+            <p className="text-sm text-gray-400">{t('account.sub.empty')}</p>
+          ) : (
+            <div className="rounded-lg border border-gray-200 overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
+                  <tr>
+                    <th className="text-left font-semibold px-4 py-2.5">{t('account.sub.bank')}</th>
+                    <th className="text-left font-semibold px-4 py-2.5">{t('account.sub.maturity')}</th>
+                    <th className="text-left font-semibold px-4 py-2.5">BCT</th>
+                    <th className="text-left font-semibold px-4 py-2.5">{t('account.sub.submitted')}</th>
+                    <th className="px-4 py-2.5"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {mySubs.map(s => (
+                    <tr key={s.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 font-medium text-gray-800">
+                        {s.bank_name || '—'}
+                      </td>
+                      <td className="px-4 py-3">
+                        {s.global_score != null ? (
+                          <span className="font-semibold" style={{ color: maturityColor(s.global_score) }}>
+                            {Math.round(s.global_score * 20)}%
+                          </span>
+                        ) : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">{s.bct_rate ?? 0}%</td>
+                      <td className="px-4 py-3 text-gray-500">
+                        {s.created_at
+                          ? new Date(s.created_at).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-GB')
+                          : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => handleDeleteSub(s.id)}
+                          className="text-xs text-red-500 hover:text-red-700"
+                        >
+                          {t('account.sub.delete')}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
