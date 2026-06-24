@@ -170,6 +170,16 @@ to their successor instead of losing access or migrating data.
    page) in English/French; translating the assessment content itself is a
    follow-up.
 
+## Phase 3d — profile photo / avatar
+1. Run [`supabase/phase3d.sql`](./supabase/phase3d.sql) once. It adds
+   `profiles.avatar_url`, creates a public **`avatars`** Storage bucket, and adds
+   policies so each user can upload/replace/delete only files in their own
+   folder (public read so images render without signed URLs).
+2. On **My account → Profile photo**, users can upload a JPG/PNG/WebP (≤ 2 MB).
+   The image is stored at `avatars/<user-id>/avatar`; its URL is saved on the
+   profile via `/api/update-self` (avatar_url is on the same whitelist as name
+   and language). The avatar then appears in the top bar.
+
 ## What's next (later phases)
 - Full French translation of the assessment content and reports.
 - Editable recommendation library.

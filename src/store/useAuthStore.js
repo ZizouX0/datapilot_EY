@@ -22,6 +22,7 @@ const useAuthStore = create((set, get) => ({
   user: null,
   role: null,        // 'superadmin' | 'admin' | 'analyst' | null (until loaded)
   fullName: null,    // the signed-in user's display name (from profiles)
+  avatarUrl: null,   // the signed-in user's avatar URL (from profiles)
   loading: true,     // true until the initial session check resolves
   error: null,
   _initialized: false,
@@ -40,23 +41,24 @@ const useAuthStore = create((set, get) => ({
   // admin access by accident.
   async fetchRole(userId) {
     if (!userId) {
-      set({ role: null, fullName: null });
+      set({ role: null, fullName: null, avatarUrl: null });
       return;
     }
     const { data, error } = await supabase
       .from('profiles')
-      .select('role, full_name, language')
+      .select('role, full_name, language, avatar_url')
       .eq('id', userId)
       .single();
     if (error) {
       // Missing row or RLS issue — fail closed to the least-privileged role.
-      set({ role: 'analyst', fullName: null });
+      set({ role: 'analyst', fullName: null, avatarUrl: null });
       return;
     }
     // Accept only known roles; anything unexpected fails closed to 'analyst'.
     set({
       role: ROLES.includes(data?.role) ? data.role : 'analyst',
       fullName: data?.full_name || null,
+      avatarUrl: data?.avatar_url || null,
     });
     // Apply the user's saved language preference app-wide.
     if (data?.language) useSettingsStore.getState().setLanguage(data.language);
@@ -120,7 +122,7 @@ const useAuthStore = create((set, get) => ({
 
   async signOut() {
     if (isSupabaseConfigured) await supabase.auth.signOut();
-    set({ session: null, user: null, role: null, fullName: null, error: null });
+    set({ session: null, user: null, role: null, fullName: null, avatarUrl: null, error: null });
   },
 }));
 

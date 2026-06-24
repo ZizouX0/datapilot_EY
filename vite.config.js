@@ -148,7 +148,7 @@ function updateSelfApiPlugin() {
           const auth = req.headers.authorization || ''
           const token = auth.startsWith('Bearer ') ? auth.slice(7) : ''
           const { updateSelfCore } = await import('./api/_update-self-core.js')
-          const result = await updateSelfCore({ token, fullName: payload.fullName, language: payload.language })
+          const result = await updateSelfCore({ token, fullName: payload.fullName, language: payload.language, avatarUrl: payload.avatarUrl })
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify(result))
         } catch (err) {

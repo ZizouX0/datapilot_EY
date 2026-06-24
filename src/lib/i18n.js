@@ -48,6 +48,15 @@ const STRINGS = {
   'account.passwordChanged': { en: 'Password updated.', fr: 'Mot de passe mis à jour.' },
   'account.passwordMismatch': { en: 'Passwords do not match.', fr: 'Les mots de passe ne correspondent pas.' },
 
+  // Account — profile photo
+  'account.photo':        { en: 'Profile photo',  fr: 'Photo de profil' },
+  'account.changePhoto':  { en: 'Change photo',   fr: 'Changer la photo' },
+  'account.removePhoto':  { en: 'Remove',         fr: 'Supprimer' },
+  'account.photoHint':    { en: 'JPG or PNG, up to 2 MB.', fr: 'JPG ou PNG, jusqu’à 2 Mo.' },
+  'account.uploading':    { en: 'Uploading…',     fr: 'Téléversement…' },
+  'account.photoTooLarge':{ en: 'Image is too large (max 2 MB).', fr: 'Image trop volumineuse (max 2 Mo).' },
+  'account.photoInvalid': { en: 'Please choose an image file.',   fr: 'Veuillez choisir un fichier image.' },
+
   // Account — my submissions
   'account.section.submissions': { en: 'My submissions', fr: 'Mes évaluations' },
   'account.sub.subtitle': { en: 'Assessments you have submitted for review.', fr: 'Évaluations que vous avez soumises pour revue.' },

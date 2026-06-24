@@ -16,7 +16,7 @@ function fail(statusCode, message) {
   return err;
 }
 
-export async function updateSelfCore({ token, fullName, language }) {
+export async function updateSelfCore({ token, fullName, language, avatarUrl }) {
   const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -43,6 +43,11 @@ export async function updateSelfCore({ token, fullName, language }) {
   if (language !== undefined) {
     if (!LANGUAGES.includes(language)) throw fail(400, 'Unsupported language.');
     patch.language = language;
+  }
+  if (avatarUrl !== undefined) {
+    const v = avatarUrl === null ? null : String(avatarUrl).trim();
+    if (v && !/^https?:\/\//i.test(v)) throw fail(400, 'Invalid avatar URL.');
+    patch.avatar_url = v || null;
   }
   if (Object.keys(patch).length === 0) throw fail(400, 'Nothing to update.');
 

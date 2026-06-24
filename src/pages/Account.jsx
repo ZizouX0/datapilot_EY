@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import useAuthStore from '../store/useAuthStore';
 import useSettingsStore from '../store/useSettingsStore';
 import { LANGUAGES } from '../lib/i18n';
 import { MATURITY_LEVELS } from '../store/useAppStore';
+import Avatar from '../components/ui/Avatar';
+
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2 MB
 
 function maturityColor(score) {
   if (score === null || score === undefined) return '#9CA3AF';
@@ -18,6 +21,7 @@ export default function Account() {
   const user = useAuthStore(s => s.user);
   const role = useAuthStore(s => s.role);
   const isAdmin = useAuthStore(s => s.isAdmin());
+  const avatarUrl = useAuthStore(s => s.avatarUrl);
   const language = useSettingsStore(s => s.language);
   const setLanguage = useSettingsStore(s => s.setLanguage);
   const t = useSettingsStore(s => s.t);
@@ -31,6 +35,9 @@ export default function Account() {
   const [pwd2, setPwd2] = useState('');
   const [savingPwd, setSavingPwd] = useState(false);
   const [pwdMsg, setPwdMsg] = useState(null); // { ok, text }
+
+  const fileRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
 
   // The caller's own submissions (analysts only). Scoped to analyst_id so an
   // admin viewing their own account never sees the whole org's submissions.
@@ -91,6 +98,56 @@ export default function Account() {
     return { body };
   }
 
+  async function handlePickPhoto(e) {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-selecting the same file later
+    if (!file) return;
+    setInfoMsg(null);
+    if (!file.type.startsWith('image/')) {
+      setInfoMsg({ ok: false, text: t('account.photoInvalid') });
+      return;
+    }
+    if (file.size > MAX_AVATAR_BYTES) {
+      setInfoMsg({ ok: false, text: t('account.photoTooLarge') });
+      return;
+    }
+    setUploading(true);
+    const path = `${user.id}/avatar`;
+    const { error: upErr } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true, contentType: file.type });
+    if (upErr) {
+      setUploading(false);
+      setInfoMsg({ ok: false, text: upErr.message });
+      return;
+    }
+    // Public bucket → stable URL; cache-bust so the new image shows immediately.
+    const base = supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl;
+    const url = `${base}?v=${Date.now()}`;
+    const { error } = await postUpdateSelf({ avatarUrl: url });
+    setUploading(false);
+    if (error) {
+      setInfoMsg({ ok: false, text: error });
+    } else {
+      useAuthStore.setState({ avatarUrl: url });
+      setInfoMsg({ ok: true, text: t('account.saved') });
+    }
+  }
+
+  async function handleRemovePhoto() {
+    setInfoMsg(null);
+    setUploading(true);
+    await supabase.storage.from('avatars').remove([`${user.id}/avatar`]);
+    const { error } = await postUpdateSelf({ avatarUrl: null });
+    setUploading(false);
+    if (error) {
+      setInfoMsg({ ok: false, text: error });
+    } else {
+      useAuthStore.setState({ avatarUrl: null });
+      setInfoMsg({ ok: true, text: t('account.saved') });
+    }
+  }
+
   async function handleSaveInfo(e) {
     e.preventDefault();
     setSavingInfo(true);
@@ -146,6 +203,43 @@ export default function Account() {
         </h2>
 
         <div className="flex flex-col gap-4">
+          {/* Profile photo */}
+          <div>
+            <label className={labelCls}>{t('account.photo')}</label>
+            <div className="flex items-center gap-4">
+              <Avatar url={avatarUrl} name={name} email={user?.email} size={56} />
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    disabled={uploading}
+                    className="text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-1.5 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    {uploading ? t('account.uploading') : t('account.changePhoto')}
+                  </button>
+                  {avatarUrl && !uploading && (
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      className="text-sm text-red-500 hover:text-red-700"
+                    >
+                      {t('account.removePhoto')}
+                    </button>
+                  )}
+                </div>
+                <span className="text-[11px] text-gray-400">{t('account.photoHint')}</span>
+              </div>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                onChange={handlePickPhoto}
+                className="hidden"
+              />
+            </div>
+          </div>
+
           <div>
             <label className={labelCls}>{t('account.displayName')}</label>
             <input

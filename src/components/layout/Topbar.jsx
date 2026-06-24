@@ -2,6 +2,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import useAppStore from '../../store/useAppStore';
 import useAuthStore from '../../store/useAuthStore';
 import useSettingsStore from '../../store/useSettingsStore';
+import Avatar from '../ui/Avatar';
 
 export default function Topbar() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function Topbar() {
   const role = useAuthStore(s => s.role);
   const isAdmin = useAuthStore(s => s.isAdmin());
   const fullName = useAuthStore(s => s.fullName);
+  const avatarUrl = useAuthStore(s => s.avatarUrl);
   const signOut = useAuthStore(s => s.signOut);
   const t = useSettingsStore(s => s.t);
 
@@ -56,9 +58,10 @@ export default function Topbar() {
             <Link
               to="/account"
               title={t('top.account')}
-              className="text-gray-300 hover:text-white max-w-[40vw] truncate"
+              className="flex items-center gap-2 text-gray-300 hover:text-white max-w-[40vw]"
             >
-              {fullName || user.email}
+              <Avatar url={avatarUrl} name={fullName} email={user.email} size={26} />
+              <span className="truncate">{fullName || user.email}</span>
             </Link>
             {(role === 'admin' || role === 'superadmin') && (
               <span className="bg-ey-purple text-white px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide">

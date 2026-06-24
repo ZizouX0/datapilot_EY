@@ -19,6 +19,7 @@ export default async function handler(req, res) {
       token: bearer(req),
       fullName: payload.fullName,
       language: payload.language,
+      avatarUrl: payload.avatarUrl,
     });
     res.status(200).json(result);
   } catch (err) {
