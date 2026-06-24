@@ -156,5 +156,20 @@ to their successor instead of losing access or migrating data.
 > accounts for day-to-day analysts (so actions stay traceable), disabled on
 > departure.
 
+## Phase 3c — account page (all roles)
+1. Run [`supabase/phase3c.sql`](./supabase/phase3c.sql) once. It adds a
+   `language` preference column to `profiles`.
+2. Every signed-in user gets a **My account** page (click their name in the top
+   bar). They can edit their **display name** and **language (EN/FR)** and
+   **change their password**. Email, position, role and status are read-only
+   there (administered elsewhere).
+3. Self-edits go through `/api/update-self`, which reuses the existing
+   `SUPABASE_SERVICE_ROLE_KEY` and only ever writes a whitelist (name, language)
+   on the caller's own row — `role`/`disabled`/`email` can't be changed this way.
+4. Language currently localizes the app **shell** (top bar, navigation, account
+   page) in English/French; translating the assessment content itself is a
+   follow-up.
+
 ## What's next (later phases)
+- Full French translation of the assessment content and reports.
 - Editable recommendation library.

@@ -1,6 +1,7 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import useAppStore from '../../store/useAppStore';
 import useAuthStore from '../../store/useAuthStore';
+import useSettingsStore from '../../store/useSettingsStore';
 
 export default function Topbar() {
   const navigate = useNavigate();
@@ -10,7 +11,9 @@ export default function Topbar() {
   const user = useAuthStore(s => s.user);
   const role = useAuthStore(s => s.role);
   const isAdmin = useAuthStore(s => s.isAdmin());
+  const fullName = useAuthStore(s => s.fullName);
   const signOut = useAuthStore(s => s.signOut);
+  const t = useSettingsStore(s => s.t);
 
   async function handleSignOut() {
     await signOut();
@@ -24,7 +27,7 @@ export default function Topbar() {
           EY
         </span>
         <span className="text-white font-semibold text-base">DataPilot</span>
-        <span className="text-gray-400 text-sm hidden sm:inline">Data Maturity Steering Tool</span>
+        <span className="text-gray-400 text-sm hidden sm:inline">{t('top.subtitle')}</span>
       </div>
       <div className="ml-auto flex items-center gap-2 text-sm">
         {/* Assessment-only chrome — hidden from admins, who don't run assessments. */}
@@ -47,10 +50,16 @@ export default function Topbar() {
           </>
         )}
 
-        {/* Authenticated identity + role badge + sign out. */}
+        {/* Authenticated identity (links to account) + role badge + sign out. */}
         {user && (
           <>
-            <span className="text-gray-300 hidden md:inline">{user.email}</span>
+            <Link
+              to="/account"
+              title={t('top.account')}
+              className="text-gray-300 hover:text-white max-w-[40vw] truncate"
+            >
+              {fullName || user.email}
+            </Link>
             {(role === 'admin' || role === 'superadmin') && (
               <span className="bg-ey-purple text-white px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide">
                 {role === 'superadmin' ? 'Super Admin' : 'Admin'}
@@ -60,7 +69,7 @@ export default function Topbar() {
               onClick={handleSignOut}
               className="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded text-xs font-medium"
             >
-              Sign out
+              {t('top.signOut')}
             </button>
           </>
         )}

@@ -2,26 +2,28 @@ import { NavLink } from 'react-router-dom';
 import { useState } from 'react';
 import useAppStore from '../../store/useAppStore';
 import useAuthStore from '../../store/useAuthStore';
+import useSettingsStore from '../../store/useSettingsStore';
 
 const TABS = [
-  { label: 'Bank Profile', path: '/profile', locked: false },
-  { label: 'Assessment', path: '/assessment', locked: false },
-  { label: 'Results', path: '/results', locked: true },
-  { label: 'Gap Analysis', path: '/gap-analysis', locked: true },
-  { label: 'Compliance', path: '/compliance', locked: true },
+  { key: 'nav.profile', path: '/profile', locked: false },
+  { key: 'nav.assessment', path: '/assessment', locked: false },
+  { key: 'nav.results', path: '/results', locked: true },
+  { key: 'nav.gap', path: '/gap-analysis', locked: true },
+  { key: 'nav.compliance', path: '/compliance', locked: true },
 ];
 
 export default function NavBar() {
   const profile = useAppStore(s => s.profile);
   const isAssessmentComplete = useAppStore(s => s.isAssessmentComplete());
   const isAdmin = useAuthStore(s => s.isAdmin());
+  const t = useSettingsStore(s => s.t);
   const [tooltip, setTooltip] = useState(null);
 
   // Admins and super-admins don't run assessments — they only get the admin
   // back-office, so they see just the Admin tab. Analysts get the assessment
   // workflow and never see Admin.
   const tabs = isAdmin
-    ? [{ label: 'Admin', path: '/admin', locked: false }]
+    ? [{ key: 'nav.admin', path: '/admin', locked: false }]
     : TABS;
 
   const profileDone = !!(profile.bankName && profile.respondentName);
@@ -53,11 +55,11 @@ export default function NavBar() {
                   <svg className="w-3 h-3 opacity-60" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                   </svg>
-                  {tab.label}
+                  {t(tab.key)}
                 </button>
                 {tooltip === tab.path && (
                   <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 bg-ey-charcoal text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg pointer-events-none">
-                    Complete the full assessment to unlock results.
+                    {t('nav.locked')}
                     <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-ey-charcoal rotate-45" />
                   </div>
                 )}
@@ -80,7 +82,7 @@ export default function NavBar() {
               <span
                 className={`w-2 h-2 rounded-full flex-shrink-0 ${isDone ? 'bg-green-500' : 'bg-gray-300'}`}
               />
-              {tab.label}
+              {t(tab.key)}
             </NavLink>
           );
         })}

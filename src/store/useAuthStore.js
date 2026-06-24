@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import useSettingsStore from './useSettingsStore';
 
 // Auth + role state for the whole app. Kept separate from useAppStore (which
 // holds the assessment data) so the two concerns stay independent: this store
@@ -20,6 +21,7 @@ const useAuthStore = create((set, get) => ({
   session: null,
   user: null,
   role: null,        // 'superadmin' | 'admin' | 'analyst' | null (until loaded)
+  fullName: null,    // the signed-in user's display name (from profiles)
   loading: true,     // true until the initial session check resolves
   error: null,
   _initialized: false,
@@ -38,21 +40,26 @@ const useAuthStore = create((set, get) => ({
   // admin access by accident.
   async fetchRole(userId) {
     if (!userId) {
-      set({ role: null });
+      set({ role: null, fullName: null });
       return;
     }
     const { data, error } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, full_name, language')
       .eq('id', userId)
       .single();
     if (error) {
       // Missing row or RLS issue — fail closed to the least-privileged role.
-      set({ role: 'analyst' });
+      set({ role: 'analyst', fullName: null });
       return;
     }
     // Accept only known roles; anything unexpected fails closed to 'analyst'.
-    set({ role: ROLES.includes(data?.role) ? data.role : 'analyst' });
+    set({
+      role: ROLES.includes(data?.role) ? data.role : 'analyst',
+      fullName: data?.full_name || null,
+    });
+    // Apply the user's saved language preference app-wide.
+    if (data?.language) useSettingsStore.getState().setLanguage(data.language);
   },
 
   // Wires up the session listener once. Call from a top-level effect. Returns
@@ -113,7 +120,7 @@ const useAuthStore = create((set, get) => ({
 
   async signOut() {
     if (isSupabaseConfigured) await supabase.auth.signOut();
-    set({ session: null, user: null, role: null, error: null });
+    set({ session: null, user: null, role: null, fullName: null, error: null });
   },
 }));
 

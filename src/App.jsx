@@ -17,6 +17,7 @@ const Results = lazy(() => import('./pages/Results'));
 const GapAnalysis = lazy(() => import('./pages/GapAnalysis'));
 const Compliance = lazy(() => import('./pages/Compliance'));
 const Admin = lazy(() => import('./pages/Admin'));
+const Account = lazy(() => import('./pages/Account'));
 
 function PageLoader() {
   return (
@@ -112,6 +113,9 @@ function AppRoutes() {
         path="/compliance"
         element={<RequireAuth><RequireAnalyst><Layout><RequireComplete><Compliance /></RequireComplete></Layout></RequireAnalyst></RequireAuth>}
       />
+
+      {/* Account settings — available to every authenticated role. */}
+      <Route path="/account" element={<RequireAuth><Layout><Account /></Layout></RequireAuth>} />
 
       {/* Admin-only. */}
       <Route
