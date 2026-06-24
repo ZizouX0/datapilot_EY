@@ -17,8 +17,12 @@ export default function NavBar() {
   const isAdmin = useAuthStore(s => s.isAdmin());
   const [tooltip, setTooltip] = useState(null);
 
-  // The Admin tab is only ever rendered for administrators; analysts never see it.
-  const tabs = isAdmin ? [...TABS, { label: 'Admin', path: '/admin', locked: false }] : TABS;
+  // Admins and super-admins don't run assessments — they only get the admin
+  // back-office, so they see just the Admin tab. Analysts get the assessment
+  // workflow and never see Admin.
+  const tabs = isAdmin
+    ? [{ label: 'Admin', path: '/admin', locked: false }]
+    : TABS;
 
   const profileDone = !!(profile.bankName && profile.respondentName);
 

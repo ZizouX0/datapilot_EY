@@ -51,6 +51,19 @@ function RequireAdmin({ children }) {
   return children;
 }
 
+// Analyst-only gate. Admins and super-admins don't run assessments — they
+// administer — so the whole assessment workflow (profile, assessment, results,
+// gap, compliance, and the Welcome landing) is hidden from them and they are
+// sent straight to the admin area.
+function RequireAnalyst({ children }) {
+  const loading = useAuthStore(s => s.loading);
+  const isAdmin = useAuthStore(s => s.isAdmin());
+
+  if (loading) return <PageLoader />;
+  if (isAdmin) return <Navigate to="/admin" replace />;
+  return children;
+}
+
 function RequireComplete({ children }) {
   const isComplete = useAppStore(s => s.isAssessmentComplete());
   if (!isComplete) return <Navigate to="/assessment" replace />;
@@ -83,20 +96,21 @@ function AppRoutes() {
       <Route path="/set-password" element={<SetPassword />} />
 
       {/* Everything below requires authentication. */}
-      <Route path="/" element={<RequireAuth><Welcome /></RequireAuth>} />
-      <Route path="/profile" element={<RequireAuth><Layout><Profile /></Layout></RequireAuth>} />
-      <Route path="/assessment" element={<RequireAuth><Layout><Questionnaire /></Layout></RequireAuth>} />
+      {/* The assessment workflow is analyst-only; admins are sent to /admin. */}
+      <Route path="/" element={<RequireAuth><RequireAnalyst><Welcome /></RequireAnalyst></RequireAuth>} />
+      <Route path="/profile" element={<RequireAuth><RequireAnalyst><Layout><Profile /></Layout></RequireAnalyst></RequireAuth>} />
+      <Route path="/assessment" element={<RequireAuth><RequireAnalyst><Layout><Questionnaire /></Layout></RequireAnalyst></RequireAuth>} />
       <Route
         path="/results"
-        element={<RequireAuth><Layout><RequireComplete><Results /></RequireComplete></Layout></RequireAuth>}
+        element={<RequireAuth><RequireAnalyst><Layout><RequireComplete><Results /></RequireComplete></Layout></RequireAnalyst></RequireAuth>}
       />
       <Route
         path="/gap-analysis"
-        element={<RequireAuth><Layout><RequireComplete><GapAnalysis /></RequireComplete></Layout></RequireAuth>}
+        element={<RequireAuth><RequireAnalyst><Layout><RequireComplete><GapAnalysis /></RequireComplete></Layout></RequireAnalyst></RequireAuth>}
       />
       <Route
         path="/compliance"
-        element={<RequireAuth><Layout><RequireComplete><Compliance /></RequireComplete></Layout></RequireAuth>}
+        element={<RequireAuth><RequireAnalyst><Layout><RequireComplete><Compliance /></RequireComplete></Layout></RequireAnalyst></RequireAuth>}
       />
 
       {/* Admin-only. */}

@@ -9,6 +9,7 @@ export default function Topbar() {
 
   const user = useAuthStore(s => s.user);
   const role = useAuthStore(s => s.role);
+  const isAdmin = useAuthStore(s => s.isAdmin());
   const signOut = useAuthStore(s => s.signOut);
 
   async function handleSignOut() {
@@ -26,19 +27,24 @@ export default function Topbar() {
         <span className="text-gray-400 text-sm hidden sm:inline">Data Maturity Steering Tool</span>
       </div>
       <div className="ml-auto flex items-center gap-2 text-sm">
-        {/* DEV ONLY — quick fill for testing. Hide before release. */}
-        <button
-          onClick={fillRandomAnswers}
-          title="Fill all indicators with random scores (dev/test only)"
-          className="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded text-xs font-medium"
-        >
-          ⚡ Skip evaluation
-        </button>
+        {/* Assessment-only chrome — hidden from admins, who don't run assessments. */}
+        {!isAdmin && (
+          <>
+            {/* DEV ONLY — quick fill for testing. Hide before release. */}
+            <button
+              onClick={fillRandomAnswers}
+              title="Fill all indicators with random scores (dev/test only)"
+              className="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded text-xs font-medium"
+            >
+              ⚡ Skip evaluation
+            </button>
 
-        {profile.bankName && (
-          <span className="bg-gray-700 text-gray-200 px-3 py-1 rounded text-xs">
-            🏦 {profile.bankName}
-          </span>
+            {profile.bankName && (
+              <span className="bg-gray-700 text-gray-200 px-3 py-1 rounded text-xs">
+                🏦 {profile.bankName}
+              </span>
+            )}
+          </>
         )}
 
         {/* Authenticated identity + role badge + sign out. */}
