@@ -97,6 +97,38 @@ Inviting users creates accounts, which requires Supabase's privileged
   are empty, not migrated, or unreachable, it silently falls back to the bundled
   default questionnaire. The app is therefore always usable, online or not.
 
+## Phase 3 — super-admin role + centralized submissions
+1. In **SQL Editor → New query**, paste all of
+   [`supabase/phase3.sql`](./supabase/phase3.sql) and **Run**. This:
+   - adds a third role, **`superadmin`**, on top of admin/analyst;
+   - redefines `is_admin()` to mean *admin **or** superadmin*, so super-admins
+     automatically get every admin surface (no other policy changes);
+   - **removes the browser-side role-update policy** — role changes now go only
+     through the `/api/set-role` server endpoint, which enforces the hierarchy
+     (a regular admin can no longer edit the table to escalate themselves);
+   - creates the **`submissions`** table + RLS (analysts insert/read their own;
+     admins and super-admins read every submission).
+2. Promote your first super-admin in **SQL Editor** (replace the email):
+   ```sql
+   update public.profiles set role = 'superadmin'
+   where id = (select id from auth.users where email = 'you@ey.com');
+   ```
+   Sign out and back in — the badge reads **Super Admin**.
+
+### How the three tiers work
+- **Analyst** — completes the assessment and, on the Results page, clicks
+  **Submit for review** to send it in. Sees only their own submissions.
+- **Admin** — everything an analyst can do, plus: review **all** submissions,
+  edit the questionnaire, and manage analysts (invite users, toggle
+  analyst ↔ admin). Cannot grant or modify the super-admin role.
+- **Super Admin** — everything an admin can do, plus grant/revoke **admin** and
+  **super-admin** roles. Nobody can change their **own** role (prevents
+  self-escalation and lock-out).
+
+### Server endpoint
+`/api/set-role` reuses the existing **`SUPABASE_SERVICE_ROLE_KEY`** (the same key
+`/api/invite` already needs) — no new secret. Without it, role changes report
+"not configured"; promote roles from the dashboard SQL editor as a fallback.
+
 ## What's next (later phases)
-- Centralized submissions (store each analyst's answers server-side).
 - Editable recommendation library.

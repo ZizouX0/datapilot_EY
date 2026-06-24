@@ -2,24 +2,35 @@ import { useState } from 'react';
 import useAuthStore from '../store/useAuthStore';
 import AdminQuestionnaire from './admin/AdminQuestionnaire';
 import AdminUsers from './admin/AdminUsers';
+import AdminSubmissions from './admin/AdminSubmissions';
 
 const TABS = [
+  { id: 'submissions', label: 'Submissions' },
   { id: 'questionnaire', label: 'Questionnaire' },
   { id: 'users', label: 'Users & roles' },
 ];
 
+const PANELS = {
+  submissions: AdminSubmissions,
+  questionnaire: AdminQuestionnaire,
+  users: AdminUsers,
+};
+
 // Admin back-office hub. Role-gating is enforced upstream by <RequireAdmin> in
-// App.jsx, so reaching this component already implies administrator access.
+// App.jsx, so reaching this component already implies administrator access
+// (admin or super-admin).
 export default function Admin() {
   const user = useAuthStore(s => s.user);
-  const [tab, setTab] = useState('questionnaire');
+  const isSuperAdmin = useAuthStore(s => s.isSuperAdmin());
+  const [tab, setTab] = useState('submissions');
+  const Panel = PANELS[tab] || AdminSubmissions;
 
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center gap-3 mb-1">
         <h1 className="text-2xl font-semibold text-gray-800">Administration</h1>
         <span className="bg-ey-purple text-white text-[11px] font-semibold px-2 py-0.5 rounded uppercase tracking-wide">
-          Admin
+          {isSuperAdmin ? 'Super Admin' : 'Admin'}
         </span>
       </div>
       <p className="text-sm text-gray-500 mb-6">
@@ -43,7 +54,7 @@ export default function Admin() {
         ))}
       </div>
 
-      {tab === 'questionnaire' ? <AdminQuestionnaire /> : <AdminUsers />}
+      <Panel />
     </div>
   );
 }

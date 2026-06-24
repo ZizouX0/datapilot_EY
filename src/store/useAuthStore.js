@@ -6,20 +6,30 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 // is the single source of truth for "who is signed in and what can they do".
 //
 // Roles live in a `profiles` table (see supabase/schema.sql). Every auth user
-// has exactly one profile row with role 'admin' or 'analyst'. We treat any
-// unknown/missing role as the least-privileged 'analyst'.
+// has exactly one profile row with role 'superadmin', 'admin' or 'analyst'. We
+// treat any unknown/missing role as the least-privileged 'analyst'.
+//
+// The three tiers are hierarchical: a super-admin can do everything an admin
+// can (plus manage admins), and an admin can do everything an analyst can (plus
+// manage analysts and review submissions). isAdmin() therefore returns true for
+// super-admins too, so admin-gated surfaces stay open to them automatically.
+const ROLES = ['superadmin', 'admin', 'analyst'];
+
 const useAuthStore = create((set, get) => ({
   // ── State ──────────────────────────────────────────────────────────
   session: null,
   user: null,
-  role: null,        // 'admin' | 'analyst' | null (until loaded)
+  role: null,        // 'superadmin' | 'admin' | 'analyst' | null (until loaded)
   loading: true,     // true until the initial session check resolves
   error: null,
   _initialized: false,
 
   // ── Selectors ──────────────────────────────────────────────────────
   isAuthenticated: () => Boolean(get().session),
-  isAdmin: () => get().role === 'admin',
+  // Admin-level access: granted to admins AND super-admins (capability
+  // inheritance), matching the database's is_admin() helper.
+  isAdmin: () => get().role === 'admin' || get().role === 'superadmin',
+  isSuperAdmin: () => get().role === 'superadmin',
 
   // ── Actions ────────────────────────────────────────────────────────
 
@@ -41,7 +51,8 @@ const useAuthStore = create((set, get) => ({
       set({ role: 'analyst' });
       return;
     }
-    set({ role: data?.role === 'admin' ? 'admin' : 'analyst' });
+    // Accept only known roles; anything unexpected fails closed to 'analyst'.
+    set({ role: ROLES.includes(data?.role) ? data.role : 'analyst' });
   },
 
   // Wires up the session listener once. Call from a top-level effect. Returns

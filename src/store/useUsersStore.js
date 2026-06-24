@@ -23,9 +23,27 @@ const useUsersStore = create((set, get) => ({
     set({ users: data || [], loading: false });
   },
 
+  // Change a user's role. Role writes are not allowed from the browser (no
+  // client UPDATE policy on profiles); they go through the server endpoint,
+  // which holds the service_role key and enforces the role hierarchy (admins
+  // can only manage analysts; only super-admins can grant/modify super-admin).
   async setUserRole(id, role) {
-    const { error } = await supabase.from('profiles').update({ role }).eq('id', id);
-    if (error) return { error: error.message };
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    if (!token) return { error: 'Your session has expired — sign in again.' };
+
+    let res, body;
+    try {
+      res = await fetch('/api/set-role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ targetId: id, role }),
+      });
+      body = await res.json();
+    } catch {
+      return { error: 'Could not reach the role service.' };
+    }
+    if (!res.ok) return { error: body?.error || 'Role change failed.' };
     // Reflect the change locally without a refetch.
     set(s => ({ users: s.users.map(u => (u.id === id ? { ...u, role } : u)) }));
     return { error: null };

@@ -68,6 +68,37 @@ function inviteApiPlugin() {
   }
 }
 
+// Serves POST /api/set-role during `npm run dev` using the same core handler as
+// the production serverless function. Uses the server-side service_role key and
+// enforces the role hierarchy in setRoleCore().
+function setRoleApiPlugin() {
+  return {
+    name: 'set-role-api-dev',
+    configureServer(server) {
+      server.middlewares.use('/api/set-role', async (req, res) => {
+        if (req.method !== 'POST') {
+          res.statusCode = 405
+          res.end(JSON.stringify({ error: 'Method not allowed' }))
+          return
+        }
+        try {
+          const payload = await readJsonBody(req)
+          const auth = req.headers.authorization || ''
+          const token = auth.startsWith('Bearer ') ? auth.slice(7) : ''
+          const { setRoleCore } = await import('./api/_set-role-core.js')
+          const result = await setRoleCore({ token, targetId: payload.targetId, role: payload.role })
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(result))
+        } catch (err) {
+          res.statusCode = err.statusCode || 500
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ error: err.message || 'Failed to change role.' }))
+        }
+      })
+    },
+  }
+}
+
 export default defineConfig(({ mode }) => {
   // Load .env (all keys, not just VITE_) and expose them to the dev-server
   // process so the API middlewares above can read server-side secrets like
@@ -78,6 +109,6 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    plugins: [react(), tailwindcss(), roadmapApiPlugin(), inviteApiPlugin()],
+    plugins: [react(), tailwindcss(), roadmapApiPlugin(), inviteApiPlugin(), setRoleApiPlugin()],
   }
 })

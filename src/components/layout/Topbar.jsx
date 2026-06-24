@@ -45,9 +45,9 @@ export default function Topbar() {
         {user && (
           <>
             <span className="text-gray-300 hidden md:inline">{user.email}</span>
-            {role === 'admin' && (
+            {(role === 'admin' || role === 'superadmin') && (
               <span className="bg-ey-purple text-white px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide">
-                Admin
+                {role === 'superadmin' ? 'Super Admin' : 'Admin'}
               </span>
             )}
             <button

@@ -1,6 +1,8 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import useAppStore, { MATURITY_LEVELS } from '../store/useAppStore';
+import useSubmissionsStore from '../store/useSubmissionsStore';
+import { isSupabaseConfigured } from '../lib/supabase';
 import { DIMENSIONS, INDICATORS } from '../data/indicators';
 import RadarChart from '../charts/RadarChart';
 import DimensionBars from '../charts/DimensionBars';
@@ -34,6 +36,18 @@ export default function Results() {
   const getFormulaString = useAppStore(s => s.getFormulaString);
   const answers = useAppStore(s => s.answers);
   const profile = useAppStore(s => s.profile);
+  const buildSubmission = useAppStore(s => s.buildSubmission);
+
+  const saveSubmission = useSubmissionsStore(s => s.saveSubmission);
+  const saving = useSubmissionsStore(s => s.saving);
+  const [submitMsg, setSubmitMsg] = useState(null); // { ok, text }
+
+  async function handleSubmit() {
+    setSubmitMsg(null);
+    const { error: err } = await saveSubmission(buildSubmission());
+    if (err) setSubmitMsg({ ok: false, text: err });
+    else setSubmitMsg({ ok: true, text: 'Assessment submitted for review.' });
+  }
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
@@ -69,17 +83,37 @@ export default function Results() {
         profile={profile}
       />
       <div className="print-content">
-      {/* Export button */}
+      {/* Export + submit-for-review actions */}
       <div className="flex flex-col items-end gap-1 mb-4 no-print">
-        <button
-          onClick={handlePrint}
-          className="px-4 py-2 bg-ey-yellow text-ey-charcoal font-semibold rounded-lg text-sm hover:bg-yellow-400"
-        >
-          ⤓ Save as PDF
-        </button>
+        <div className="flex items-center gap-2">
+          {isSupabaseConfigured && (
+            <button
+              onClick={handleSubmit}
+              disabled={saving}
+              className="px-4 py-2 bg-ey-charcoal text-white font-semibold rounded-lg text-sm hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {saving ? 'Submitting…' : '↑ Submit for review'}
+            </button>
+          )}
+          <button
+            onClick={handlePrint}
+            className="px-4 py-2 bg-ey-yellow text-ey-charcoal font-semibold rounded-lg text-sm hover:bg-yellow-400"
+          >
+            ⤓ Save as PDF
+          </button>
+        </div>
         <span className="text-[11px] text-gray-400">
           Opens your browser's save window — choose "Save as PDF" to download the file.
         </span>
+        {submitMsg && (
+          <span className={`text-[12px] rounded-lg px-3 py-1.5 border ${
+            submitMsg.ok
+              ? 'text-green-700 bg-green-50 border-green-200'
+              : 'text-red-600 bg-red-50 border-red-200'
+          }`}>
+            {submitMsg.text}
+          </span>
+        )}
       </div>
 
       {/* Executive summary — auto-written verdict for a non-technical reader */}

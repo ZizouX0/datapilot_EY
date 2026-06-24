@@ -180,6 +180,33 @@ const useAppStore = create(
       .join(' + ');
   },
 
+  // Assembles a snapshot of the current assessment for centralized submission
+  // (see useSubmissionsStore). Captures the headline scores plus the full
+  // profile/answers so a reviewer can reopen the assessment exactly as scored.
+  buildSubmission() {
+    const profile = get().profile;
+    const globalScore = get().getGlobalScore();
+    const level = get().getMaturityLevel(globalScore);
+    const bct = get().getBCTCompliance();
+    const dimensionScores = {};
+    Object.keys(DIMENSIONS).forEach(d => {
+      dimensionScores[d] = get().getDimScore(d);
+    });
+    return {
+      bank_name: profile.bankName || null,
+      respondent_name: profile.respondentName || null,
+      respondent_role: profile.role || null,
+      assessment_date: profile.date || null,
+      global_score: globalScore,
+      maturity_level: globalScore === null ? null : level.level,
+      bct_rate: bct.rate,
+      target_level: get().targetLevel,
+      dimension_scores: dimensionScores,
+      answers: get().answers,
+      profile,
+    };
+  },
+
   // ── Actions ────────────────────────────────────────────────────────
 
   setProfile(profile) {

@@ -2,12 +2,18 @@ import { useEffect, useState } from 'react';
 import useUsersStore from '../../store/useUsersStore';
 import useAuthStore from '../../store/useAuthStore';
 
-const ROLES = ['analyst', 'admin'];
+// Roles a super-admin may assign vs. a regular admin (who manages analysts only
+// and can never grant or alter super-admin).
+const SUPERADMIN_ROLES = ['analyst', 'admin', 'superadmin'];
+const ADMIN_ROLES = ['analyst', 'admin'];
+const ROLE_LABELS = { superadmin: 'Super Admin', admin: 'Admin', analyst: 'Analyst' };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function AdminUsers() {
   const { users, loading, error, listUsers, setUserRole, inviteUser } = useUsersStore();
   const currentUserId = useAuthStore(s => s.user?.id);
+  const isSuperAdmin = useAuthStore(s => s.isSuperAdmin());
+  const assignableRoles = isSuperAdmin ? SUPERADMIN_ROLES : ADMIN_ROLES;
   const [busyId, setBusyId] = useState(null);
   const [rowError, setRowError] = useState(null);
 
@@ -143,15 +149,36 @@ export default function AdminUsers() {
                   {u.created_at ? new Date(u.created_at).toLocaleDateString('en-GB') : '—'}
                 </td>
                 <td className="px-4 py-3">
-                  <select
-                    value={u.role}
-                    disabled={busyId === u.id || u.id === currentUserId}
-                    onChange={e => handleRoleChange(u.id, e.target.value)}
-                    title={u.id === currentUserId ? "You can't change your own role" : ''}
-                    className="border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ey-yellow disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-                  </select>
+                  {(() => {
+                    // A regular admin cannot modify a super-admin's row, and
+                    // nobody can change their own role.
+                    const isSelf = u.id === currentUserId;
+                    const lockedSuperadmin = u.role === 'superadmin' && !isSuperAdmin;
+                    const locked = isSelf || lockedSuperadmin;
+                    // Always include the user's current role as an option so it
+                    // renders even if it's outside the assignable set.
+                    const options = assignableRoles.includes(u.role)
+                      ? assignableRoles
+                      : [u.role, ...assignableRoles];
+                    const title = isSelf
+                      ? "You can't change your own role"
+                      : lockedSuperadmin
+                        ? 'Only a super-admin can change a super-admin'
+                        : '';
+                    return (
+                      <select
+                        value={u.role}
+                        disabled={busyId === u.id || locked}
+                        onChange={e => handleRoleChange(u.id, e.target.value)}
+                        title={title}
+                        className="border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ey-yellow disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {options.map(r => (
+                          <option key={r} value={r}>{ROLE_LABELS[r] || r}</option>
+                        ))}
+                      </select>
+                    );
+                  })()}
                 </td>
               </tr>
             ))}
