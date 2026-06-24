@@ -59,6 +59,26 @@ const STRINGS = {
   'account.bankHintSuper': { en: 'As super-admin, this bank is inherited by everyone you invite.', fr: 'En tant que super-admin, cette banque est héritée par toutes les personnes que vous invitez.' },
   'account.bankUnset':     { en: 'Not set yet',   fr: 'Pas encore défini' },
 
+  // Account — SMS verification (Phone MFA)
+  'account.sms.title':    { en: 'SMS verification', fr: 'Vérification par SMS' },
+  'account.sms.on':       { en: 'On',  fr: 'Activée' },
+  'account.sms.off':      { en: 'Off', fr: 'Désactivée' },
+  'account.sms.onDesc':   { en: 'A code is texted to your phone when you change your password.', fr: 'Un code est envoyé par SMS lors du changement de mot de passe.' },
+  'account.sms.offDesc':  { en: 'Add your mobile to require a texted code when changing your password.', fr: 'Ajoutez votre mobile pour exiger un code par SMS lors du changement de mot de passe.' },
+  'account.sms.phoneLabel': { en: 'Mobile number (international format)', fr: 'Numéro mobile (format international)' },
+  'account.sms.send':     { en: 'Send code',  fr: 'Envoyer le code' },
+  'account.sms.sending':  { en: 'Sending…',   fr: 'Envoi…' },
+  'account.sms.codeLabel':{ en: 'Verification code', fr: 'Code de vérification' },
+  'account.sms.confirm':  { en: 'Confirm',     fr: 'Confirmer' },
+  'account.sms.codeSent': { en: 'We texted a 6-digit code to your phone.', fr: 'Nous avons envoyé un code à 6 chiffres par SMS.' },
+  'account.sms.enrolled': { en: 'SMS verification is now on.', fr: 'La vérification par SMS est activée.' },
+  'account.sms.removed':  { en: 'SMS verification turned off.', fr: 'Vérification par SMS désactivée.' },
+  'account.sms.remove':   { en: 'Turn off SMS verification', fr: 'Désactiver la vérification par SMS' },
+  'account.sms.invalidPhone': { en: 'Enter a valid number in international format, e.g. +21620123456.', fr: 'Entrez un numéro valide au format international, ex. +21620123456.' },
+  'account.sms.notConfigured': { en: 'SMS verification isn’t available yet — ask your administrator to enable it.', fr: 'La vérification par SMS n’est pas encore disponible — demandez à votre administrateur de l’activer.' },
+  'account.pwd.needCode': { en: 'Enter the code we texted you, then change your password.', fr: 'Saisissez le code reçu par SMS, puis changez votre mot de passe.' },
+  'account.pwd.sendCode': { en: 'Text me a code', fr: 'M’envoyer un code' },
+
   // Account — profile photo
   'account.photo':        { en: 'Profile photo',  fr: 'Photo de profil' },
   'account.changePhoto':  { en: 'Change photo',   fr: 'Changer la photo' },

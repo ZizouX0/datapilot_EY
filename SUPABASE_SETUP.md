@@ -198,6 +198,29 @@ to their successor instead of losing access or migrating data.
 4. **Phone** is an optional recovery/contact number each user manages on their
    account (saved via `/api/update-self`; no SMS is sent).
 
+## Phase 3f — SMS verification on password change (no SQL — dashboard config)
+This uses **Supabase Phone MFA**, so the SMS credentials live in the Supabase
+dashboard, never in our code. There is no migration to run; you configure a
+provider once:
+
+1. **Add an SMS provider.** Supabase → **Authentication → Providers → Phone** →
+   enable it and connect **Twilio** (Account SID, Auth Token, Message Service /
+   From number). For testing, a **Twilio free trial** (~$15 credit) works — in
+   trial mode it only sends to numbers you verify in the Twilio console.
+2. **Enable Phone as an MFA factor.** Supabase → **Authentication → Multi-Factor
+   Auth** → turn on the **Phone** factor.
+3. That's it. In the app, **My account → Security → SMS verification**: a user
+   enters their mobile in international format (e.g. `+21620123456`), receives a
+   code, and confirms. Once on, **changing the password requires a texted code**.
+   Turning it off unenrolls the factor.
+
+Notes:
+- Cost: the feature/config is free; each SMS is billed by Twilio (international
+  SMS to Tunisia is ~$0.06–0.12). Password-change-only keeps volume low.
+- Until a provider is configured, the UI shows “SMS verification isn’t available
+  yet”, and password changes work without a code (no lock-out).
+
 ## What's next (later phases)
 - Full French translation of the assessment content and reports.
 - Editable recommendation library.
+- Optional: SMS two-factor at login (currently password-change only).

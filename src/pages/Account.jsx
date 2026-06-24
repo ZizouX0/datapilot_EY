@@ -8,6 +8,8 @@ import { MATURITY_LEVELS } from '../store/useAppStore';
 import Avatar from '../components/ui/Avatar';
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2 MB
+// E.164 international phone format required by Supabase Phone MFA, e.g. +21620123456.
+const E164_RE = /^\+[1-9]\d{6,14}$/;
 
 function maturityColor(score) {
   if (score === null || score === undefined) return '#9CA3AF';
@@ -40,6 +42,18 @@ export default function Account() {
   const [savingPwd, setSavingPwd] = useState(false);
   const [pwdMsg, setPwdMsg] = useState(null); // { ok, text }
 
+  // SMS verification (Supabase Phone MFA). When a verified phone factor exists,
+  // changing the password requires an SMS code (step-up). The actual SMS is sent
+  // by Supabase's configured phone provider (Twilio) — no secrets in our code.
+  const [phoneFactor, setPhoneFactor] = useState(null); // verified phone factor or null
+  const [smsBusy, setSmsBusy] = useState(false);
+  const [smsMsg, setSmsMsg] = useState(null);
+  const [enrollPhone, setEnrollPhone] = useState('');
+  const [enrollIds, setEnrollIds] = useState(null); // { factorId, challengeId }
+  const [enrollCode, setEnrollCode] = useState('');
+  const [pwdChallenge, setPwdChallenge] = useState(null); // { factorId, challengeId }
+  const [pwdCode, setPwdCode] = useState('');
+
   const fileRef = useRef(null);
   const [uploading, setUploading] = useState(false);
 
@@ -62,7 +76,22 @@ export default function Account() {
         setName(data.full_name || '');
         setPhone(data.phone || '');
         setBank(data.bank_name || '');
+        if (data.phone) setEnrollPhone(data.phone);
       });
+    return () => { alive = false; };
+  }, [user?.id]);
+
+  // Discover whether the user already has a verified phone factor (SMS on).
+  useEffect(() => {
+    if (!user?.id) return;
+    let alive = true;
+    supabase.auth.mfa.listFactors()
+      .then(({ data }) => {
+        if (!alive) return;
+        const list = data?.all || data?.phone || [];
+        setPhoneFactor(list.find(f => f.factor_type === 'phone' && f.status === 'verified') || null);
+      })
+      .catch(() => {});
     return () => { alive = false; };
   }, [user?.id]);
 
@@ -176,6 +205,61 @@ export default function Account() {
     }
   }
 
+  // Maps provider/config errors to a friendly "not set up yet" message.
+  function smsError(error) {
+    const m = (error?.message || '').toLowerCase();
+    if (/not enabled|disabled|not configured|unsupported|provider/.test(m)) {
+      return t('account.sms.notConfigured');
+    }
+    return error?.message || 'SMS error.';
+  }
+
+  // ── SMS verification enrollment ───────────────────────────────────────
+  async function handleStartEnroll() {
+    setSmsMsg(null);
+    if (!E164_RE.test(enrollPhone.trim())) {
+      setSmsMsg({ ok: false, text: t('account.sms.invalidPhone') });
+      return;
+    }
+    setSmsBusy(true);
+    const { data, error } = await supabase.auth.mfa.enroll({
+      factorType: 'phone',
+      phone: enrollPhone.trim(),
+      friendlyName: `phone-${user.id.slice(0, 8)}`,
+    });
+    if (error) { setSmsBusy(false); setSmsMsg({ ok: false, text: smsError(error) }); return; }
+    const { data: ch, error: chErr } = await supabase.auth.mfa.challenge({ factorId: data.id });
+    setSmsBusy(false);
+    if (chErr) { setSmsMsg({ ok: false, text: smsError(chErr) }); return; }
+    setEnrollIds({ factorId: data.id, challengeId: ch.id });
+    setSmsMsg({ ok: true, text: t('account.sms.codeSent') });
+  }
+
+  async function handleConfirmEnroll() {
+    if (!enrollIds) return;
+    setSmsBusy(true); setSmsMsg(null);
+    const { error } = await supabase.auth.mfa.verify({
+      factorId: enrollIds.factorId, challengeId: enrollIds.challengeId, code: enrollCode.trim(),
+    });
+    if (error) { setSmsBusy(false); setSmsMsg({ ok: false, text: error.message }); return; }
+    const { data } = await supabase.auth.mfa.listFactors();
+    const list = data?.all || data?.phone || [];
+    setPhoneFactor(list.find(f => f.factor_type === 'phone' && f.status === 'verified') || null);
+    setEnrollIds(null); setEnrollCode(''); setSmsBusy(false);
+    setSmsMsg({ ok: true, text: t('account.sms.enrolled') });
+  }
+
+  async function handleDisableSms() {
+    if (!phoneFactor) return;
+    setSmsBusy(true); setSmsMsg(null);
+    const { error } = await supabase.auth.mfa.unenroll({ factorId: phoneFactor.id });
+    setSmsBusy(false);
+    if (error) { setSmsMsg({ ok: false, text: error.message }); return; }
+    setPhoneFactor(null);
+    setSmsMsg({ ok: true, text: t('account.sms.removed') });
+  }
+
+  // ── Password change (SMS step-up when a phone factor is enrolled) ──────
   async function handleChangePassword(e) {
     e.preventDefault();
     if (pwd.length < 8) return;
@@ -183,14 +267,30 @@ export default function Account() {
       setPwdMsg({ ok: false, text: t('account.passwordMismatch') });
       return;
     }
-    setSavingPwd(true);
-    setPwdMsg(null);
+    // Step 1: with SMS on and no code yet, text a code and wait for it.
+    if (phoneFactor && !pwdChallenge) {
+      setSavingPwd(true); setPwdMsg(null);
+      const { data, error } = await supabase.auth.mfa.challenge({ factorId: phoneFactor.id });
+      setSavingPwd(false);
+      if (error) { setPwdMsg({ ok: false, text: smsError(error) }); return; }
+      setPwdChallenge({ factorId: phoneFactor.id, challengeId: data.id });
+      setPwdMsg({ ok: true, text: t('account.pwd.needCode') });
+      return;
+    }
+    setSavingPwd(true); setPwdMsg(null);
+    // Step 2: verify the texted code (raises assurance) before the change.
+    if (phoneFactor && pwdChallenge) {
+      const { error: vErr } = await supabase.auth.mfa.verify({
+        factorId: pwdChallenge.factorId, challengeId: pwdChallenge.challengeId, code: pwdCode.trim(),
+      });
+      if (vErr) { setSavingPwd(false); setPwdMsg({ ok: false, text: vErr.message }); return; }
+    }
     const { error } = await supabase.auth.updateUser({ password: pwd });
     setSavingPwd(false);
     if (error) {
       setPwdMsg({ ok: false, text: error.message });
     } else {
-      setPwd(''); setPwd2('');
+      setPwd(''); setPwd2(''); setPwdCode(''); setPwdChallenge(null);
       setPwdMsg({ ok: true, text: t('account.passwordChanged') });
     }
   }
@@ -369,12 +469,89 @@ export default function Account() {
         </div>
       </form>
 
-      {/* Security — password change */}
-      <form onSubmit={handleChangePassword} className="bg-white rounded-xl border border-gray-200 p-6">
+      {/* Security */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-sm font-semibold text-gray-700 mb-4 uppercase tracking-wide">
           {t('account.section.security')}
         </h2>
-        <div className="flex flex-col gap-4">
+
+        {/* SMS verification (Phone MFA) */}
+        <div className="border border-gray-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-semibold text-gray-800">{t('account.sms.title')}</div>
+              <p className="text-[12px] text-gray-500 mt-0.5">
+                {phoneFactor ? t('account.sms.onDesc') : t('account.sms.offDesc')}
+              </p>
+            </div>
+            <span className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-1 rounded ${
+              phoneFactor ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+            }`}>
+              {phoneFactor ? t('account.sms.on') : t('account.sms.off')}
+            </span>
+          </div>
+
+          {phoneFactor ? (
+            <button
+              type="button"
+              onClick={handleDisableSms}
+              disabled={smsBusy}
+              className="mt-3 text-sm text-red-500 hover:text-red-700 disabled:opacity-50"
+            >
+              {t('account.sms.remove')}
+            </button>
+          ) : !enrollIds ? (
+            <div className="mt-3 flex flex-col sm:flex-row gap-2 sm:items-end">
+              <div className="flex-1">
+                <label className={labelCls}>{t('account.sms.phoneLabel')}</label>
+                <input
+                  type="tel"
+                  className={inputCls}
+                  placeholder="+216 20 123 456"
+                  value={enrollPhone}
+                  onChange={e => setEnrollPhone(e.target.value)}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleStartEnroll}
+                disabled={smsBusy}
+                className="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                {smsBusy ? t('account.sms.sending') : t('account.sms.send')}
+              </button>
+            </div>
+          ) : (
+            <div className="mt-3 flex flex-col sm:flex-row gap-2 sm:items-end">
+              <div className="flex-1">
+                <label className={labelCls}>{t('account.sms.codeLabel')}</label>
+                <input
+                  inputMode="numeric"
+                  className={inputCls}
+                  placeholder="123456"
+                  value={enrollCode}
+                  onChange={e => setEnrollCode(e.target.value)}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleConfirmEnroll}
+                disabled={smsBusy || enrollCode.trim().length < 4}
+                className="bg-ey-charcoal text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
+              >
+                {smsBusy ? t('account.saving') : t('account.sms.confirm')}
+              </button>
+            </div>
+          )}
+          {smsMsg && (
+            <p className={`text-[12px] mt-2 ${smsMsg.ok ? 'text-green-600' : 'text-red-600'}`}>
+              {smsMsg.text}
+            </p>
+          )}
+        </div>
+
+        {/* Password change (SMS-gated when verification is on) */}
+        <form onSubmit={handleChangePassword} className="flex flex-col gap-4">
           <div>
             <label className={labelCls}>{t('account.newPassword')}</label>
             <input
@@ -396,13 +573,29 @@ export default function Account() {
               onChange={e => setPwd2(e.target.value)}
             />
           </div>
+          {pwdChallenge && (
+            <div>
+              <label className={labelCls}>{t('account.sms.codeLabel')}</label>
+              <input
+                inputMode="numeric"
+                className={inputCls}
+                placeholder="123456"
+                value={pwdCode}
+                onChange={e => setPwdCode(e.target.value)}
+              />
+            </div>
+          )}
           <div className="flex items-center gap-3 pt-1">
             <button
               type="submit"
-              disabled={savingPwd || pwd.length < 8 || pwd !== pwd2}
+              disabled={savingPwd || pwd.length < 8 || pwd !== pwd2 || (pwdChallenge && pwdCode.trim().length < 4)}
               className="bg-ey-charcoal text-white font-semibold rounded-lg px-5 py-2.5 text-sm hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {savingPwd ? t('account.saving') : t('account.changePassword')}
+              {savingPwd
+                ? t('account.saving')
+                : phoneFactor && !pwdChallenge
+                  ? t('account.pwd.sendCode')
+                  : t('account.changePassword')}
             </button>
             {pwdMsg && (
               <span className={`text-sm rounded-lg px-3 py-1.5 border ${
@@ -413,8 +606,8 @@ export default function Account() {
               </span>
             )}
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
 
       {/* My submissions — analysts only. */}
       {!isAdmin && (
