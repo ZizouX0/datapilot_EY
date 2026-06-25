@@ -15,8 +15,9 @@
 --   • assessments              — the shared draft/finalized assessment per bank
 --   • assessment_assignments   — dimension -> department mapping, per assessment
 --   • assessment_answers       — the shared, server-side answers (score/evidence)
---   • helpers + RLS that scope every table by bank, and gate answer WRITES by
---     "my department is assigned this dimension" OR "I am a coordinator".
+--   • helpers + RLS that scope every table by bank. Answer WRITES are limited
+--     to an ANALYST whose department is assigned that dimension — coordinators
+--     (admin / superadmin) never enter scores; only the EY owner may override.
 --
 -- Reuses existing helpers from earlier phases: my_bank(), bank_of(), is_owner(),
 -- is_admin() (= admin/superadmin/owner), is_superadmin(), is_bank_admin().
@@ -28,6 +29,14 @@
 create or replace function public.my_department()
 returns uuid language sql stable security definer set search_path = public
 as $$ select department_id from public.profiles where id = auth.uid(); $$;
+
+-- Only analysts enter scores. Coordinators (admin / superadmin) configure,
+-- monitor and finalize but never fill; the EY owner can override separately.
+create or replace function public.is_analyst()
+returns boolean language sql stable security definer set search_path = public
+as $$ select exists (
+  select 1 from public.profiles where id = auth.uid() and role = 'analyst'
+); $$;
 
 -- 1. departments -------------------------------------------------------------
 create table if not exists public.departments (
@@ -143,52 +152,52 @@ create policy "answers_read" on public.assessment_answers for select to authenti
   using ( public.is_owner() or public.assessment_bank(assessment_id) = public.my_bank() );
 
 -- Write is split into insert/update/delete so each carries the right check.
--- Allowed when, within the assessment's bank, the caller is either a
--- coordinator (is_admin) OR a member of the department assigned to this
--- dimension. Owners (EY) may write anything.
+-- Only an ANALYST may enter scores, and only for a dimension assigned to their
+-- department, within the assessment's bank. Coordinators (admin / superadmin)
+-- do NOT fill — they configure, monitor and finalize. The EY owner may override.
 drop policy if exists "answers_insert" on public.assessment_answers;
 create policy "answers_insert" on public.assessment_answers for insert to authenticated
   with check (
     public.is_owner()
-    or ( public.assessment_bank(assessment_id) = public.my_bank()
-         and ( public.is_admin()
-               or exists ( select 1 from public.assessment_assignments aa
-                           where aa.assessment_id = assessment_answers.assessment_id
-                             and aa.dim_code = assessment_answers.dim_code
-                             and aa.department_id = public.my_department() ) ) )
+    or ( public.is_analyst()
+         and public.assessment_bank(assessment_id) = public.my_bank()
+         and exists ( select 1 from public.assessment_assignments aa
+                      where aa.assessment_id = assessment_answers.assessment_id
+                        and aa.dim_code = assessment_answers.dim_code
+                        and aa.department_id = public.my_department() ) )
   );
 
 drop policy if exists "answers_update" on public.assessment_answers;
 create policy "answers_update" on public.assessment_answers for update to authenticated
   using (
     public.is_owner()
-    or ( public.assessment_bank(assessment_id) = public.my_bank()
-         and ( public.is_admin()
-               or exists ( select 1 from public.assessment_assignments aa
-                           where aa.assessment_id = assessment_answers.assessment_id
-                             and aa.dim_code = assessment_answers.dim_code
-                             and aa.department_id = public.my_department() ) ) )
+    or ( public.is_analyst()
+         and public.assessment_bank(assessment_id) = public.my_bank()
+         and exists ( select 1 from public.assessment_assignments aa
+                      where aa.assessment_id = assessment_answers.assessment_id
+                        and aa.dim_code = assessment_answers.dim_code
+                        and aa.department_id = public.my_department() ) )
   )
   with check (
     public.is_owner()
-    or ( public.assessment_bank(assessment_id) = public.my_bank()
-         and ( public.is_admin()
-               or exists ( select 1 from public.assessment_assignments aa
-                           where aa.assessment_id = assessment_answers.assessment_id
-                             and aa.dim_code = assessment_answers.dim_code
-                             and aa.department_id = public.my_department() ) ) )
+    or ( public.is_analyst()
+         and public.assessment_bank(assessment_id) = public.my_bank()
+         and exists ( select 1 from public.assessment_assignments aa
+                      where aa.assessment_id = assessment_answers.assessment_id
+                        and aa.dim_code = assessment_answers.dim_code
+                        and aa.department_id = public.my_department() ) )
   );
 
 drop policy if exists "answers_delete" on public.assessment_answers;
 create policy "answers_delete" on public.assessment_answers for delete to authenticated
   using (
     public.is_owner()
-    or ( public.assessment_bank(assessment_id) = public.my_bank()
-         and ( public.is_admin()
-               or exists ( select 1 from public.assessment_assignments aa
-                           where aa.assessment_id = assessment_answers.assessment_id
-                             and aa.dim_code = assessment_answers.dim_code
-                             and aa.department_id = public.my_department() ) ) )
+    or ( public.is_analyst()
+         and public.assessment_bank(assessment_id) = public.my_bank()
+         and exists ( select 1 from public.assessment_assignments aa
+                      where aa.assessment_id = assessment_answers.assessment_id
+                        and aa.dim_code = assessment_answers.dim_code
+                        and aa.department_id = public.my_department() ) )
   );
 
 -- Make the new tables/columns visible to PostgREST immediately.
