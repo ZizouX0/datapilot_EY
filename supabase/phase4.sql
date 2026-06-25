@@ -23,21 +23,6 @@
 -- is_admin() (= admin/superadmin/owner), is_superadmin(), is_bank_admin().
 -- ============================================================================
 
--- 0. Helper: the caller's own department -------------------------------------
---    SECURITY DEFINER so it can be called inside a policy without recursing on
---    the profiles RLS (same pattern as my_bank()).
-create or replace function public.my_department()
-returns uuid language sql stable security definer set search_path = public
-as $$ select department_id from public.profiles where id = auth.uid(); $$;
-
--- Only analysts enter scores. Coordinators (admin / superadmin) configure,
--- monitor and finalize but never fill; the EY owner can override separately.
-create or replace function public.is_analyst()
-returns boolean language sql stable security definer set search_path = public
-as $$ select exists (
-  select 1 from public.profiles where id = auth.uid() and role = 'analyst'
-); $$;
-
 -- 1. departments -------------------------------------------------------------
 create table if not exists public.departments (
   id         uuid primary key default gen_random_uuid(),
@@ -67,6 +52,22 @@ create policy "departments_write" on public.departments for all to authenticated
 --    column is assigned there, never from the browser anon key.)
 alter table public.profiles
   add column if not exists department_id uuid references public.departments (id) on delete set null;
+
+-- 2b. Helpers that depend on the column/tables added above -------------------
+--    Defined AFTER profiles.department_id exists (Postgres validates SQL
+--    function bodies at creation time). SECURITY DEFINER so they can be called
+--    inside a policy without recursing on the profiles RLS (like my_bank()).
+create or replace function public.my_department()
+returns uuid language sql stable security definer set search_path = public
+as $$ select department_id from public.profiles where id = auth.uid(); $$;
+
+-- Only analysts enter scores. Coordinators (admin / superadmin) configure,
+-- monitor and finalize but never fill; the EY owner can override separately.
+create or replace function public.is_analyst()
+returns boolean language sql stable security definer set search_path = public
+as $$ select exists (
+  select 1 from public.profiles where id = auth.uid() and role = 'analyst'
+); $$;
 
 -- 3. assessments — one shared draft (then finalized) per bank -----------------
 create table if not exists public.assessments (
