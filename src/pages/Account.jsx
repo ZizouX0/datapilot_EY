@@ -24,7 +24,6 @@ export default function Account() {
   const user = useAuthStore(s => s.user);
   const role = useAuthStore(s => s.role);
   const isAdmin = useAuthStore(s => s.isAdmin());
-  const isSuperAdmin = useAuthStore(s => s.isSuperAdmin());
   const avatarUrl = useAuthStore(s => s.avatarUrl);
   const language = useSettingsStore(s => s.language);
   const setLanguage = useSettingsStore(s => s.setLanguage);
@@ -188,8 +187,9 @@ export default function Account() {
     setSavingInfo(true);
     setInfoMsg(null);
     const payload = { fullName: name, language, phone };
-    // Only super-admins may set the bank; the field is read-only for everyone else.
-    if (isSuperAdmin) payload.bankName = bank;
+    // Only a (bank) super-admin may set the bank; read-only for everyone else,
+    // and not applicable to EY owners (who aren't tied to a bank).
+    if (role === 'superadmin') payload.bankName = bank;
     const { error } = await postUpdateSelf(payload);
     setSavingInfo(false);
     if (error) {
@@ -199,7 +199,7 @@ export default function Account() {
       useAuthStore.setState({
         fullName: name.trim() || null,
         phone: phone.trim() || null,
-        ...(isSuperAdmin ? { bankName: bank.trim() || null } : {}),
+        ...(role === 'superadmin' ? { bankName: bank.trim() || null } : {}),
       });
       setInfoMsg({ ok: true, text: t('account.saved') });
     }
@@ -384,29 +384,31 @@ export default function Account() {
             <p className="text-[11px] text-gray-400 mt-1">{t('account.phoneHint')}</p>
           </div>
 
-          {/* Bank — editable only by a super-admin; inherited and read-only for
-              admins and analysts. */}
-          <div>
-            <label className={labelCls}>{t('account.bank')}</label>
-            {isSuperAdmin ? (
-              <>
-                <input
-                  className={inputCls}
-                  placeholder={t('account.bankPlaceholder')}
-                  value={bank}
-                  onChange={e => setBank(e.target.value)}
-                />
-                <p className="text-[11px] text-gray-400 mt-1">{t('account.bankHintSuper')}</p>
-              </>
-            ) : (
-              <>
-                <div className={roCls}>
-                  {bank || <span className="text-gray-400 italic">{t('account.bankUnset')}</span>}
-                </div>
-                <p className="text-[11px] text-gray-400 mt-1">{t('account.bankHint')}</p>
-              </>
-            )}
-          </div>
+          {/* Bank — editable only by a (bank) super-admin; inherited and
+              read-only for admins/analysts; hidden for EY owners (no bank). */}
+          {role !== 'owner' && (
+            <div>
+              <label className={labelCls}>{t('account.bank')}</label>
+              {role === 'superadmin' ? (
+                <>
+                  <input
+                    className={inputCls}
+                    placeholder={t('account.bankPlaceholder')}
+                    value={bank}
+                    onChange={e => setBank(e.target.value)}
+                  />
+                  <p className="text-[11px] text-gray-400 mt-1">{t('account.bankHintSuper')}</p>
+                </>
+              ) : (
+                <>
+                  <div className={roCls}>
+                    {bank || <span className="text-gray-400 italic">{t('account.bankUnset')}</span>}
+                  </div>
+                  <p className="text-[11px] text-gray-400 mt-1">{t('account.bankHint')}</p>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Read-only identity fields */}
           <div className="grid grid-cols-2 gap-4">

@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
 import useUsersStore from '../../store/useUsersStore';
 import useAuthStore from '../../store/useAuthStore';
+import { roleLabel, assignableRoles as rolesFor, rank } from '../../lib/roles';
+import { POSITIONS, POSITION_OTHER } from '../../data/positions';
 
-// Roles a super-admin may assign vs. a regular admin (who manages analysts only
-// and can never grant or alter super-admin).
-const SUPERADMIN_ROLES = ['analyst', 'admin', 'superadmin'];
-const ADMIN_ROLES = ['analyst', 'admin'];
-const ROLE_LABELS = { superadmin: 'Super Admin', admin: 'Admin', analyst: 'Analyst' };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function AdminUsers() {
@@ -15,16 +12,29 @@ export default function AdminUsers() {
     setUserTitle, setUserDisabled, resetPassword,
   } = useUsersStore();
   const currentUserId = useAuthStore(s => s.user?.id);
+  const myRole = useAuthStore(s => s.role);
   const isSuperAdmin = useAuthStore(s => s.isSuperAdmin());
-  const assignableRoles = isSuperAdmin ? SUPERADMIN_ROLES : ADMIN_ROLES;
+  const isOwner = myRole === 'owner';
+  const assignableRoles = rolesFor(myRole);
   const [busyId, setBusyId] = useState(null);
   const [rowError, setRowError] = useState(null);
   const [rowMsg, setRowMsg] = useState(null);
 
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteTitle, setInviteTitle] = useState('');
+  const [invitePosition, setInvitePosition] = useState(''); // preset or POSITION_OTHER
+  const [inviteOther, setInviteOther] = useState('');        // free-text when "Other"
+  const [inviteRole, setInviteRole] = useState('analyst');
+  const [inviteBank, setInviteBank] = useState('');          // EY owner → target bank
   const [inviting, setInviting] = useState(false);
   const [inviteMsg, setInviteMsg] = useState(null); // { ok, text }
+
+  // An EY owner must name the bank, unless they're inviting another EY owner.
+  const bankRequired = isOwner && inviteRole !== 'owner';
+  const inviteTitle = invitePosition === POSITION_OTHER ? inviteOther : invitePosition;
+  const canSubmitInvite =
+    !inviting &&
+    EMAIL_RE.test(inviteEmail.trim()) &&
+    (!bankRequired || inviteBank.trim().length > 0);
 
   useEffect(() => {
     listUsers();
@@ -32,17 +42,27 @@ export default function AdminUsers() {
 
   async function handleInvite(e) {
     e.preventDefault();
-    if (!EMAIL_RE.test(inviteEmail.trim())) return;
+    if (!canSubmitInvite) return;
     setInviting(true);
     setInviteMsg(null);
-    const { error: err } = await inviteUser(inviteEmail, inviteTitle);
+    const { error: err } = await inviteUser(inviteEmail, {
+      title: inviteTitle,
+      role: inviteRole,
+      bank: bankRequired ? inviteBank : undefined,
+    });
     setInviting(false);
     if (err) {
       setInviteMsg({ ok: false, text: err });
     } else {
-      setInviteMsg({ ok: true, text: `Invitation sent to ${inviteEmail.trim()}.` });
+      setInviteMsg({
+        ok: true,
+        text: `Invitation sent to ${inviteEmail.trim()} as ${roleLabel(inviteRole)}.`,
+      });
       setInviteEmail('');
-      setInviteTitle('');
+      setInvitePosition('');
+      setInviteOther('');
+      setInviteBank('');
+      setInviteRole('analyst');
     }
   }
 
@@ -106,32 +126,79 @@ export default function AdminUsers() {
         <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
           Invite a new user
         </label>
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <input
             type="email"
             value={inviteEmail}
             onChange={e => setInviteEmail(e.target.value)}
             placeholder="datapilot-admin@bank.com.tn"
-            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
           />
-          <input
-            type="text"
-            value={inviteTitle}
-            onChange={e => setInviteTitle(e.target.value)}
-            placeholder="Position / title (optional)"
-            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
-          />
+          {/* Role to grant — limited to roles at or below the inviter's tier. */}
+          <select
+            value={inviteRole}
+            onChange={e => setInviteRole(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ey-yellow"
+          >
+            {assignableRoles.map(r => (
+              <option key={r} value={r}>{roleLabel(r)}</option>
+            ))}
+          </select>
+          {/* Position — preset list with an "Other" free-text escape hatch. */}
+          <select
+            value={invitePosition}
+            onChange={e => setInvitePosition(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ey-yellow"
+          >
+            <option value="">Position (optional)</option>
+            {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
+            <option value={POSITION_OTHER}>{POSITION_OTHER}…</option>
+          </select>
+          {invitePosition === POSITION_OTHER ? (
+            <input
+              type="text"
+              value={inviteOther}
+              onChange={e => setInviteOther(e.target.value)}
+              placeholder="Type the position"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
+            />
+          ) : (
+            // Bank field only an EY owner sees, and only when inviting into a bank.
+            bankRequired && (
+              <input
+                type="text"
+                value={inviteBank}
+                onChange={e => setInviteBank(e.target.value)}
+                placeholder="Bank name (required)"
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
+              />
+            )
+          )}
+          {/* When "Other" took the 4th cell, the bank field needs its own row. */}
+          {invitePosition === POSITION_OTHER && bankRequired && (
+            <input
+              type="text"
+              value={inviteBank}
+              onChange={e => setInviteBank(e.target.value)}
+              placeholder="Bank name (required)"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow sm:col-span-2"
+            />
+          )}
+        </div>
+        <div className="mt-2">
           <button
             type="submit"
-            disabled={inviting || !EMAIL_RE.test(inviteEmail.trim())}
+            disabled={!canSubmitInvite}
             className="bg-ey-yellow text-ey-charcoal font-semibold rounded-lg px-4 py-2 text-sm hover:bg-yellow-400 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {inviting ? 'Sending…' : 'Send invite'}
           </button>
         </div>
         <p className="text-xs text-gray-400 mt-2">
-          They'll get an email to set their password and join as an <strong>analyst</strong>.
-          Promote them below if needed.
+          They'll get an email to set their password and join as{' '}
+          <strong>{roleLabel(inviteRole)}</strong>
+          {isOwner && inviteRole !== 'owner' && ' in the bank you name above'}. You can change
+          their role below later.
         </p>
         {inviteMsg && (
           <p className={`text-sm mt-2 rounded-lg px-3 py-2 border ${
@@ -185,9 +252,9 @@ export default function AdminUsers() {
             )}
             {users.map(u => {
               const isSelf = u.id === currentUserId;
-              const lockedSuperadmin = u.role === 'superadmin' && !isSuperAdmin;
-              // A regular admin can't edit/off-board a super-admin's account.
-              const canManage = !lockedSuperadmin;
+              // You can't edit/off-board anyone who outranks you.
+              const lockedAbove = rank(u.role) > rank(myRole);
+              const canManage = !lockedAbove;
               return (
                 <tr key={u.id} className={`hover:bg-gray-50 ${u.disabled ? 'opacity-60' : ''}`}>
                   <td className="px-4 py-3">
@@ -214,16 +281,16 @@ export default function AdminUsers() {
                   </td>
                   <td className="px-4 py-3">
                     {(() => {
-                      // Nobody can change their own role; a regular admin can't
-                      // touch a super-admin's row.
-                      const locked = isSelf || lockedSuperadmin;
+                      // Nobody can change their own role; nobody can change the
+                      // role of an account above their own tier.
+                      const locked = isSelf || lockedAbove;
                       const options = assignableRoles.includes(u.role)
                         ? assignableRoles
                         : [u.role, ...assignableRoles];
                       const title = isSelf
                         ? "You can't change your own role"
-                        : lockedSuperadmin
-                          ? 'Only a super-admin can change a super-admin'
+                        : lockedAbove
+                          ? `Only ${roleLabel(u.role)} (or above) can change this account`
                           : '';
                       return (
                         <select
@@ -234,7 +301,7 @@ export default function AdminUsers() {
                           className="border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ey-yellow disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {options.map(r => (
-                            <option key={r} value={r}>{ROLE_LABELS[r] || r}</option>
+                            <option key={r} value={r}>{roleLabel(r) || r}</option>
                           ))}
                         </select>
                       );

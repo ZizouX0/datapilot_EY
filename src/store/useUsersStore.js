@@ -14,7 +14,7 @@ const useUsersStore = create((set, get) => ({
     set({ loading: true, error: null });
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, email, full_name, title, role, disabled, created_at')
+      .select('id, email, full_name, title, role, bank_name, disabled, created_at')
       .order('created_at', { ascending: true });
     if (error) {
       set({ loading: false, error: error.message });
@@ -51,8 +51,10 @@ const useUsersStore = create((set, get) => ({
 
   // Invite a new user by email. Calls the server endpoint (which holds the
   // service_role key and verifies we're an admin) with our access token. The
-  // optional `title` describes the account's position (functional mailboxes).
-  async inviteUser(email, title) {
+  // optional `title` describes the account's position; `role` is the tier to
+  // grant (default analyst, server-validated against the caller's rank); `bank`
+  // is only used when an EY owner invites someone into a specific bank.
+  async inviteUser(email, { title, role, bank } = {}) {
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
     if (!token) return { error: 'Your session has expired — sign in again.' };
@@ -65,6 +67,8 @@ const useUsersStore = create((set, get) => ({
         body: JSON.stringify({
           email: email.trim(),
           title: (title || '').trim() || undefined,
+          role: role || undefined,
+          bank: (bank || '').trim() || undefined,
           redirectTo: `${window.location.origin}/set-password`,
         }),
       });

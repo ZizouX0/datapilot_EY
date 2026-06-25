@@ -14,7 +14,7 @@ import useSettingsStore from './useSettingsStore';
 // can (plus manage admins), and an admin can do everything an analyst can (plus
 // manage analysts and review submissions). isAdmin() therefore returns true for
 // super-admins too, so admin-gated surfaces stay open to them automatically.
-const ROLES = ['superadmin', 'admin', 'analyst'];
+const ROLES = ['owner', 'superadmin', 'admin', 'analyst'];
 
 const useAuthStore = create((set, get) => ({
   // ── State ──────────────────────────────────────────────────────────
@@ -31,10 +31,11 @@ const useAuthStore = create((set, get) => ({
 
   // ── Selectors ──────────────────────────────────────────────────────
   isAuthenticated: () => Boolean(get().session),
-  // Admin-level access: granted to admins AND super-admins (capability
-  // inheritance), matching the database's is_admin() helper.
-  isAdmin: () => get().role === 'admin' || get().role === 'superadmin',
-  isSuperAdmin: () => get().role === 'superadmin',
+  // Capability inheritance (owner > superadmin > admin > analyst), matching the
+  // database's is_admin() / is_superadmin() helpers.
+  isAdmin: () => ['admin', 'superadmin', 'owner'].includes(get().role),
+  isSuperAdmin: () => ['superadmin', 'owner'].includes(get().role),
+  isOwner: () => get().role === 'owner',
 
   // ── Actions ────────────────────────────────────────────────────────
 

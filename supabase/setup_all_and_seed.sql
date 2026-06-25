@@ -1,7 +1,7 @@
 -- ============================================================================
 -- DataPilot — ONE-SHOT SETUP + TEST USERS
 -- Run this whole file ONCE in the DataPilot Supabase SQL editor.
--- It applies phase3 → phase3b → phase3c → phase3d → phase3e (in order),
+-- It applies phase3 → phase3b → phase3c → phase3d → phase3e → phase3f (in order),
 -- then seeds 3 test accounts (superadmin / admin / analyst), all auto-confirmed.
 -- Safe to re-run: every step is idempotent and the seed skips existing users.
 --
@@ -318,7 +318,32 @@ notify pgrst, 'reload schema';
 
 
 -- ##########################################################################
--- ## STEP 6 / 6 — seed 3 test accounts (superadmin / admin / analyst)
+-- ## STEP 6 / 7 — phase3f.sql (EY 'owner' tier above bank super-admins)
+-- ##########################################################################
+alter table public.profiles drop constraint if exists profiles_role_check;
+alter table public.profiles
+  add constraint profiles_role_check check (role in ('owner', 'superadmin', 'admin', 'analyst'));
+
+create or replace function public.is_admin()
+returns boolean language sql stable security definer set search_path = public
+as $$ select exists (select 1 from public.profiles
+  where id = auth.uid() and role in ('admin', 'superadmin', 'owner')); $$;
+
+create or replace function public.is_superadmin()
+returns boolean language sql stable security definer set search_path = public
+as $$ select exists (select 1 from public.profiles
+  where id = auth.uid() and role in ('superadmin', 'owner')); $$;
+
+create or replace function public.is_owner()
+returns boolean language sql stable security definer set search_path = public
+as $$ select exists (select 1 from public.profiles
+  where id = auth.uid() and role = 'owner'); $$;
+
+notify pgrst, 'reload schema';
+
+
+-- ##########################################################################
+-- ## STEP 7 / 7 — seed 3 test accounts (superadmin / admin / analyst)
 -- ##########################################################################
 -- Creates auto-confirmed auth users + identities, then sets role + bank on the
 -- profile rows the handle_new_user trigger creates. Re-running skips existing

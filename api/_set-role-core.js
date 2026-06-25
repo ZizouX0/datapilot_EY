@@ -8,8 +8,7 @@
 // profiles, see supabase/phase3.sql); they must go through here so the role
 // hierarchy is enforced in one trusted place.
 import { createClient } from '@supabase/supabase-js';
-
-const ROLES = ['analyst', 'admin', 'superadmin'];
+import { ROLES, ROLE_RANK, rank } from './_roles.js';
 
 function fail(statusCode, message) {
   const err = new Error(message);
@@ -43,7 +42,7 @@ export async function setRoleCore({ token, targetId, role }) {
     .from('profiles').select('role').eq('id', callerId).single();
   if (callerErr) throw fail(403, 'Could not verify your permissions.');
   const callerRole = caller?.role;
-  if (callerRole !== 'admin' && callerRole !== 'superadmin') {
+  if (rank(callerRole) < ROLE_RANK.admin) {
     throw fail(403, 'Administrator access required.');
   }
 
@@ -52,17 +51,17 @@ export async function setRoleCore({ token, targetId, role }) {
   if (targetErr || !target) throw fail(404, 'That user no longer exists.');
   const targetRole = target.role;
 
-  // 3) Enforce the hierarchy.
+  // 3) Enforce the hierarchy (owner > superadmin > admin > analyst).
   // Nobody can change their own role (prevents self-escalation and lock-out).
   if (targetId === callerId) throw fail(403, "You can't change your own role.");
-
-  if (callerRole === 'admin') {
-    // Admins manage analysts only: they may toggle analyst ↔ admin, but may not
-    // grant super-admin, nor modify an existing super-admin.
-    if (role === 'superadmin') throw fail(403, 'Only a super-admin can grant the super-admin role.');
-    if (targetRole === 'superadmin') throw fail(403, 'Only a super-admin can change a super-admin.');
+  // You can only grant a role at or below your own rank…
+  if (rank(role) > rank(callerRole)) {
+    throw fail(403, 'You cannot grant a role higher than your own.');
   }
-  // Super-admins may set any of the three roles on anyone (except themselves).
+  // …and you can't modify someone who outranks you.
+  if (rank(targetRole) > rank(callerRole)) {
+    throw fail(403, 'You cannot change the role of someone above your level.');
+  }
 
   if (role === targetRole) {
     return { ok: true, id: targetId, role }; // no-op, idempotent

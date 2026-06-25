@@ -2,6 +2,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import useAppStore from '../../store/useAppStore';
 import useAuthStore from '../../store/useAuthStore';
 import useSettingsStore from '../../store/useSettingsStore';
+import { roleLabel } from '../../lib/roles';
 import Avatar from '../ui/Avatar';
 
 export default function Topbar() {
@@ -74,9 +75,9 @@ export default function Topbar() {
               <Avatar url={avatarUrl} name={fullName} email={user.email} size={26} />
               <span className="truncate">{fullName || user.email}</span>
             </Link>
-            {(role === 'admin' || role === 'superadmin') && (
+            {isAdmin && (
               <span className="bg-ey-purple text-white px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide">
-                {role === 'superadmin' ? 'Super Admin' : 'Admin'}
+                {roleLabel(role)}
               </span>
             )}
             <button

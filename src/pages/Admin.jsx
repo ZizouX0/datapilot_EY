@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import useAuthStore from '../store/useAuthStore';
+import { roleLabel } from '../lib/roles';
 import AdminQuestionnaire from './admin/AdminQuestionnaire';
 import AdminUsers from './admin/AdminUsers';
 import AdminSubmissions from './admin/AdminSubmissions';
@@ -21,7 +22,7 @@ const PANELS = {
 // (admin or super-admin).
 export default function Admin() {
   const user = useAuthStore(s => s.user);
-  const isSuperAdmin = useAuthStore(s => s.isSuperAdmin());
+  const role = useAuthStore(s => s.role);
   const [tab, setTab] = useState('submissions');
   const Panel = PANELS[tab] || AdminSubmissions;
 
@@ -30,7 +31,7 @@ export default function Admin() {
       <div className="flex items-center gap-3 mb-1">
         <h1 className="text-2xl font-semibold text-gray-800">Administration</h1>
         <span className="bg-ey-purple text-white text-[11px] font-semibold px-2 py-0.5 rounded uppercase tracking-wide">
-          {isSuperAdmin ? 'Super Admin' : 'Admin'}
+          {roleLabel(role)}
         </span>
       </div>
       <p className="text-sm text-gray-500 mb-6">

@@ -7,6 +7,7 @@
 // way /api/set-role does it. Password resets are NOT here: they are a plain
 // recovery email sent client-side (no privileged access needed).
 import { createClient } from '@supabase/supabase-js';
+import { ROLE_RANK, rank } from './_roles.js';
 
 const ACTIONS = ['set-title', 'disable', 'enable'];
 // Far-future ban = effectively disabled. 'none' lifts the ban (re-enable).
@@ -42,7 +43,7 @@ export async function manageUserCore({ token, action, targetId, title }) {
     .from('profiles').select('role').eq('id', callerId).single();
   if (callerErr) throw fail(403, 'Could not verify your permissions.');
   const callerRole = caller?.role;
-  if (callerRole !== 'admin' && callerRole !== 'superadmin') {
+  if (rank(callerRole) < ROLE_RANK.admin) {
     throw fail(403, 'Administrator access required.');
   }
 
@@ -51,9 +52,10 @@ export async function manageUserCore({ token, action, targetId, title }) {
     .from('profiles').select('role').eq('id', targetId).single();
   if (targetErr || !target) throw fail(404, 'That user no longer exists.');
 
-  // A regular admin may never act on a super-admin's account.
-  if (callerRole === 'admin' && target.role === 'superadmin') {
-    throw fail(403, 'Only a super-admin can manage a super-admin.');
+  // You may never act on an account that outranks you (owner > superadmin >
+  // admin > analyst).
+  if (rank(target.role) > rank(callerRole)) {
+    throw fail(403, 'You cannot manage an account above your level.');
   }
 
   // 3) Perform the action.
@@ -64,9 +66,9 @@ export async function manageUserCore({ token, action, targetId, title }) {
     return { ok: true, id: targetId, title: (title || '').trim() || null };
   }
 
-  // disable / enable are powerful off-boarding actions — super-admin only, and
-  // never on your own account (so you can't lock yourself out).
-  if (callerRole !== 'superadmin') {
+  // disable / enable are powerful off-boarding actions — super-admin and above
+  // only, and never on your own account (so you can't lock yourself out).
+  if (rank(callerRole) < ROLE_RANK.superadmin) {
     throw fail(403, 'Only a super-admin can enable or disable accounts.');
   }
   if (targetId === callerId) throw fail(403, "You can't disable your own account.");

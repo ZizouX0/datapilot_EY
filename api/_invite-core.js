@@ -7,6 +7,7 @@
 // own access token is verified first and must belong to an admin, so the
 // endpoint cannot be used by analysts or anonymous visitors.
 import { createClient } from '@supabase/supabase-js';
+import { ROLE_RANK, rank } from './_roles.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -16,7 +17,7 @@ function fail(statusCode, message) {
   return err;
 }
 
-export async function inviteUserCore({ token, email, redirectTo, title }) {
+export async function inviteUserCore({ token, email, redirectTo, title, role, bank }) {
   const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -41,21 +42,49 @@ export async function inviteUserCore({ token, email, redirectTo, title }) {
   const { data: profile, error: profErr } = await admin
     .from('profiles').select('role, bank_name').eq('id', userData.user.id).single();
   if (profErr) throw fail(403, 'Could not verify your permissions.');
-  if (profile?.role !== 'admin' && profile?.role !== 'superadmin') {
+  const callerRole = profile?.role;
+  if (rank(callerRole) < ROLE_RANK.admin) {
     throw fail(403, 'Administrator access required.');
   }
   const inviterBank = profile?.bank_name || null;
 
-  // 3) Send the invitation. Creates the auth user (the DB trigger then creates
-  //    their profile as an analyst) and emails them a link to set a password.
-  //    Title (position) and the inviter's bank are passed as user metadata; the
-  //    handle_new_user trigger copies both onto the new profile.
+  // 3) Resolve the role to grant the invitee (default: analyst). The caller may
+  //    only grant a role at or below their own rank.
+  const wantRole = typeof role === 'string' && role ? role : 'analyst';
+  if (rank(wantRole) < 0) throw fail(400, 'Invalid role.');
+  if (rank(wantRole) > rank(callerRole)) {
+    throw fail(403, 'You cannot grant a role higher than your own.');
+  }
+
+  // 4) Resolve the bank. Bank-tier users (super-admin/admin) can only invite into
+  //    their OWN bank (inherited). An EY owner is not tied to a bank, so they
+  //    pass the target bank explicitly — required unless they're inviting another
+  //    owner (EY is not a bank).
+  let effectiveBank;
+  if (callerRole === 'owner') {
+    const cleanBank = typeof bank === 'string' ? bank.trim() : '';
+    if (wantRole === 'owner') {
+      effectiveBank = null;
+    } else if (!cleanBank) {
+      throw fail(400, 'A bank name is required when inviting a user into a bank.');
+    } else {
+      effectiveBank = cleanBank;
+    }
+  } else {
+    effectiveBank = inviterBank; // inherited; the passed bank is ignored
+  }
+
+  // 5) Send the invitation. Creates the auth user (the DB trigger creates their
+  //    profile) and emails them a link to set a password. Title and bank ride
+  //    along as metadata; the handle_new_user trigger copies them onto the
+  //    profile. Role is applied as an explicit update below (the trigger always
+  //    defaults new profiles to analyst).
   const options = {};
   if (redirectTo) options.redirectTo = redirectTo;
   const cleanTitle = typeof title === 'string' ? title.trim() : '';
   const meta = {};
   if (cleanTitle) meta.title = cleanTitle;
-  if (inviterBank) meta.bank_name = inviterBank;
+  if (effectiveBank) meta.bank_name = effectiveBank;
   if (Object.keys(meta).length) options.data = meta;
   const { data, error } = await admin.auth.admin.inviteUserByEmail(
     String(email).trim(),
@@ -63,11 +92,16 @@ export async function inviteUserCore({ token, email, redirectTo, title }) {
   );
   if (error) throw fail(400, error.message);
 
-  // Defensive: ensure the bank landed on the profile even if the trigger ran
-  // before the metadata was visible. No-op when already set by the trigger.
+  // 6) Apply role + bank on the new profile. Covers the case where the trigger
+  //    ran before the metadata was visible, and sets any non-default role.
   const newUserId = data?.user?.id || null;
-  if (newUserId && inviterBank) {
-    await admin.from('profiles').update({ bank_name: inviterBank }).eq('id', newUserId);
+  if (newUserId) {
+    const patch = {};
+    if (wantRole !== 'analyst') patch.role = wantRole;
+    if (effectiveBank) patch.bank_name = effectiveBank;
+    if (Object.keys(patch).length) {
+      await admin.from('profiles').update(patch).eq('id', newUserId);
+    }
   }
 
   return { ok: true, userId: newUserId };
