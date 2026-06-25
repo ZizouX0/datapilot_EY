@@ -5,11 +5,13 @@ import AdminQuestionnaire from './admin/AdminQuestionnaire';
 import AdminUsers from './admin/AdminUsers';
 import AdminSubmissions from './admin/AdminSubmissions';
 import AdminDepartments from './admin/AdminDepartments';
+import AdminGroupAssessment from './admin/AdminGroupAssessment';
 
 // Tabs everyone with admin access sees, plus a super-admin-only "Departments"
 // tab (org setup). `superadmin: true` entries are filtered out for plain admins.
 const TABS = [
   { id: 'submissions', label: 'Submissions' },
+  { id: 'group', label: 'Group assessment' },
   { id: 'questionnaire', label: 'Questionnaire' },
   { id: 'departments', label: 'Departments', superadmin: true },
   { id: 'users', label: 'Users & roles' },
@@ -17,6 +19,7 @@ const TABS = [
 
 const PANELS = {
   submissions: AdminSubmissions,
+  group: AdminGroupAssessment,
   questionnaire: AdminQuestionnaire,
   departments: AdminDepartments,
   users: AdminUsers,
