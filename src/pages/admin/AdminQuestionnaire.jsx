@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import useContentStore from '../../store/useContentStore';
+import useAuthStore from '../../store/useAuthStore';
 import { isSupabaseConfigured } from '../../lib/supabase';
 import { DIMENSIONS, INDICATORS, SUBDIM_NAMES } from '../../data/indicators';
 
 // ── Editor for one dimension's name, weight and colour ──────────────────────
-function DimensionRow({ code, dim, totalWeight, onSave, onDelete }) {
+function DimensionRow({ code, dim, totalWeight, canEdit, onSave, onDelete }) {
   const [name, setName] = useState(dim.name);
   const [weight, setWeight] = useState(String(dim.weight));
   const [color, setColor] = useState(dim.color || '#888888');
@@ -30,39 +31,40 @@ function DimensionRow({ code, dim, totalWeight, onSave, onDelete }) {
     <div className="px-4 py-2.5 flex flex-col gap-2">
       <div className="flex items-center gap-3">
         <input
-          type="color" value={color} onChange={e => setColor(e.target.value)}
-          className="w-7 h-7 rounded cursor-pointer border border-gray-200 flex-shrink-0"
+          type="color" value={color} onChange={e => setColor(e.target.value)} disabled={!canEdit}
+          className="w-7 h-7 rounded cursor-pointer border border-gray-200 flex-shrink-0 disabled:cursor-default"
           title="Dimension colour"
         />
         <span className="text-xs font-mono text-gray-400 w-7">{code}</span>
         <input
-          value={name} onChange={e => setName(e.target.value)}
-          className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
+          value={name} onChange={e => setName(e.target.value)} disabled={!canEdit}
+          className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow disabled:bg-gray-50 disabled:text-gray-600"
         />
         <input
-          type="number" step="0.05" min="0" value={weight} onChange={e => setWeight(e.target.value)}
-          className="w-20 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
+          type="number" step="0.05" min="0" value={weight} onChange={e => setWeight(e.target.value)} disabled={!canEdit}
+          className="w-20 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow disabled:bg-gray-50 disabled:text-gray-600"
         />
         <span className="text-xs text-gray-500 w-10 text-right">{pct}%</span>
-        <button
-          onClick={save} disabled={!dirty || status === 'saving'}
-          className="text-xs font-semibold rounded-lg px-3 py-1.5 bg-ey-charcoal text-white hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
-        >
-          {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved ✓' : 'Save'}
-        </button>
-        <button
-          onClick={() => onDelete(code, dim.name)}
-          className="text-xs font-medium rounded-lg px-2.5 py-1.5 text-red-600 hover:bg-red-50"
-          title="Delete this dimension and all its indicators"
-        >
-          🗑
-        </button>
+        {canEdit && (
+          <>
+            <button
+              onClick={save} disabled={!dirty || status === 'saving'}
+              className="text-xs font-semibold rounded-lg px-3 py-1.5 bg-ey-charcoal text-white hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved ✓' : 'Save'}
+            </button>
+            <button
+              onClick={() => onDelete(code, dim.name)}
+              className="text-xs font-medium rounded-lg px-2.5 py-1.5 text-red-600 hover:bg-red-50"
+              title="Delete this dimension and all its indicators"
+            >🗑</button>
+          </>
+        )}
       </div>
       <input
-        value={desc}
-        onChange={e => setDesc(e.target.value)}
+        value={desc} onChange={e => setDesc(e.target.value)} disabled={!canEdit}
         placeholder="Short description shown to users for this dimension…"
-        className="ml-10 border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-ey-yellow"
+        className="ml-10 border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-ey-yellow disabled:bg-gray-50"
       />
       {err && <span className="text-xs text-red-600 ml-10">{err}</span>}
     </div>
@@ -70,7 +72,7 @@ function DimensionRow({ code, dim, totalWeight, onSave, onDelete }) {
 }
 
 // ── Editor for one indicator ────────────────────────────────────────────────
-function IndicatorRow({ ind, onSave, onDelete }) {
+function IndicatorRow({ ind, canEdit, onSave, onDelete }) {
   const [q, setQ] = useState(ind.q);
   const [hint, setHint] = useState(ind.hint || '');
   const [bct, setBct] = useState(!!ind.bct);
@@ -105,16 +107,16 @@ function IndicatorRow({ ind, onSave, onDelete }) {
       <div className="px-4 py-4 border-t border-gray-100 bg-gray-50/50 flex flex-col gap-3">
         <div>
           <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Question</label>
-          <textarea value={q} onChange={e => setQ(e.target.value)} rows={2}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow" />
+          <textarea value={q} onChange={e => setQ(e.target.value)} rows={2} disabled={!canEdit}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow disabled:bg-gray-100" />
         </div>
         <div>
           <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Hint / guidance</label>
-          <textarea value={hint} onChange={e => setHint(e.target.value)} rows={2}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow" />
+          <textarea value={hint} onChange={e => setHint(e.target.value)} rows={2} disabled={!canEdit}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow disabled:bg-gray-100" />
         </div>
         <label className="flex items-center gap-2 text-sm text-gray-700">
-          <input type="checkbox" checked={bct} onChange={e => setBct(e.target.checked)} />
+          <input type="checkbox" checked={bct} onChange={e => setBct(e.target.checked)} disabled={!canEdit} />
           Mandatory BCT indicator (cannot be skipped)
         </label>
         <div>
@@ -125,23 +127,25 @@ function IndicatorRow({ ind, onSave, onDelete }) {
             {rubric.map((level, i) => (
               <div key={i} className="flex gap-2 items-start">
                 <span className="w-6 h-6 mt-1 flex-shrink-0 rounded-full bg-ey-charcoal text-white text-xs font-bold flex items-center justify-center">{i + 1}</span>
-                <textarea value={level} onChange={e => setLevel(i, e.target.value)} rows={2}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow" />
+                <textarea value={level} onChange={e => setLevel(i, e.target.value)} rows={2} disabled={!canEdit}
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow disabled:bg-gray-100" />
               </div>
             ))}
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button onClick={save} disabled={status === 'saving'}
-            className="text-sm font-semibold rounded-lg px-4 py-2 bg-ey-yellow text-ey-charcoal hover:bg-yellow-400 disabled:opacity-40">
-            {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved ✓' : 'Save indicator'}
-          </button>
-          <button onClick={() => onDelete(ind.id, ind.q)}
-            className="text-sm font-medium rounded-lg px-3 py-2 text-red-600 hover:bg-red-50">
-            🗑 Delete indicator
-          </button>
-          {err && <span className="text-xs text-red-600">{err}</span>}
-        </div>
+        {canEdit && (
+          <div className="flex items-center gap-3">
+            <button onClick={save} disabled={status === 'saving'}
+              className="text-sm font-semibold rounded-lg px-4 py-2 bg-ey-yellow text-ey-charcoal hover:bg-yellow-400 disabled:opacity-40">
+              {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved ✓' : 'Save indicator'}
+            </button>
+            <button onClick={() => onDelete(ind.id, ind.q)}
+              className="text-sm font-medium rounded-lg px-3 py-2 text-red-600 hover:bg-red-50">
+              🗑 Delete indicator
+            </button>
+            {err && <span className="text-xs text-red-600">{err}</span>}
+          </div>
+        )}
       </div>
     </details>
   );
@@ -150,24 +154,31 @@ function IndicatorRow({ ind, onSave, onDelete }) {
 export default function AdminQuestionnaire() {
   const source = useContentStore(s => s.source);
   const version = useContentStore(s => s.version);
+  const seeded = useContentStore(s => s.seeded);
   const {
-    seedDefaults, saveDimension, saveIndicator,
+    seedDefaults, seedBankFromMaster, saveDimension, saveIndicator,
     addIndicator, deleteIndicator,
     addSubDimension, renameSubDimension, deleteSubDimension,
     addDimension, deleteDimension,
   } = useContentStore();
+
+  const role = useAuthStore(s => s.role);
+  const bankName = useAuthStore(s => s.bankName);
+  const isOwner = role === 'owner';
+  // EY edits the master; a bank Admin edits their bank; Super Admins read-only.
+  const canEdit = isOwner || role === 'admin';
+  const scopeLabel = isOwner ? 'EY master questionnaire' : `${bankName || 'Your bank'} — questionnaire`;
 
   const [seeding, setSeeding] = useState(false);
   const [seedErr, setSeedErr] = useState(null);
 
   async function handleSeed() {
     setSeeding(true); setSeedErr(null);
-    const { error } = await seedDefaults();
+    const { error } = await (isOwner ? seedDefaults() : seedBankFromMaster());
     setSeeding(false);
     if (error) setSeedErr(error);
   }
 
-  // Wrap a structural action so any error surfaces instead of failing silently.
   async function run(promise) {
     const { error } = await promise;
     if (error) alert(`Could not complete that change:\n${error}`);
@@ -182,21 +193,30 @@ export default function AdminQuestionnaire() {
     );
   }
 
-  if (source !== 'remote') {
+  // No copy for this scope yet → seed it (owner: master; admin: from master).
+  if (!seeded) {
     return (
       <div className="rounded-xl border border-gray-200 bg-white p-6 max-w-2xl">
-        <h2 className="text-lg font-semibold text-gray-800 mb-1">Start editing the questionnaire</h2>
+        <h2 className="text-lg font-semibold text-gray-800 mb-1">
+          {isOwner ? 'Set up the EY master questionnaire' : `Set up ${bankName || 'your bank'}’s questionnaire`}
+        </h2>
         <p className="text-sm text-gray-500 mb-4">
-          The content database is empty, so the app is using its built-in default
-          questionnaire ({Object.keys(DIMENSIONS).length} dimensions, {INDICATORS.length} indicators). Load those
-          defaults into the database to begin editing. This is safe — it won't change
-          anything analysts have already answered.
+          {isOwner
+            ? `Load the built-in default questionnaire (${Object.keys(DIMENSIONS).length} dimensions, ${INDICATORS.length} indicators) into the EY master template. Every bank's copy starts from this master.`
+            : canEdit
+              ? 'Create your bank’s own copy of the questionnaire from the EY master. You can then tailor it for your bank without affecting anyone else.'
+              : 'Your bank’s questionnaire hasn’t been set up yet. Ask your bank’s Admin to create it.'}
         </p>
-        <button onClick={handleSeed} disabled={seeding}
-          className="bg-ey-yellow text-ey-charcoal font-semibold rounded-lg px-4 py-2.5 text-sm hover:bg-yellow-400 disabled:opacity-40">
-          {seeding ? 'Loading…' : 'Load defaults into database'}
-        </button>
+        {canEdit && (
+          <button onClick={handleSeed} disabled={seeding}
+            className="bg-ey-yellow text-ey-charcoal font-semibold rounded-lg px-4 py-2.5 text-sm hover:bg-yellow-400 disabled:opacity-40">
+            {seeding ? 'Loading…' : isOwner ? 'Load defaults into master' : 'Create my bank’s copy from the EY master'}
+          </button>
+        )}
         {seedErr && <p className="text-sm text-red-600 mt-3">{seedErr}</p>}
+        {source !== 'remote' && !canEdit && (
+          <p className="text-xs text-gray-400 mt-3">The app is running on built-in defaults meanwhile.</p>
+        )}
       </div>
     );
   }
@@ -234,14 +254,26 @@ export default function AdminQuestionnaire() {
 
   return (
     <div key={version} className="flex flex-col gap-8">
+      {/* Scope banner */}
+      <div className={`rounded-lg px-4 py-2.5 text-sm flex items-center justify-between ${
+        isOwner ? 'bg-ey-charcoal text-white' : 'bg-gray-100 text-gray-700'
+      }`}>
+        <span className="font-semibold">{scopeLabel}</span>
+        <span className="text-xs opacity-80">
+          {canEdit ? (isOwner ? 'Master — changes seed new banks' : 'Editing your bank’s copy') : 'Read-only'}
+        </span>
+      </div>
+
       {/* Dimensions & weights */}
       <section>
         <div className="flex items-center justify-between mb-1">
           <h2 className="text-lg font-semibold text-gray-800">Dimensions &amp; weights</h2>
-          <button onClick={onAddDimension}
-            className="text-xs font-semibold rounded-lg px-3 py-1.5 border border-ey-charcoal text-ey-charcoal hover:bg-gray-50">
-            + Add dimension
-          </button>
+          {canEdit && (
+            <button onClick={onAddDimension}
+              className="text-xs font-semibold rounded-lg px-3 py-1.5 border border-ey-charcoal text-ey-charcoal hover:bg-gray-50">
+              + Add dimension
+            </button>
+          )}
         </div>
         <p className="text-sm text-gray-500 mb-3">
           Weights are relative — percentages show each dimension's share of the overall
@@ -250,7 +282,7 @@ export default function AdminQuestionnaire() {
         <div className="rounded-xl border border-gray-200 bg-white divide-y divide-gray-100">
           {dimEntries.map(([code, dim]) => (
             <DimensionRow key={code} code={code} dim={dim} totalWeight={totalWeight}
-              onSave={saveDimension} onDelete={onDeleteDimension} />
+              canEdit={canEdit} onSave={saveDimension} onDelete={onDeleteDimension} />
           ))}
           {dimEntries.length === 0 && (
             <div className="px-4 py-6 text-center text-sm text-gray-400">No dimensions. Add one to begin.</div>
@@ -262,22 +294,24 @@ export default function AdminQuestionnaire() {
       <section>
         <h2 className="text-lg font-semibold text-gray-800 mb-1">Indicators &amp; rubrics</h2>
         <p className="text-sm text-gray-500 mb-3">
-          Indicators are grouped by sub-dimension. Add, rename or remove groups and
-          indicators with the buttons on each section.
+          Indicators are grouped by sub-dimension.
+          {canEdit && ' Add, rename or remove groups and indicators with the buttons on each section.'}
         </p>
         <div className="flex flex-col gap-8">
           {dimEntries.map(([code, dim]) => (
             <div key={code} className="border-l-2 pl-4" style={{ borderColor: dim.color || '#ddd' }}>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-bold text-gray-800">{code} · {dim.name}</h3>
-                <button onClick={() => onAddSub(code)}
-                  className="text-xs font-medium text-gray-600 border border-gray-300 rounded-lg px-2.5 py-1 hover:bg-gray-50">
-                  + Add sub-dimension
-                </button>
+                {canEdit && (
+                  <button onClick={() => onAddSub(code)}
+                    className="text-xs font-medium text-gray-600 border border-gray-300 rounded-lg px-2.5 py-1 hover:bg-gray-50">
+                    + Add sub-dimension
+                  </button>
+                )}
               </div>
 
               {(dim.subDims || []).length === 0 && (
-                <p className="text-xs text-gray-400 mb-3">No sub-dimensions yet — add one above.</p>
+                <p className="text-xs text-gray-400 mb-3">No sub-dimensions yet.</p>
               )}
 
               <div className="flex flex-col gap-5">
@@ -290,18 +324,21 @@ export default function AdminQuestionnaire() {
                         <span className="text-xs font-mono text-gray-400">{sub}</span>
                         <span className="text-sm font-semibold text-gray-700">{subName}</span>
                         <span className="text-xs text-gray-400">· {inds.length}</span>
-                        <div className="flex gap-1 ml-2">
-                          <button onClick={() => onRenameSub(code, sub, subName)}
-                            className="text-[11px] text-gray-500 hover:text-gray-800 px-1.5 py-0.5 rounded hover:bg-gray-100">Rename</button>
-                          <button onClick={() => onAddIndicator(code, sub)}
-                            className="text-[11px] text-ey-charcoal font-medium px-1.5 py-0.5 rounded hover:bg-gray-100">+ Indicator</button>
-                          <button onClick={() => onDeleteSub(code, sub, subName)}
-                            className="text-[11px] text-red-600 px-1.5 py-0.5 rounded hover:bg-red-50">Delete</button>
-                        </div>
+                        {canEdit && (
+                          <div className="flex gap-1 ml-2">
+                            <button onClick={() => onRenameSub(code, sub, subName)}
+                              className="text-[11px] text-gray-500 hover:text-gray-800 px-1.5 py-0.5 rounded hover:bg-gray-100">Rename</button>
+                            <button onClick={() => onAddIndicator(code, sub)}
+                              className="text-[11px] text-ey-charcoal font-medium px-1.5 py-0.5 rounded hover:bg-gray-100">+ Indicator</button>
+                            <button onClick={() => onDeleteSub(code, sub, subName)}
+                              className="text-[11px] text-red-600 px-1.5 py-0.5 rounded hover:bg-red-50">Delete</button>
+                          </div>
+                        )}
                       </div>
                       <div className="flex flex-col gap-2">
                         {inds.map(ind => (
-                          <IndicatorRow key={ind.id} ind={ind} onSave={saveIndicator} onDelete={onDeleteIndicator} />
+                          <IndicatorRow key={ind.id} ind={ind} canEdit={canEdit}
+                            onSave={saveIndicator} onDelete={onDeleteIndicator} />
                         ))}
                       </div>
                     </div>

@@ -16,6 +16,12 @@ import useSettingsStore from './useSettingsStore';
 // super-admins too, so admin-gated surfaces stay open to them automatically.
 const ROLES = ['owner', 'superadmin', 'admin', 'analyst'];
 
+// Reload the per-bank questionnaire once the signed-in user's bank is known.
+// Dynamic import avoids a static cycle (useContentStore imports this store).
+function reloadContentForBank() {
+  import('./useContentStore').then(m => m.default.getState().loadContent()).catch(() => {});
+}
+
 const useAuthStore = create((set, get) => ({
   // ── State ──────────────────────────────────────────────────────────
   session: null,
@@ -45,6 +51,7 @@ const useAuthStore = create((set, get) => ({
   async fetchRole(userId) {
     if (!userId) {
       set({ role: null, fullName: null, avatarUrl: null, bankName: null, phone: null });
+      reloadContentForBank();
       return;
     }
     const { data, error } = await supabase
@@ -55,6 +62,7 @@ const useAuthStore = create((set, get) => ({
     if (error) {
       // Missing row or RLS issue — fail closed to the least-privileged role.
       set({ role: 'analyst', fullName: null, avatarUrl: null, bankName: null, phone: null });
+      reloadContentForBank();
       return;
     }
     // Accept only known roles; anything unexpected fails closed to 'analyst'.
@@ -67,6 +75,8 @@ const useAuthStore = create((set, get) => ({
     });
     // Apply the user's saved language preference app-wide.
     if (data?.language) useSettingsStore.getState().setLanguage(data.language);
+    // Load the questionnaire copy for this user's bank (per-bank content).
+    reloadContentForBank();
   },
 
   // Wires up the session listener once. Call from a top-level effect. Returns

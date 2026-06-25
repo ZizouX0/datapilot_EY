@@ -1,6 +1,23 @@
 import { create } from 'zustand';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import useAuthStore from './useAuthStore';
 import { DEFAULT_CONTENT, hydrateContent, DIMENSIONS, INDICATORS } from '../data/indicators';
+
+// Which questionnaire copy applies to the signed-in user. '' is the EY master
+// template (edited by owners); every other value is a bank's own copy.
+function editBankFromAuth() {
+  const { role, bankName } = useAuthStore.getState();
+  if (role === 'owner') return '';
+  return bankName || '';
+}
+
+async function fetchContent(bank) {
+  const [{ data: dims, error: e1 }, { data: inds, error: e2 }] = await Promise.all([
+    supabase.from('dimensions').select('*').eq('bank_name', bank),
+    supabase.from('indicators').select('*').eq('bank_name', bank),
+  ]);
+  return { dims, inds, error: e1?.message || e2?.message || null };
+}
 
 // ── ID/code generators, derived from the current in-memory content ──────────
 // Codes follow the existing convention: dimensions 'D{n}', sub-dimensions
@@ -49,57 +66,53 @@ function nextSortOrder() {
 const useContentStore = create((set, get) => ({
   loading: true,
   source: 'default',   // 'default' (bundled) | 'remote' (Supabase)
+  bank: '',            // which copy is loaded ('' = EY master)
+  seeded: false,       // does THIS bank's own copy exist? (drives the editor)
   error: null,
   version: 0,
 
-  // Fetch dimensions + indicators. On anything unexpected (not configured,
-  // network error, or empty tables) we keep the bundled defaults so the app
-  // always works. Always resolves so boot is never blocked.
+  // Fetch the questionnaire for the signed-in user's bank (or the EY master for
+  // owners). If a bank has no copy yet, fall back to the master template, then
+  // to the bundled defaults, so the assessment always works. Always resolves.
   async loadContent() {
     if (!isSupabaseConfigured) {
-      set({ loading: false, source: 'default' });
+      set({ loading: false, source: 'default', bank: '', seeded: false });
       return;
     }
+    const bank = editBankFromAuth();
     try {
-      const [{ data: dims, error: e1 }, { data: inds, error: e2 }] = await Promise.all([
-        supabase.from('dimensions').select('*'),
-        supabase.from('indicators').select('*'),
-      ]);
-      if (e1 || e2 || !dims?.length || !inds?.length) {
-        // Tables empty or not migrated yet — stay on bundled defaults.
-        set({ loading: false, source: 'default', error: e1?.message || e2?.message || null });
+      const primary = await fetchContent(bank);
+      let { dims, inds } = primary;
+      const seeded = !!(dims?.length && inds?.length);
+      // A bank with no own copy yet → show the master template meanwhile.
+      if (!seeded && bank !== '') {
+        const master = await fetchContent('');
+        dims = master.dims; inds = master.inds;
+      }
+      if (!dims?.length || !inds?.length) {
+        set({ loading: false, source: 'default', bank, seeded, error: primary.error });
         return;
       }
       hydrateContent(dims, inds);
-      set(s => ({ loading: false, source: 'remote', error: null, version: s.version + 1 }));
+      set(s => ({ loading: false, source: 'remote', bank, seeded, error: null, version: s.version + 1 }));
     } catch (err) {
-      set({ loading: false, source: 'default', error: err.message });
+      set({ loading: false, source: 'default', bank, seeded: false, error: err.message });
     }
   },
 
-  // Admin: copy the bundled defaults into the (empty) database so they can be
-  // edited. Upsert keeps it idempotent if run more than once.
+  // Owner: copy the bundled defaults into the EY master template (bank '').
   async seedDefaults() {
+    const bank = get().bank; // '' for an owner
     const { dimensions, indicators } = DEFAULT_CONTENT;
     const dimRows = Object.entries(dimensions).map(([code, d], i) => ({
-      code,
-      name: d.name,
-      weight: d.weight,
-      color: d.color,
-      proxy: !!d.proxy,
-      description: d.desc || '',
-      sort_order: i,
+      code, bank_name: bank,
+      name: d.name, weight: d.weight, color: d.color, proxy: !!d.proxy,
+      description: d.desc || '', sort_order: i,
     }));
     const indRows = indicators.map((ind, i) => ({
-      id: ind.id,
-      dim: ind.dim,
-      sub: ind.sub,
-      sub_name: ind.subName,
-      bct: !!ind.bct,
-      q: ind.q,
-      hint: ind.hint || '',
-      rubric: ind.rubric,
-      sort_order: i,
+      id: ind.id, bank_name: bank,
+      dim: ind.dim, sub: ind.sub, sub_name: ind.subName, bct: !!ind.bct,
+      q: ind.q, hint: ind.hint || '', rubric: ind.rubric, sort_order: i,
     }));
     const { error: e1 } = await supabase.from('dimensions').upsert(dimRows);
     if (e1) return { error: e1.message };
@@ -109,15 +122,36 @@ const useContentStore = create((set, get) => ({
     return { error: null };
   },
 
+  // Bank admin: create this bank's copy by cloning the EY master template.
+  async seedBankFromMaster() {
+    const bank = get().bank;
+    if (!bank) return { error: 'No bank to seed.' };
+    const { dims, inds, error } = await fetchContent('');
+    if (error) return { error };
+    if (!dims?.length || !inds?.length) {
+      return { error: 'The EY master questionnaire has not been set up yet. Ask EY to load it first.' };
+    }
+    const dimRows = dims.map(d => ({ ...d, bank_name: bank }));
+    const indRows = inds.map(i => ({ ...i, bank_name: bank }));
+    const { error: e1 } = await supabase.from('dimensions').upsert(dimRows);
+    if (e1) return { error: e1.message };
+    const { error: e2 } = await supabase.from('indicators').upsert(indRows);
+    if (e2) return { error: e2.message };
+    await get().loadContent();
+    return { error: null };
+  },
+
   async saveDimension(code, patch) {
-    const { error } = await supabase.from('dimensions').update(patch).eq('code', code);
+    const { error } = await supabase.from('dimensions').update(patch)
+      .eq('code', code).eq('bank_name', get().bank);
     if (error) return { error: error.message };
     await get().loadContent();
     return { error: null };
   },
 
   async saveIndicator(id, patch) {
-    const { error } = await supabase.from('indicators').update(patch).eq('id', id);
+    const { error } = await supabase.from('indicators').update(patch)
+      .eq('id', id).eq('bank_name', get().bank);
     if (error) return { error: error.message };
     await get().loadContent();
     return { error: null };
@@ -129,6 +163,7 @@ const useContentStore = create((set, get) => ({
   async addIndicator(dim, sub, subName) {
     const row = {
       id: nextIndicatorId(sub),
+      bank_name: get().bank,
       dim,
       sub,
       sub_name: subName,
@@ -145,7 +180,8 @@ const useContentStore = create((set, get) => ({
   },
 
   async deleteIndicator(id) {
-    const { error } = await supabase.from('indicators').delete().eq('id', id);
+    const { error } = await supabase.from('indicators').delete()
+      .eq('id', id).eq('bank_name', get().bank);
     if (error) return { error: error.message };
     await get().loadContent();
     return { error: null };
@@ -161,7 +197,7 @@ const useContentStore = create((set, get) => ({
   async renameSubDimension(dim, sub, name) {
     const { error } = await supabase
       .from('indicators').update({ sub_name: name })
-      .eq('dim', dim).eq('sub', sub);
+      .eq('dim', dim).eq('sub', sub).eq('bank_name', get().bank);
     if (error) return { error: error.message };
     await get().loadContent();
     return { error: null };
@@ -171,7 +207,7 @@ const useContentStore = create((set, get) => ({
   async deleteSubDimension(dim, sub) {
     const { error } = await supabase
       .from('indicators').delete()
-      .eq('dim', dim).eq('sub', sub);
+      .eq('dim', dim).eq('sub', sub).eq('bank_name', get().bank);
     if (error) return { error: error.message };
     await get().loadContent();
     return { error: null };
@@ -181,6 +217,7 @@ const useContentStore = create((set, get) => ({
     const code = nextDimCode();
     const { error } = await supabase.from('dimensions').insert({
       code,
+      bank_name: get().bank,
       name,
       weight: Number(weight) || 0,
       color,
@@ -194,7 +231,8 @@ const useContentStore = create((set, get) => ({
 
   // Deleting a dimension cascades to its indicators via the FK in phase2.sql.
   async deleteDimension(code) {
-    const { error } = await supabase.from('dimensions').delete().eq('code', code);
+    const { error } = await supabase.from('dimensions').delete()
+      .eq('code', code).eq('bank_name', get().bank);
     if (error) return { error: error.message };
     await get().loadContent();
     return { error: null };
