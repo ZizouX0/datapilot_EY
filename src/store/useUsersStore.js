@@ -14,7 +14,7 @@ const useUsersStore = create((set, get) => ({
     set({ loading: true, error: null });
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, email, full_name, title, role, bank_name, invited_by, disabled, created_at')
+      .select('id, email, full_name, title, role, bank_name, department_id, invited_by, disabled, created_at')
       .order('created_at', { ascending: true });
     if (error) {
       set({ loading: false, error: error.message });
@@ -46,6 +46,31 @@ const useUsersStore = create((set, get) => ({
     if (!res.ok) return { error: body?.error || 'Role change failed.' };
     // Reflect the change locally without a refetch.
     set(s => ({ users: s.users.map(u => (u.id === id ? { ...u, role } : u)) }));
+    return { error: null };
+  },
+
+  // Assign a user to a department (or pass null to clear it). Department writes
+  // touch profiles.department_id, which is not client-writable, so this goes
+  // through the server endpoint (service_role); only super-admins may assign,
+  // and only within their own bank (enforced in setDepartmentCore()).
+  async setUserDepartment(id, departmentId) {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    if (!token) return { error: 'Your session has expired — sign in again.' };
+
+    let res, body;
+    try {
+      res = await fetch('/api/set-department', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ targetId: id, departmentId: departmentId || null }),
+      });
+      body = await res.json();
+    } catch {
+      return { error: 'Could not reach the department service.' };
+    }
+    if (!res.ok) return { error: body?.error || 'Department change failed.' };
+    set(s => ({ users: s.users.map(u => (u.id === id ? { ...u, department_id: departmentId || null } : u)) }));
     return { error: null };
   },
 

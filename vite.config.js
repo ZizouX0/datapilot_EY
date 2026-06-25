@@ -161,6 +161,37 @@ function updateSelfApiPlugin() {
   }
 }
 
+// Serves POST /api/set-department during `npm run dev` (super-admin assigning a
+// user to a department). Uses the server-side service_role key via
+// setDepartmentCore(), since profiles.department_id is not client-writable.
+function setDepartmentApiPlugin() {
+  return {
+    name: 'set-department-api-dev',
+    configureServer(server) {
+      server.middlewares.use('/api/set-department', async (req, res) => {
+        if (req.method !== 'POST') {
+          res.statusCode = 405
+          res.end(JSON.stringify({ error: 'Method not allowed' }))
+          return
+        }
+        try {
+          const payload = await readJsonBody(req)
+          const auth = req.headers.authorization || ''
+          const token = auth.startsWith('Bearer ') ? auth.slice(7) : ''
+          const { setDepartmentCore } = await import('./api/_set-department-core.js')
+          const result = await setDepartmentCore({ token, targetId: payload.targetId, departmentId: payload.departmentId })
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(result))
+        } catch (err) {
+          res.statusCode = err.statusCode || 500
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ error: err.message || 'Failed to assign department.' }))
+        }
+      })
+    },
+  }
+}
+
 export default defineConfig(({ mode }) => {
   // Load .env (all keys, not just VITE_) and expose them to the dev-server
   // process so the API middlewares above can read server-side secrets like
@@ -171,6 +202,6 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    plugins: [react(), tailwindcss(), roadmapApiPlugin(), inviteApiPlugin(), setRoleApiPlugin(), manageUserApiPlugin(), updateSelfApiPlugin()],
+    plugins: [react(), tailwindcss(), roadmapApiPlugin(), inviteApiPlugin(), setRoleApiPlugin(), manageUserApiPlugin(), updateSelfApiPlugin(), setDepartmentApiPlugin()],
   }
 })
