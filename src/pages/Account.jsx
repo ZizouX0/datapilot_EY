@@ -186,10 +186,8 @@ export default function Account() {
     e.preventDefault();
     setSavingInfo(true);
     setInfoMsg(null);
+    // Bank is read-only in-app (assigned by EY at invite); not sent here.
     const payload = { fullName: name, language, phone };
-    // Only a (bank) super-admin may set the bank; read-only for everyone else,
-    // and not applicable to EY owners (who aren't tied to a bank).
-    if (role === 'superadmin') payload.bankName = bank;
     const { error } = await postUpdateSelf(payload);
     setSavingInfo(false);
     if (error) {
@@ -199,7 +197,6 @@ export default function Account() {
       useAuthStore.setState({
         fullName: name.trim() || null,
         phone: phone.trim() || null,
-        ...(role === 'superadmin' ? { bankName: bank.trim() || null } : {}),
       });
       setInfoMsg({ ok: true, text: t('account.saved') });
     }
@@ -384,29 +381,16 @@ export default function Account() {
             <p className="text-[11px] text-gray-400 mt-1">{t('account.phoneHint')}</p>
           </div>
 
-          {/* Bank — editable only by a (bank) super-admin; inherited and
-              read-only for admins/analysts; hidden for EY owners (no bank). */}
+          {/* Bank — the tenant identifier. Assigned by EY when the bank's Super
+              Admin is invited, then inherited down; read-only here for everyone,
+              and hidden for EY owners (who aren't tied to a bank). */}
           {role !== 'owner' && (
             <div>
               <label className={labelCls}>{t('account.bank')}</label>
-              {role === 'superadmin' ? (
-                <>
-                  <input
-                    className={inputCls}
-                    placeholder={t('account.bankPlaceholder')}
-                    value={bank}
-                    onChange={e => setBank(e.target.value)}
-                  />
-                  <p className="text-[11px] text-gray-400 mt-1">{t('account.bankHintSuper')}</p>
-                </>
-              ) : (
-                <>
-                  <div className={roCls}>
-                    {bank || <span className="text-gray-400 italic">{t('account.bankUnset')}</span>}
-                  </div>
-                  <p className="text-[11px] text-gray-400 mt-1">{t('account.bankHint')}</p>
-                </>
-              )}
+              <div className={roCls}>
+                {bank || <span className="text-gray-400 italic">{t('account.bankUnset')}</span>}
+              </div>
+              <p className="text-[11px] text-gray-400 mt-1">{t('account.bankHint')}</p>
             </div>
           )}
 

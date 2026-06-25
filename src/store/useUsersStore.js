@@ -14,7 +14,7 @@ const useUsersStore = create((set, get) => ({
     set({ loading: true, error: null });
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, email, full_name, title, role, bank_name, disabled, created_at')
+      .select('id, email, full_name, title, role, bank_name, invited_by, disabled, created_at')
       .order('created_at', { ascending: true });
     if (error) {
       set({ loading: false, error: error.message });

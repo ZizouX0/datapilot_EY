@@ -7,7 +7,7 @@
 // own access token is verified first and must belong to an admin, so the
 // endpoint cannot be used by analysts or anonymous visitors.
 import { createClient } from '@supabase/supabase-js';
-import { ROLE_RANK, rank } from './_roles.js';
+import { ROLE_RANK, rank, invitableRole } from './_roles.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -47,31 +47,26 @@ export async function inviteUserCore({ token, email, redirectTo, title, role, ba
     throw fail(403, 'Administrator access required.');
   }
   const inviterBank = profile?.bank_name || null;
+  const callerId = userData.user.id;
 
-  // 3) Resolve the role to grant the invitee (default: analyst). The caller may
-  //    only grant a role at or below their own rank.
-  const wantRole = typeof role === 'string' && role ? role : 'analyst';
-  if (rank(wantRole) < 0) throw fail(400, 'Invalid role.');
-  if (rank(wantRole) > rank(callerRole)) {
-    throw fail(403, 'You cannot grant a role higher than your own.');
+  // 3) Delegated invites are strictly one step down: EY → superadmin → admin →
+  //    analyst. The invitee's role is fixed by the caller's tier; if the client
+  //    sends one it must match.
+  const wantRole = invitableRole(callerRole);
+  if (!wantRole) throw fail(403, 'You are not allowed to invite users.');
+  if (role && role !== wantRole) {
+    throw fail(403, `You can only invite a ${wantRole}.`);
   }
 
-  // 4) Resolve the bank. Bank-tier users (super-admin/admin) can only invite into
-  //    their OWN bank (inherited). An EY owner is not tied to a bank, so they
-  //    pass the target bank explicitly — required unless they're inviting another
-  //    owner (EY is not a bank).
+  // 4) Resolve the bank. Only an EY owner names the bank (they invite a bank's
+  //    Super Admin); for everyone else the invitee inherits the inviter's bank.
   let effectiveBank;
   if (callerRole === 'owner') {
     const cleanBank = typeof bank === 'string' ? bank.trim() : '';
-    if (wantRole === 'owner') {
-      effectiveBank = null;
-    } else if (!cleanBank) {
-      throw fail(400, 'A bank name is required when inviting a user into a bank.');
-    } else {
-      effectiveBank = cleanBank;
-    }
+    if (!cleanBank) throw fail(400, 'A bank name is required when inviting a Super Admin.');
+    effectiveBank = cleanBank;
   } else {
-    effectiveBank = inviterBank; // inherited; the passed bank is ignored
+    effectiveBank = inviterBank; // inherited; any passed bank is ignored
   }
 
   // 5) Send the invitation. Creates the auth user (the DB trigger creates their
@@ -92,16 +87,15 @@ export async function inviteUserCore({ token, email, redirectTo, title, role, ba
   );
   if (error) throw fail(400, error.message);
 
-  // 6) Apply role + bank on the new profile. Covers the case where the trigger
-  //    ran before the metadata was visible, and sets any non-default role.
+  // 6) Apply role, bank and lineage on the new profile. Covers the case where
+  //    the trigger ran before the metadata was visible, and records who invited
+  //    them (for the per-bank org tree).
   const newUserId = data?.user?.id || null;
   if (newUserId) {
-    const patch = {};
+    const patch = { invited_by: callerId };
     if (wantRole !== 'analyst') patch.role = wantRole;
     if (effectiveBank) patch.bank_name = effectiveBank;
-    if (Object.keys(patch).length) {
-      await admin.from('profiles').update(patch).eq('id', newUserId);
-    }
+    await admin.from('profiles').update(patch).eq('id', newUserId);
   }
 
   return { ok: true, userId: newUserId };

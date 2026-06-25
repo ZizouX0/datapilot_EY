@@ -17,3 +17,19 @@ export function rank(role) {
 export function callerOutranksOrEquals(callerRole, otherRole) {
   return rank(callerRole) >= ROLE_RANK.admin && rank(callerRole) >= rank(otherRole);
 }
+
+// Delegated invites are strictly one step down: EY → superadmin → admin →
+// analyst. Returns the single role a caller may INVITE, or null if they can't.
+export function invitableRole(callerRole) {
+  const r = rank(callerRole);
+  if (r < ROLE_RANK.admin) return null;
+  return ROLES[r - 1] || null;
+}
+
+// Roles a caller may ASSIGN to an existing user (promote/demote): everything
+// strictly below their own rank, within their bank.
+export function manageableRoles(callerRole) {
+  const r = rank(callerRole);
+  if (r < ROLE_RANK.admin) return [];
+  return ROLES.filter((role) => rank(role) < r);
+}

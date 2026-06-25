@@ -16,10 +16,18 @@ export const ROLE_LABELS = {
 export const rank = (role) => (role in ROLE_RANK ? ROLE_RANK[role] : -1);
 export const roleLabel = (role) => ROLE_LABELS[role] || role || '—';
 
-// Roles a viewer is allowed to assign: everything at or below their own rank,
-// provided they are at least an admin.
-export function assignableRoles(viewerRole) {
+// The single role a viewer may INVITE — strictly one step down (EY →
+// superadmin → admin → analyst). null if they can't invite.
+export function invitableRole(viewerRole) {
+  const vr = rank(viewerRole);
+  if (vr < ROLE_RANK.admin) return null;
+  return ROLES[vr - 1] || null;
+}
+
+// Roles a viewer may ASSIGN to an existing user (promote/demote): everything
+// strictly below their own rank.
+export function manageableRoles(viewerRole) {
   const vr = rank(viewerRole);
   if (vr < ROLE_RANK.admin) return [];
-  return ROLES.filter((r) => rank(r) <= vr);
+  return ROLES.filter((r) => rank(r) < vr);
 }

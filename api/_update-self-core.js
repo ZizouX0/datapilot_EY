@@ -56,16 +56,11 @@ export async function updateSelfCore({ token, fullName, language, avatarUrl, pho
     if (v && !PHONE_RE.test(v)) throw fail(400, 'Invalid phone number.');
     patch.phone = v || null;
   }
-  // bank_name is the organisation's bank. Inherited on invite and read-only for
-  // everyone EXCEPT a super-admin, who sets it for their tree. Gate it on role.
-  if (bankName !== undefined) {
-    const { data: caller } = await admin
-      .from('profiles').select('role').eq('id', callerId).single();
-    if (caller?.role !== 'superadmin') {
-      throw fail(403, 'Only a super-admin can change the bank.');
-    }
-    patch.bank_name = String(bankName).trim() || null;
-  }
+  // bank_name is the tenant identifier: an EY owner assigns it when inviting a
+  // bank's Super Admin, and it cascades down on every further invite. It is
+  // therefore read-only in-app and intentionally NOT accepted here (changing it
+  // would split a bank's tree across tenants). `bankName` is ignored.
+  void bankName;
   if (Object.keys(patch).length === 0) throw fail(400, 'Nothing to update.');
 
   const { error } = await admin.from('profiles').update(patch).eq('id', callerId);

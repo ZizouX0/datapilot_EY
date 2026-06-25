@@ -40,7 +40,7 @@ export async function manageUserCore({ token, action, targetId, title }) {
   const callerId = userData.user.id;
 
   const { data: caller, error: callerErr } = await admin
-    .from('profiles').select('role').eq('id', callerId).single();
+    .from('profiles').select('role, bank_name').eq('id', callerId).single();
   if (callerErr) throw fail(403, 'Could not verify your permissions.');
   const callerRole = caller?.role;
   if (rank(callerRole) < ROLE_RANK.admin) {
@@ -49,13 +49,17 @@ export async function manageUserCore({ token, action, targetId, title }) {
 
   // 2) Load the target.
   const { data: target, error: targetErr } = await admin
-    .from('profiles').select('role').eq('id', targetId).single();
+    .from('profiles').select('role, bank_name').eq('id', targetId).single();
   if (targetErr || !target) throw fail(404, 'That user no longer exists.');
 
   // You may never act on an account that outranks you (owner > superadmin >
   // admin > analyst).
   if (rank(target.role) > rank(callerRole)) {
     throw fail(403, 'You cannot manage an account above your level.');
+  }
+  // Non-EY callers are confined to their own bank.
+  if (callerRole !== 'owner' && (!caller?.bank_name || caller.bank_name !== target.bank_name)) {
+    throw fail(403, 'You can only manage users in your own bank.');
   }
 
   // 3) Perform the action.

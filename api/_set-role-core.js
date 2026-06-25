@@ -37,9 +37,9 @@ export async function setRoleCore({ token, targetId, role }) {
   if (userErr || !userData?.user) throw fail(401, 'Invalid or expired session.');
   const callerId = userData.user.id;
 
-  // 2) Load the caller's role and the target's current role.
+  // 2) Load the caller's role/bank and the target's current role/bank.
   const { data: caller, error: callerErr } = await admin
-    .from('profiles').select('role').eq('id', callerId).single();
+    .from('profiles').select('role, bank_name').eq('id', callerId).single();
   if (callerErr) throw fail(403, 'Could not verify your permissions.');
   const callerRole = caller?.role;
   if (rank(callerRole) < ROLE_RANK.admin) {
@@ -47,20 +47,24 @@ export async function setRoleCore({ token, targetId, role }) {
   }
 
   const { data: target, error: targetErr } = await admin
-    .from('profiles').select('role').eq('id', targetId).single();
+    .from('profiles').select('role, bank_name').eq('id', targetId).single();
   if (targetErr || !target) throw fail(404, 'That user no longer exists.');
   const targetRole = target.role;
 
   // 3) Enforce the hierarchy (owner > superadmin > admin > analyst).
   // Nobody can change their own role (prevents self-escalation and lock-out).
   if (targetId === callerId) throw fail(403, "You can't change your own role.");
-  // You can only grant a role at or below your own rank…
-  if (rank(role) > rank(callerRole)) {
-    throw fail(403, 'You cannot grant a role higher than your own.');
+  // Non-EY callers are confined to their own bank.
+  if (callerRole !== 'owner' && (!caller?.bank_name || caller.bank_name !== target.bank_name)) {
+    throw fail(403, 'You can only manage users in your own bank.');
   }
-  // …and you can't modify someone who outranks you.
-  if (rank(targetRole) > rank(callerRole)) {
-    throw fail(403, 'You cannot change the role of someone above your level.');
+  // You can only set a role STRICTLY below your own (no peers, no superiors)…
+  if (rank(role) >= rank(callerRole)) {
+    throw fail(403, 'You cannot grant a role at or above your own.');
+  }
+  // …and you can only change someone who is strictly below you.
+  if (rank(targetRole) >= rank(callerRole)) {
+    throw fail(403, 'You cannot change the role of someone at or above your level.');
   }
 
   if (role === targetRole) {

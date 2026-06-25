@@ -1,8 +1,8 @@
 -- ============================================================================
 -- DataPilot — ONE-SHOT SETUP + TEST USERS
 -- Run this whole file ONCE in the DataPilot Supabase SQL editor.
--- It applies phase3 → phase3b → phase3c → phase3d → phase3e → phase3f (in order),
--- then seeds 3 test accounts (superadmin / admin / analyst), all auto-confirmed.
+-- It applies phase3 → phase3b → phase3c → phase3d → phase3e → phase3f → phase3g
+-- (in order), then seeds 3 test accounts (superadmin / admin / analyst).
 -- Safe to re-run: every step is idempotent and the seed skips existing users.
 --
 -- Test logins (password is the same for all three):  Test1234!
@@ -343,7 +343,45 @@ notify pgrst, 'reload schema';
 
 
 -- ##########################################################################
--- ## STEP 7 / 7 — seed 3 test accounts (superadmin / admin / analyst)
+-- ## STEP 7 / 8 — phase3g.sql (strict per-bank isolation + invite lineage)
+-- ##########################################################################
+alter table public.profiles
+  add column if not exists invited_by uuid references auth.users (id) on delete set null;
+
+create or replace function public.my_bank()
+returns text language sql stable security definer set search_path = public
+as $$ select bank_name from public.profiles where id = auth.uid(); $$;
+
+create or replace function public.bank_of(uid uuid)
+returns text language sql stable security definer set search_path = public
+as $$ select bank_name from public.profiles where id = uid; $$;
+
+drop policy if exists "profiles_select_admin" on public.profiles;
+create policy "profiles_select_admin" on public.profiles for select to authenticated
+  using ( public.is_owner() or (public.is_admin() and bank_name = public.my_bank()) );
+
+drop policy if exists "submissions_select_admin" on public.submissions;
+create policy "submissions_select_admin" on public.submissions for select to authenticated
+  using ( public.is_owner() or (public.is_admin() and public.bank_of(analyst_id) = public.my_bank()) );
+
+drop policy if exists "submissions_delete_own" on public.submissions;
+create policy "submissions_delete_own" on public.submissions for delete to authenticated
+  using ( auth.uid() = analyst_id or public.is_owner()
+          or (public.is_admin() and public.bank_of(analyst_id) = public.my_bank()) );
+
+drop policy if exists "dimensions_admin_write" on public.dimensions;
+create policy "dimensions_admin_write" on public.dimensions for all to authenticated
+  using ( public.is_owner() ) with check ( public.is_owner() );
+
+drop policy if exists "indicators_admin_write" on public.indicators;
+create policy "indicators_admin_write" on public.indicators for all to authenticated
+  using ( public.is_owner() ) with check ( public.is_owner() );
+
+notify pgrst, 'reload schema';
+
+
+-- ##########################################################################
+-- ## STEP 8 / 8 — seed 3 test accounts (superadmin / admin / analyst)
 -- ##########################################################################
 -- Creates auto-confirmed auth users + identities, then sets role + bank on the
 -- profile rows the handle_new_user trigger creates. Re-running skips existing

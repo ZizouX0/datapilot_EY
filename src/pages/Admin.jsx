@@ -5,9 +5,11 @@ import AdminQuestionnaire from './admin/AdminQuestionnaire';
 import AdminUsers from './admin/AdminUsers';
 import AdminSubmissions from './admin/AdminSubmissions';
 
+// `ownerOnly` tabs are reserved for EY (the questionnaire is a single shared
+// definition only EY may edit).
 const TABS = [
   { id: 'submissions', label: 'Submissions' },
-  { id: 'questionnaire', label: 'Questionnaire' },
+  { id: 'questionnaire', label: 'Questionnaire', ownerOnly: true },
   { id: 'users', label: 'Users & roles' },
 ];
 
@@ -23,8 +25,12 @@ const PANELS = {
 export default function Admin() {
   const user = useAuthStore(s => s.user);
   const role = useAuthStore(s => s.role);
+  const isOwner = role === 'owner';
+  const tabs = TABS.filter(t => !t.ownerOnly || isOwner);
   const [tab, setTab] = useState('submissions');
-  const Panel = PANELS[tab] || AdminSubmissions;
+  // If a non-owner somehow lands on an owner-only tab, fall back to submissions.
+  const activeTab = tabs.some(t => t.id === tab) ? tab : 'submissions';
+  const Panel = PANELS[activeTab] || AdminSubmissions;
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -40,12 +46,12 @@ export default function Admin() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-gray-200 mb-6">
-        {TABS.map(t => (
+        {tabs.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
-              tab === t.id
+              activeTab === t.id
                 ? 'border-ey-yellow text-ey-charcoal font-semibold'
                 : 'border-transparent text-gray-500 hover:text-gray-800'
             }`}
