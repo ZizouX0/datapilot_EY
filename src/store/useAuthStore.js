@@ -114,8 +114,15 @@ const useAuthStore = create((set, get) => ({
       password,
     });
     if (error) {
-      set({ error: error.message });
-      return { error: error.message };
+      // error.message is usually a clean string, but some backend 5xx responses
+      // surface as an empty/object message that would render as "{}". Fall back
+      // to a readable line so the user is never shown a bare object.
+      const msg =
+        (typeof error.message === 'string' && error.message.trim() && error.message !== '{}'
+          ? error.message
+          : 'Could not sign in. Please check your email and password and try again.');
+      set({ error: msg });
+      return { error: msg };
     }
     // onAuthStateChange will populate session/role; do it eagerly too so the
     // caller can navigate immediately without a flash of the login screen.

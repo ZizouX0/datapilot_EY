@@ -343,13 +343,19 @@ begin
     insert into auth.users (
       instance_id, id, aud, role, email, encrypted_password,
       email_confirmed_at, created_at, updated_at,
-      raw_app_meta_data, raw_user_meta_data
+      raw_app_meta_data, raw_user_meta_data,
+      -- GoTrue reads these token columns as text and 500s on NULL during
+      -- login, so seed them as '' (empty string) rather than leaving NULL.
+      confirmation_token, recovery_token, email_change,
+      email_change_token_new, email_change_token_current,
+      phone_change, phone_change_token, reauthentication_token
     ) values (
       '00000000-0000-0000-0000-000000000000', u, 'authenticated', 'authenticated',
       rec.v ->> 'email', crypt('Test1234!', gen_salt('bf')),
       now(), now(), now(),
       '{"provider":"email","providers":["email"]}'::jsonb,
-      jsonb_build_object('full_name', rec.v ->> 'name')
+      jsonb_build_object('full_name', rec.v ->> 'name'),
+      '', '', '', '', '', '', '', ''
     );
 
     insert into auth.identities (
@@ -361,6 +367,19 @@ begin
       'email', now(), now(), now()
     );
   end loop;
+
+  -- Heal any rows seeded before this fix: NULL token columns make GoTrue 500
+  -- on login. Coalesce them to '' for the test accounts.
+  update auth.users
+     set confirmation_token         = coalesce(confirmation_token, ''),
+         recovery_token             = coalesce(recovery_token, ''),
+         email_change               = coalesce(email_change, ''),
+         email_change_token_new     = coalesce(email_change_token_new, ''),
+         email_change_token_current = coalesce(email_change_token_current, ''),
+         phone_change               = coalesce(phone_change, ''),
+         phone_change_token         = coalesce(phone_change_token, ''),
+         reauthentication_token     = coalesce(reauthentication_token, '')
+   where email like '%@datapilot.test';
 
   -- Set role + bank + names on the profiles the trigger just created.
   update public.profiles p
