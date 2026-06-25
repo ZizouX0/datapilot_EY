@@ -4,16 +4,21 @@ import { roleLabel } from '../lib/roles';
 import AdminQuestionnaire from './admin/AdminQuestionnaire';
 import AdminUsers from './admin/AdminUsers';
 import AdminSubmissions from './admin/AdminSubmissions';
+import AdminDepartments from './admin/AdminDepartments';
 
+// Tabs everyone with admin access sees, plus a super-admin-only "Departments"
+// tab (org setup). `superadmin: true` entries are filtered out for plain admins.
 const TABS = [
   { id: 'submissions', label: 'Submissions' },
   { id: 'questionnaire', label: 'Questionnaire' },
+  { id: 'departments', label: 'Departments', superadmin: true },
   { id: 'users', label: 'Users & roles' },
 ];
 
 const PANELS = {
   submissions: AdminSubmissions,
   questionnaire: AdminQuestionnaire,
+  departments: AdminDepartments,
   users: AdminUsers,
 };
 
@@ -23,7 +28,9 @@ const PANELS = {
 export default function Admin() {
   const user = useAuthStore(s => s.user);
   const role = useAuthStore(s => s.role);
+  const isSuperAdmin = useAuthStore(s => s.isSuperAdmin());
   const [tab, setTab] = useState('submissions');
+  const tabs = TABS.filter(t => !t.superadmin || isSuperAdmin);
   const Panel = PANELS[tab] || AdminSubmissions;
 
   return (
@@ -40,7 +47,7 @@ export default function Admin() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-gray-200 mb-6">
-        {TABS.map(t => (
+        {tabs.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
