@@ -3,8 +3,30 @@ import { useState, useEffect } from 'react';
 import useAppStore from '../store/useAppStore';
 import useAuthStore from '../store/useAuthStore';
 import useAssessmentStore from '../store/useAssessmentStore';
+import useSettingsStore from '../store/useSettingsStore';
 import LanguageToggle from '../components/ui/LanguageToggle';
 import { INDICATORS, DIMENSIONS } from '../data/indicators';
+
+// Co-located copy for the group-assessment card (a Model B addition). The
+// surrounding solo setup form is part of the existing English solo flow.
+const WCOPY = {
+  en: {
+    gEyebrow: 'Group assessment',
+    gTitle: 'Your department has dimensions to fill',
+    gAssigned: (list) => `You’ve been assigned ${list} on your bank’s shared assessment.`,
+    gContribute: 'Contribute to the group assessment →',
+    gOrSolo: '…or run a solo assessment below',
+    soloEyebrow: 'Solo assessment',
+  },
+  fr: {
+    gEyebrow: 'Évaluation groupée',
+    gTitle: 'Votre département a des dimensions à remplir',
+    gAssigned: (list) => `Les dimensions ${list} vous ont été affectées sur l’évaluation partagée de votre banque.`,
+    gContribute: 'Contribuer à l’évaluation groupée →',
+    gOrSolo: '…ou réalisez une évaluation solo ci-dessous',
+    soloEyebrow: 'Évaluation solo',
+  },
+};
 
 const ROLES = [
   'Chief Data Officer',
@@ -73,6 +95,7 @@ export default function Welcome() {
   const myAssignedDims = useAssessmentStore(s => s.myAssignedDims);
   useEffect(() => { loadActive(); }, [loadActive]);
   const groupDims = (groupAssessment && groupAssessment.status === 'draft') ? myAssignedDims() : [];
+  const wc = WCOPY[useSettingsStore(s => s.language)] || WCOPY.en;
 
   // Derived from live content so the copy matches the current questionnaire.
   const WORKFLOW = buildWorkflow(INDICATORS.length, Object.keys(DIMENSIONS).length);
@@ -170,23 +193,23 @@ export default function Welcome() {
               the analyst's department on an active draft. Solo stays available. */}
           {groupDims.length > 0 && (
             <div className="bg-white rounded-xl border-2 border-ey-yellow p-5 shadow-sm">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-ey-charcoal/60">Group assessment</div>
-              <h3 className="text-base font-semibold text-gray-800 mt-0.5">Your department has dimensions to fill</h3>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-ey-charcoal/60">{wc.gEyebrow}</div>
+              <h3 className="text-base font-semibold text-gray-800 mt-0.5">{wc.gTitle}</h3>
               <p className="text-sm text-gray-600 mt-1">
-                You’ve been assigned {groupDims.map(d => `${d} · ${DIMENSIONS[d].name}`).join(', ')} on your bank’s shared assessment.
+                {wc.gAssigned(groupDims.map(d => `${d} · ${DIMENSIONS[d].name}`).join(', '))}
               </p>
               <button
                 onClick={() => navigate('/group')}
                 className="mt-3 w-full bg-ey-charcoal text-ey-yellow font-semibold rounded-lg py-2.5 text-sm hover:bg-gray-800"
               >
-                Contribute to the group assessment →
+                {wc.gContribute}
               </button>
-              <div className="text-[11px] text-gray-400 text-center mt-2">…or run a solo assessment below</div>
+              <div className="text-[11px] text-gray-400 text-center mt-2">{wc.gOrSolo}</div>
             </div>
           )}
           <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
           {groupDims.length > 0 && (
-            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Solo assessment</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">{wc.soloEyebrow}</div>
           )}
           <div className="flex items-start justify-between mb-1">
             <h2 className="text-xl font-semibold text-gray-800">Set up your assessment</h2>
