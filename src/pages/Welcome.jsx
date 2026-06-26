@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useAppStore from '../store/useAppStore';
 import useAuthStore from '../store/useAuthStore';
+import useAssessmentStore from '../store/useAssessmentStore';
 import { INDICATORS, DIMENSIONS } from '../data/indicators';
 
 const ROLES = [
@@ -61,6 +62,16 @@ export default function Welcome() {
   // them), not chosen here. Read-only.
   const authBank = useAuthStore(s => s.bankName) || '';
   const signOut = useAuthStore(s => s.signOut);
+
+  // Does this analyst have a group (Model B) assessment to contribute to? We
+  // load the bank's active assessment and check which dimensions are assigned to
+  // their department. Subscribing to `assignments` keeps the card reactive.
+  const loadActive = useAssessmentStore(s => s.loadActive);
+  const groupAssessment = useAssessmentStore(s => s.assessment);
+  useAssessmentStore(s => s.assignments); // re-render when assignments load
+  const myAssignedDims = useAssessmentStore(s => s.myAssignedDims);
+  useEffect(() => { loadActive(); }, [loadActive]);
+  const groupDims = (groupAssessment && groupAssessment.status === 'draft') ? myAssignedDims() : [];
 
   // Derived from live content so the copy matches the current questionnaire.
   const WORKFLOW = buildWorkflow(INDICATORS.length, Object.keys(DIMENSIONS).length);
@@ -149,7 +160,26 @@ export default function Welcome() {
 
       {/* Right panel — sign-in / profile form */}
       <div className="flex-1 bg-gray-50 flex items-center justify-center p-10">
-        <div className="bg-white rounded-xl border border-gray-200 p-8 w-full max-w-md shadow-sm">
+        <div className="w-full max-w-md flex flex-col gap-4">
+          {/* Group assessment invitation — only when a dimension is assigned to
+              the analyst's department on an active draft. Solo stays available. */}
+          {groupDims.length > 0 && (
+            <div className="bg-white rounded-xl border-2 border-ey-yellow p-5 shadow-sm">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-ey-charcoal/60">Group assessment</div>
+              <h3 className="text-base font-semibold text-gray-800 mt-0.5">Your department has dimensions to fill</h3>
+              <p className="text-sm text-gray-600 mt-1">
+                You’ve been assigned {groupDims.map(d => `${d} · ${DIMENSIONS[d].name}`).join(', ')} on your bank’s shared assessment.
+              </p>
+              <button
+                onClick={() => navigate('/group')}
+                className="mt-3 w-full bg-ey-charcoal text-ey-yellow font-semibold rounded-lg py-2.5 text-sm hover:bg-gray-800"
+              >
+                Contribute to the group assessment →
+              </button>
+              <div className="text-[11px] text-gray-400 text-center mt-2">…or run a solo assessment below</div>
+            </div>
+          )}
+          <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
           <div className="flex items-start justify-between mb-1">
             <h2 className="text-xl font-semibold text-gray-800">Set up your assessment</h2>
             <button
@@ -240,6 +270,7 @@ export default function Welcome() {
               Start Evaluation →
             </button>
           </div>
+        </div>
         </div>
       </div>
     </div>

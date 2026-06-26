@@ -14,6 +14,7 @@ const Landing = lazy(() => import('./pages/Landing'));
 const Welcome = lazy(() => import('./pages/Welcome'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Questionnaire = lazy(() => import('./pages/Questionnaire'));
+const GroupContributor = lazy(() => import('./pages/GroupContributor'));
 const Results = lazy(() => import('./pages/Results'));
 const GapAnalysis = lazy(() => import('./pages/GapAnalysis'));
 const Compliance = lazy(() => import('./pages/Compliance'));
@@ -118,6 +119,9 @@ function AppRoutes() {
       {/* The assessment workflow is analyst-only; admins are sent to /admin. */}
       <Route path="/profile" element={<RequireAuth><RequireAnalyst><Layout><Profile /></Layout></RequireAnalyst></RequireAuth>} />
       <Route path="/assessment" element={<RequireAuth><RequireAnalyst><Layout><Questionnaire /></Layout></RequireAnalyst></RequireAuth>} />
+      {/* Group (Model B) contributor view — an analyst filling their department's
+          assigned dimensions on the bank's shared assessment. */}
+      <Route path="/group" element={<RequireAuth><RequireAnalyst><Layout><GroupContributor /></Layout></RequireAnalyst></RequireAuth>} />
       <Route
         path="/results"
         element={<RequireAuth><RequireAnalyst><Layout><RequireComplete><Results /></RequireComplete></Layout></RequireAnalyst></RequireAuth>}
