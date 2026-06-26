@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import useAuthStore from '../store/useAuthStore';
+import LanguageToggle from '../components/ui/LanguageToggle';
 
 // Where invited users land after clicking the email link. Supabase establishes
 // a session from the link automatically (detectSessionInUrl), so here we just
@@ -31,7 +32,10 @@ export default function SetPassword() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen relative">
+      <div className="absolute top-4 right-4 z-10">
+        <LanguageToggle variant="light" />
+      </div>
       <div className="w-[42%] min-w-[360px] bg-ey-charcoal flex flex-col justify-between p-12">
         <div>
           <div className="text-6xl font-bold text-ey-yellow leading-none">EY</div>

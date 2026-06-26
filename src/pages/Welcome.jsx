@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import useAppStore from '../store/useAppStore';
 import useAuthStore from '../store/useAuthStore';
 import useAssessmentStore from '../store/useAssessmentStore';
+import LanguageToggle from '../components/ui/LanguageToggle';
 import { INDICATORS, DIMENSIONS } from '../data/indicators';
 
 const ROLES = [
@@ -108,7 +109,11 @@ export default function Welcome() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen relative">
+      {/* Language switch — always available. */}
+      <div className="absolute top-4 right-4 z-10">
+        <LanguageToggle variant="light" />
+      </div>
       {/* Left panel — branding + plain-language workflow */}
       <div className="w-[42%] min-w-[360px] bg-ey-charcoal flex flex-col justify-between p-12">
         <div>

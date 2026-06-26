@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { INDICATORS, DIMENSIONS } from '../data/indicators';
+import LanguageToggle from '../components/ui/LanguageToggle';
 
 // Public landing page — the first thing anyone sees, signed in or not. It leads
 // with WHAT DataPilot is and WHY it is credible (the frameworks it is built on
@@ -40,12 +41,15 @@ export default function Landing() {
             <span className="bg-ey-yellow text-ey-charcoal font-bold px-2 py-0.5 rounded text-sm leading-none">EY</span>
             <span className="text-lg font-light">DataPilot</span>
           </div>
-          <Link
-            to="/login"
-            className="text-sm font-semibold border border-gray-500 hover:border-ey-yellow hover:text-ey-yellow text-gray-200 rounded-lg px-4 py-1.5 transition-colors"
-          >
-            Sign in
-          </Link>
+          <div className="flex items-center gap-3">
+            <LanguageToggle variant="dark" />
+            <Link
+              to="/login"
+              className="text-sm font-semibold border border-gray-500 hover:border-ey-yellow hover:text-ey-yellow text-gray-200 rounded-lg px-4 py-1.5 transition-colors"
+            >
+              Sign in
+            </Link>
+          </div>
         </div>
       </header>
 

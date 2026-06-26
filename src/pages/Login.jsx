@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import { isSupabaseConfigured } from '../lib/supabase';
+import LanguageToggle from '../components/ui/LanguageToggle';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -35,7 +36,11 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen relative">
+      {/* Language switch — always available, even before signing in. */}
+      <div className="absolute top-4 right-4 z-10">
+        <LanguageToggle variant="light" />
+      </div>
       {/* Left panel — EY branding (mirrors the look of the rest of the app) */}
       <div className="w-[42%] min-w-[360px] bg-ey-charcoal flex flex-col justify-between p-12">
         <div>

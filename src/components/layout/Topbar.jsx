@@ -4,6 +4,7 @@ import useAuthStore from '../../store/useAuthStore';
 import useSettingsStore from '../../store/useSettingsStore';
 import { roleLabel } from '../../lib/roles';
 import Avatar from '../ui/Avatar';
+import LanguageToggle from '../ui/LanguageToggle';
 
 export default function Topbar() {
   const navigate = useNavigate();
@@ -36,6 +37,9 @@ export default function Topbar() {
         <span className="text-gray-400 text-sm hidden sm:inline">{t('top.subtitle')}</span>
       </div>
       <div className="ml-auto flex items-center gap-2 text-sm">
+        {/* Language switch — always available. */}
+        <LanguageToggle variant="dark" />
+
         {/* Assessment-only chrome — hidden from admins, who don't run assessments. */}
         {!isAdmin && (
           <>
