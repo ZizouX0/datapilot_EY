@@ -1,21 +1,84 @@
 import { useEffect, useMemo, useState } from 'react';
 import useAssessmentStore from '../../store/useAssessmentStore';
 import useDepartmentsStore from '../../store/useDepartmentsStore';
+import useSettingsStore from '../../store/useSettingsStore';
 import { DIMENSIONS, INDICATORS } from '../../data/indicators';
 import { TUNISIA_SUGGESTED_MAPPING } from '../../data/tunisiaDefaults';
 
-// Coordinator screen for a group (Model B) assessment:
-//   • create the shared draft for the bank;
-//   • map each dimension to the department that owns it (or apply the suggested
-//     Tunisian mapping in one click);
-//   • watch live per-dimension progress and scores as analysts fill;
-//   • finalize into a submissions row (feeds the existing review/export).
+const COPY = {
+  en: {
+    title: 'Group assessment',
+    introCreate: 'One shared assessment your departments fill together. Create the draft, assign each dimension to a department, then finalize when everyone’s done.',
+    nameLabel: 'Assessment name (optional)',
+    namePlaceholder: 'e.g. 2026 Data Maturity Assessment',
+    create: 'Create group assessment',
+    createdMsg: 'Draft assessment created. Now assign each dimension to a department.',
+    suggested: '⚡ Suggested Tunisian mapping',
+    needDepts: 'Create your departments first (Departments tab).',
+    suggestedMsg: 'Applied the suggested Tunisian mapping. Adjust any dimension as needed.',
+    draft: 'Draft',
+    finalized: 'Finalized',
+    introDraft: 'Assign each dimension to the department that owns it. Analysts then fill only their dimensions.',
+    introFinal: 'This assessment is locked and has been added to Submissions.',
+    colDim: 'Dimension',
+    colDept: 'Owning department',
+    colProg: 'Progress',
+    suggestedFor: 'Suggested',
+    unassigned: '— Unassigned —',
+    globalScore: 'Global score',
+    maturity: 'Maturity',
+    level: (n) => `Level ${n}`,
+    bct: 'BCT rate',
+    finalize: 'Finalize & submit',
+    finalizing: 'Finalizing…',
+    startNew: 'Start a new assessment',
+    confirmFinalize: 'Finalize this assessment? It will be locked and added to Submissions.',
+    finalizedMsg: (s) => `Assessment finalized and submitted (global score ${s}/5). See the Submissions tab.`,
+    loading: 'Loading…',
+  },
+  fr: {
+    title: 'Évaluation groupée',
+    introCreate: 'Une évaluation partagée que vos départements remplissent ensemble. Créez le brouillon, affectez chaque dimension à un département, puis finalisez une fois que tout le monde a terminé.',
+    nameLabel: 'Nom de l’évaluation (facultatif)',
+    namePlaceholder: 'ex. Évaluation de maturité des données 2026',
+    create: 'Créer l’évaluation groupée',
+    createdMsg: 'Brouillon créé. Affectez maintenant chaque dimension à un département.',
+    suggested: '⚡ Affectation tunisienne suggérée',
+    needDepts: 'Créez d’abord vos départements (onglet Départements).',
+    suggestedMsg: 'Affectation tunisienne suggérée appliquée. Ajustez chaque dimension si nécessaire.',
+    draft: 'Brouillon',
+    finalized: 'Finalisée',
+    introDraft: 'Affectez chaque dimension au département qui en est responsable. Les analystes ne remplissent alors que leurs dimensions.',
+    introFinal: 'Cette évaluation est verrouillée et a été ajoutée aux Évaluations.',
+    colDim: 'Dimension',
+    colDept: 'Département responsable',
+    colProg: 'Avancement',
+    suggestedFor: 'Suggéré',
+    unassigned: '— Non affecté —',
+    globalScore: 'Score global',
+    maturity: 'Maturité',
+    level: (n) => `Niveau ${n}`,
+    bct: 'Taux BCT',
+    finalize: 'Finaliser et soumettre',
+    finalizing: 'Finalisation…',
+    startNew: 'Démarrer une nouvelle évaluation',
+    confirmFinalize: 'Finaliser cette évaluation ? Elle sera verrouillée et ajoutée aux Évaluations.',
+    finalizedMsg: (s) => `Évaluation finalisée et soumise (score global ${s}/5). Voir l’onglet Évaluations.`,
+    loading: 'Chargement…',
+  },
+};
+
+// Coordinator screen for a group (Model B) assessment: create the shared draft,
+// map each dimension to its owning department, watch live progress and scores,
+// then finalize into a submissions row (feeds the existing review/export).
 export default function AdminGroupAssessment() {
   const {
     assessment, assignments, answers, loading, saving, error,
     loadActive, createAssessment, setAssignment, applySuggestedMapping, scores, finalize,
   } = useAssessmentStore();
   const { departments, list: listDepartments } = useDepartmentsStore();
+  const lang = useSettingsStore(s => s.language);
+  const c = COPY[lang] || COPY.en;
 
   const [title, setTitle] = useState('');
   const [busy, setBusy] = useState(false);
@@ -30,7 +93,6 @@ export default function AdminGroupAssessment() {
     return m;
   }, [assignments]);
 
-  // Per-dimension answered/total from the shared answers + content.
   const progress = useMemo(() => {
     const p = {};
     dims.forEach(d => {
@@ -53,7 +115,7 @@ export default function AdminGroupAssessment() {
     const { error: err } = await createAssessment({ title });
     setBusy(false);
     if (err) flash(false, err);
-    else { setTitle(''); flash(true, 'Draft assessment created. Now assign each dimension to a department.'); }
+    else { setTitle(''); flash(true, c.createdMsg); }
   }
 
   async function handleAssign(dimCode, departmentId) {
@@ -64,51 +126,48 @@ export default function AdminGroupAssessment() {
   }
 
   async function handleSuggested() {
-    if (!departments.length) { flash(false, 'Create your departments first (Departments tab).'); return; }
+    if (!departments.length) { flash(false, c.needDepts); return; }
     setBusy(true); setMsg(null);
     const { error: err } = await applySuggestedMapping(departments);
     setBusy(false);
     if (err) flash(false, err);
-    else flash(true, 'Applied the suggested Tunisian mapping. Adjust any dimension as needed.');
+    else flash(true, c.suggestedMsg);
   }
 
   async function handleFinalize() {
-    if (!window.confirm('Finalize this assessment? It will be locked and added to Submissions.')) return;
+    if (!window.confirm(c.confirmFinalize)) return;
     setBusy(true); setMsg(null);
     const { error: err } = await finalize();
     setBusy(false);
     if (err) flash(false, err);
-    else flash(true, `Assessment finalized and submitted (global score ${s.globalScore ?? '—'}/5). See the Submissions tab.`);
+    else flash(true, c.finalizedMsg(s.globalScore ?? '—'));
   }
 
-  if (loading) return <p className="text-sm text-gray-400 py-6 text-center">Loading…</p>;
+  if (loading) return <p className="text-sm text-gray-400 py-6 text-center">{c.loading}</p>;
 
   // ── No assessment yet → create one ────────────────────────────────────
   if (!assessment) {
     return (
       <div className="flex flex-col gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-800">Group assessment</h2>
-          <p className="text-sm text-gray-500">
-            One shared assessment your departments fill together. Create the draft, assign each
-            dimension to a department, then finalize when everyone’s done.
-          </p>
+          <h2 className="text-lg font-semibold text-gray-800">{c.title}</h2>
+          <p className="text-sm text-gray-500">{c.introCreate}</p>
         </div>
         {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
         {msg && <p className={`text-sm rounded-lg px-3 py-2 border ${msg.ok ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-600 bg-red-50 border-red-200'}`}>{msg.text}</p>}
         <div className="rounded-xl border border-gray-200 bg-white p-4 flex flex-col gap-3 max-w-lg">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Assessment name (optional)</label>
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{c.nameLabel}</label>
           <input
             value={title}
             onChange={e => setTitle(e.target.value)}
-            placeholder="e.g. 2026 Data Maturity Assessment"
+            placeholder={c.namePlaceholder}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
           />
           <button
             onClick={handleCreate}
             disabled={busy}
             className="self-start bg-ey-yellow text-ey-charcoal font-semibold rounded-lg px-4 py-2 text-sm hover:bg-yellow-400 disabled:opacity-40"
-          >Create group assessment</button>
+          >{c.create}</button>
         </div>
       </div>
     );
@@ -121,23 +180,19 @@ export default function AdminGroupAssessment() {
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-lg font-semibold text-gray-800">
-            {assessment.title || 'Group assessment'}
+            {assessment.title || c.title}
             <span className={`ml-2 text-[11px] font-semibold px-2 py-0.5 rounded uppercase tracking-wide ${
               finalized ? 'bg-gray-200 text-gray-600' : 'bg-green-100 text-green-700'
-            }`}>{finalized ? 'Finalized' : 'Draft'}</span>
+            }`}>{finalized ? c.finalized : c.draft}</span>
           </h2>
-          <p className="text-sm text-gray-500">
-            {finalized
-              ? 'This assessment is locked and has been added to Submissions.'
-              : 'Assign each dimension to the department that owns it. Analysts then fill only their dimensions.'}
-          </p>
+          <p className="text-sm text-gray-500">{finalized ? c.introFinal : c.introDraft}</p>
         </div>
         {!finalized && (
           <button
             onClick={handleSuggested}
             disabled={busy}
             className="text-xs font-semibold bg-ey-charcoal text-ey-yellow rounded-lg px-3 py-1.5 hover:bg-gray-800 disabled:opacity-40 flex-shrink-0"
-          >⚡ Suggested Tunisian mapping</button>
+          >{c.suggested}</button>
         )}
       </div>
 
@@ -147,7 +202,7 @@ export default function AdminGroupAssessment() {
       {/* Dimension → department mapping + progress */}
       <div className="rounded-xl border border-gray-200 overflow-hidden">
         <div className="grid grid-cols-[1fr_auto_auto] gap-3 bg-gray-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
-          <span>Dimension</span><span className="w-56">Owning department</span><span className="w-24 text-right">Progress</span>
+          <span>{c.colDim}</span><span className="w-56">{c.colDept}</span><span className="w-24 text-right">{c.colProg}</span>
         </div>
         {dims.map(d => {
           const dim = DIMENSIONS[d];
@@ -158,7 +213,7 @@ export default function AdminGroupAssessment() {
               <div className="min-w-0">
                 <span className="text-sm font-medium" style={{ color: dim.color }}>{d}</span>
                 <span className="text-sm text-gray-700"> · {dim.name}</span>
-                <div className="text-[11px] text-gray-400">Suggested: {TUNISIA_SUGGESTED_MAPPING[d] || '—'}</div>
+                <div className="text-[11px] text-gray-400">{c.suggestedFor}: {TUNISIA_SUGGESTED_MAPPING[d] || '—'}</div>
               </div>
               <select
                 value={assignedDept[d] || ''}
@@ -166,7 +221,7 @@ export default function AdminGroupAssessment() {
                 onChange={e => handleAssign(d, e.target.value)}
                 className="w-56 border border-gray-300 rounded-lg px-2 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-ey-yellow disabled:opacity-60"
               >
-                <option value="">— Unassigned —</option>
+                <option value="">{c.unassigned}</option>
                 {departments.map(dep => <option key={dep.id} value={dep.id}>{dep.name}</option>)}
               </select>
               <div className="w-24 text-right">
@@ -184,15 +239,15 @@ export default function AdminGroupAssessment() {
       <div className="rounded-xl border border-gray-200 bg-white p-4 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Global score</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{c.globalScore}</div>
             <div className="text-3xl font-bold font-mono text-ey-charcoal">{s.globalScore ?? '—'}<span className="text-base text-gray-400">/5</span></div>
           </div>
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Maturity</div>
-            <div className="text-xl font-semibold text-gray-700">{s.maturityLevel ? `Level ${s.maturityLevel}` : '—'}</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{c.maturity}</div>
+            <div className="text-xl font-semibold text-gray-700">{s.maturityLevel ? c.level(s.maturityLevel) : '—'}</div>
           </div>
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">BCT rate</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{c.bct}</div>
             <div className="text-xl font-semibold text-gray-700">{s.bctRate}%</div>
           </div>
         </div>
@@ -201,14 +256,14 @@ export default function AdminGroupAssessment() {
             onClick={handleFinalize}
             disabled={busy || saving}
             className="bg-ey-yellow text-ey-charcoal font-semibold rounded-lg px-5 py-2.5 text-sm hover:bg-yellow-400 disabled:opacity-40"
-          >{saving ? 'Finalizing…' : 'Finalize & submit'}</button>
+          >{saving ? c.finalizing : c.finalize}</button>
         )}
         {finalized && (
           <button
             onClick={handleCreate}
             disabled={busy}
             className="text-sm font-semibold text-gray-600 border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50 disabled:opacity-40"
-          >Start a new assessment</button>
+          >{c.startNew}</button>
         )}
       </div>
     </div>

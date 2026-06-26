@@ -99,6 +99,15 @@ const STRINGS = {
   'account.sub.empty':     { en: 'You haven’t submitted any assessments yet.', fr: 'Vous n’avez encore soumis aucune évaluation.' },
   'account.sub.confirmDelete': { en: 'Delete this submission? This cannot be undone.', fr: 'Supprimer cette soumission ? Action irréversible.' },
 
+  // Admin shell (hub tabs + header)
+  'adm.title':            { en: 'Administration', fr: 'Administration' },
+  'adm.signedInAs':       { en: 'Signed in as',   fr: 'Connecté en tant que' },
+  'adm.tab.submissions':  { en: 'Submissions',      fr: 'Évaluations' },
+  'adm.tab.group':        { en: 'Group assessment', fr: 'Évaluation groupée' },
+  'adm.tab.questionnaire':{ en: 'Questionnaire',    fr: 'Questionnaire' },
+  'adm.tab.departments':  { en: 'Departments',      fr: 'Départements' },
+  'adm.tab.users':        { en: 'Users & roles',    fr: 'Utilisateurs et rôles' },
+
   // Roles / status (shared)
   'role.owner':      { en: 'EY Admin',    fr: 'Admin EY' },
   'role.superadmin': { en: 'Super Admin', fr: 'Super Admin' },
