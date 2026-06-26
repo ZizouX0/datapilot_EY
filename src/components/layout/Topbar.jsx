@@ -64,6 +64,17 @@ export default function Topbar() {
           </>
         )}
 
+        {/* Guide — a lost user can re-read their role and the workflow any time. */}
+        {user && (
+          <Link
+            to="/guide"
+            title="How DataPilot works and what your role does"
+            className="flex items-center gap-1 bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded text-xs font-medium"
+          >
+            <span aria-hidden>📘</span><span className="hidden sm:inline">Guide</span>
+          </Link>
+        )}
+
         {/* Authenticated identity (links to account) + role badge + sign out. */}
         {user && (
           <>
