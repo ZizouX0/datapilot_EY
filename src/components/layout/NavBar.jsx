@@ -1,8 +1,10 @@
 import { NavLink } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useAppStore from '../../store/useAppStore';
 import useAuthStore from '../../store/useAuthStore';
+import useAssessmentStore from '../../store/useAssessmentStore';
 import useSettingsStore from '../../store/useSettingsStore';
+import { INDICATORS } from '../../data/indicators';
 
 const TABS = [
   { key: 'nav.profile', path: '/profile', locked: false },
@@ -19,16 +21,36 @@ export default function NavBar() {
   const t = useSettingsStore(s => s.t);
   const [tooltip, setTooltip] = useState(null);
 
+  // Group (Model B): an analyst whose department owns a dimension on the bank's
+  // active draft gets a persistent link to it (they'd otherwise only reach it
+  // from the Welcome card). Load the assessment once for analysts.
+  const groupAssessment = useAssessmentStore(s => s.assessment);
+  const groupAnswers = useAssessmentStore(s => s.answers);
+  useAssessmentStore(s => s.assignments); // re-render when assignments load
+  const loadActive = useAssessmentStore(s => s.loadActive);
+  const myAssignedDims = useAssessmentStore(s => s.myAssignedDims);
+  useEffect(() => {
+    if (!isAdmin && !groupAssessment) loadActive();
+  }, [isAdmin, groupAssessment, loadActive]);
+
+  const groupDims = (!isAdmin && groupAssessment?.status === 'draft') ? myAssignedDims() : [];
+  const hasGroup = groupDims.length > 0;
+  const groupDone = hasGroup && INDICATORS.filter(i => groupDims.includes(i.dim)).every(i => {
+    const a = groupAnswers[i.id];
+    return a && (a.skipped || (a.score !== null && a.score !== undefined));
+  });
+
   // Admins and super-admins don't run assessments — they only get the admin
   // back-office, so they see just the Admin tab. Analysts get the assessment
-  // workflow and never see Admin.
+  // workflow, plus a Group assessment link when their department is assigned.
   const tabs = isAdmin
     ? [{ key: 'nav.admin', path: '/admin', locked: false }]
-    : TABS;
+    : (hasGroup ? [{ key: 'nav.group', path: '/group', locked: false }, ...TABS] : TABS);
 
   const profileDone = !!(profile.bankName && profile.respondentName);
 
   const doneMap = {
+    '/group': groupDone,
     '/profile': profileDone,
     '/assessment': isAssessmentComplete,
     '/results': isAssessmentComplete,

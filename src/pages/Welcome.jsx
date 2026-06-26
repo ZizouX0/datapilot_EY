@@ -185,6 +185,9 @@ export default function Welcome() {
             </div>
           )}
           <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
+          {groupDims.length > 0 && (
+            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Solo assessment</div>
+          )}
           <div className="flex items-start justify-between mb-1">
             <h2 className="text-xl font-semibold text-gray-800">Set up your assessment</h2>
             <button

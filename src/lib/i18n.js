@@ -22,6 +22,7 @@ const STRINGS = {
   'nav.gap':        { en: 'Gap Analysis',  fr: 'Analyse des écarts' },
   'nav.compliance': { en: 'Compliance',    fr: 'Conformité' },
   'nav.admin':      { en: 'Admin',         fr: 'Admin' },
+  'nav.group':      { en: 'Group assessment', fr: 'Évaluation groupée' },
   'nav.locked':     { en: 'Complete the full assessment to unlock results.', fr: 'Terminez toute l’évaluation pour débloquer les résultats.' },
 
   // Account page
@@ -99,6 +100,7 @@ const STRINGS = {
   'account.sub.confirmDelete': { en: 'Delete this submission? This cannot be undone.', fr: 'Supprimer cette soumission ? Action irréversible.' },
 
   // Roles / status (shared)
+  'role.owner':      { en: 'EY Admin',    fr: 'Admin EY' },
   'role.superadmin': { en: 'Super Admin', fr: 'Super Admin' },
   'role.admin':      { en: 'Admin',       fr: 'Admin' },
   'role.analyst':    { en: 'Analyst',     fr: 'Analyste' },
