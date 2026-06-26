@@ -7,13 +7,18 @@ import AdminSubmissions from './admin/AdminSubmissions';
 import AdminDepartments from './admin/AdminDepartments';
 import AdminGroupAssessment from './admin/AdminGroupAssessment';
 
-// Tabs everyone with admin access sees, plus a super-admin-only "Departments"
-// tab (org setup). `superadmin: true` entries are filtered out for plain admins.
+// Each tab is shown only to the roles it is actually useful to (a tab with no
+// `roles` is for everyone with admin access). This keeps each role's hub free of
+// controls the database wouldn't let them use anyway:
+//   • Questionnaire editing is admin/owner only (is_bank_admin), so super-admins
+//     don't get a Questionnaire tab they couldn't save in.
+//   • Group assessment needs a bank, which EY owners don't have.
+//   • Departments (org setup) is a super-admin responsibility.
 const TABS = [
   { id: 'submissions', label: 'Submissions' },
-  { id: 'group', label: 'Group assessment' },
-  { id: 'questionnaire', label: 'Questionnaire' },
-  { id: 'departments', label: 'Departments', superadmin: true },
+  { id: 'group', label: 'Group assessment', roles: ['superadmin', 'admin'] },
+  { id: 'questionnaire', label: 'Questionnaire', roles: ['owner', 'admin'] },
+  { id: 'departments', label: 'Departments', roles: ['superadmin'] },
   { id: 'users', label: 'Users & roles' },
 ];
 
@@ -31,10 +36,11 @@ const PANELS = {
 export default function Admin() {
   const user = useAuthStore(s => s.user);
   const role = useAuthStore(s => s.role);
-  const isSuperAdmin = useAuthStore(s => s.isSuperAdmin());
   const [tab, setTab] = useState('submissions');
-  const tabs = TABS.filter(t => !t.superadmin || isSuperAdmin);
-  const Panel = PANELS[tab] || AdminSubmissions;
+  const tabs = TABS.filter(t => !t.roles || t.roles.includes(role));
+  // If the current tab isn't available to this role, fall back to the first one.
+  const activeTab = tabs.some(t => t.id === tab) ? tab : (tabs[0]?.id || 'submissions');
+  const Panel = PANELS[activeTab] || AdminSubmissions;
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -55,7 +61,7 @@ export default function Admin() {
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
-              tab === t.id
+              activeTab === t.id
                 ? 'border-ey-yellow text-ey-charcoal font-semibold'
                 : 'border-transparent text-gray-500 hover:text-gray-800'
             }`}
