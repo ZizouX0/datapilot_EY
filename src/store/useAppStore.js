@@ -310,6 +310,13 @@ const useAppStore = create(
     set({ answers, autoFilled: true, _preFillStash: state.answers });
   },
 
+  // Clear every answer so the assessment is "all not done" again, while keeping
+  // the profile/bank and target level. Used by the top-bar Reset control so an
+  // analyst can start filling from scratch (e.g. after a test auto-fill).
+  resetAnswers() {
+    set({ answers: {}, autoFilled: false, _preFillStash: null, activeDimension: 'D1', activeSubDim: '1.1' });
+  },
+
   resetAll() {
     set({
       profile: { bankName: '', date: '', respondentName: '', role: '', email: '' },

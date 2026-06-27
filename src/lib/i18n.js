@@ -14,6 +14,14 @@ const STRINGS = {
   'top.subtitle':   { en: 'Data Maturity Steering Tool', fr: 'Outil de pilotage de la maturité des données' },
   'top.account':    { en: 'Account',  fr: 'Compte' },
   'top.signOut':    { en: 'Sign out', fr: 'Déconnexion' },
+  'top.guide':      { en: 'Guide',    fr: 'Guide' },
+  'top.skip':       { en: '⚡ Skip evaluation',   fr: '⚡ Ignorer l’évaluation' },
+  'top.skipOn':     { en: '✓ Evaluation skipped', fr: '✓ Évaluation ignorée' },
+  'top.skipTitleOn':  { en: 'Auto-fill is ON — click to remove it and restore your answers', fr: 'Le remplissage auto est ACTIVÉ — cliquez pour le retirer et restaurer vos réponses' },
+  'top.skipTitleOff': { en: 'Auto-fill all indicators with random scores (skip the evaluation)', fr: 'Remplir tous les indicateurs avec des scores aléatoires (ignorer l’évaluation)' },
+  'top.reset':        { en: '↺ Reset', fr: '↺ Réinitialiser' },
+  'top.resetTitle':   { en: 'Clear all answers and start the assessment fresh', fr: 'Effacer toutes les réponses et recommencer l’évaluation' },
+  'top.resetConfirm': { en: 'Clear all your answers and start a fresh assessment?', fr: 'Effacer toutes vos réponses et démarrer une nouvelle évaluation ?' },
 
   // Navigation tabs
   'nav.profile':    { en: 'Bank Profile',  fr: 'Profil de la banque' },

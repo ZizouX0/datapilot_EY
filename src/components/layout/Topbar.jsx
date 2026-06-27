@@ -10,6 +10,7 @@ export default function Topbar() {
   const navigate = useNavigate();
   const toggleAutoFill = useAppStore(s => s.toggleAutoFill);
   const autoFilled = useAppStore(s => s.autoFilled);
+  const resetAnswers = useAppStore(s => s.resetAnswers);
 
   const user = useAuthStore(s => s.user);
   const role = useAuthStore(s => s.role);
@@ -43,25 +44,30 @@ export default function Topbar() {
         {/* Assessment-only chrome — hidden from admins, who don't run assessments. */}
         {!isAdmin && (
           <>
-            {/* Skip evaluation — a TEST helper that fills every indicator with
-                random scores. Shown only in development so a real analyst can
-                never wipe their answers with one click in production. */}
-            {import.meta.env.DEV && (
-              <button
-                onClick={toggleAutoFill}
-                title={autoFilled
-                  ? 'Auto-fill is ON — click to remove it and restore your answers'
-                  : 'Auto-fill all indicators with random scores (skip the evaluation)'}
-                className={
-                  (autoFilled
-                    ? 'bg-ey-yellow text-ey-charcoal hover:brightness-95'
-                    : 'bg-gray-700 hover:bg-gray-600 text-gray-200') +
-                  ' px-3 py-1 rounded text-xs font-medium'
-                }
-              >
-                {autoFilled ? '✓ Evaluation skipped' : '⚡ Skip evaluation'}
-              </button>
-            )}
+            {/* Reset — clears every answer so the assessment is "all not done"
+                again and the analyst can fill it from scratch. */}
+            <button
+              onClick={() => { if (window.confirm(t('top.resetConfirm'))) resetAnswers(); }}
+              title={t('top.resetTitle')}
+              className="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded text-xs font-medium"
+            >
+              {t('top.reset')}
+            </button>
+
+            {/* Skip evaluation — a test helper that auto-fills every indicator
+                (toggle off restores the analyst's own answers). */}
+            <button
+              onClick={toggleAutoFill}
+              title={autoFilled ? t('top.skipTitleOn') : t('top.skipTitleOff')}
+              className={
+                (autoFilled
+                  ? 'bg-ey-yellow text-ey-charcoal hover:brightness-95'
+                  : 'bg-gray-700 hover:bg-gray-600 text-gray-200') +
+                ' px-3 py-1 rounded text-xs font-medium'
+              }
+            >
+              {autoFilled ? t('top.skipOn') : t('top.skip')}
+            </button>
 
             {bankName && (
               <span className="bg-gray-700 text-gray-200 px-3 py-1 rounded text-xs">
@@ -78,7 +84,7 @@ export default function Topbar() {
             title="How DataPilot works and what your role does"
             className="flex items-center gap-1 bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded text-xs font-medium"
           >
-            <span aria-hidden>📘</span><span className="hidden sm:inline">Guide</span>
+            <span aria-hidden>📘</span><span className="hidden sm:inline">{t('top.guide')}</span>
           </Link>
         )}
 
