@@ -1,16 +1,79 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAppStore from '../store/useAppStore';
+import useSettingsStore from '../store/useSettingsStore';
 import { INDICATORS, DIMENSIONS, SUBDIM_NAMES } from '../data/indicators';
 import BCTBadge from '../components/ui/BCTBadge';
 import ProxyBadge from '../components/ui/ProxyBadge';
 
+// Maturity-scale labels stay on the CMMI/Gartner scale in both languages —
+// they're part of the scoring method, not translatable UI chrome.
 const LEVEL_NAMES = ['Initial', 'Emerging', 'Defined', 'Managed', 'Optimized'];
 const GARTNER = ['Unaware', 'Aware', 'Active', 'Effective', 'Transformative'];
 const LEVEL_COLORS = ['#B71C1C', '#E65100', '#827717', '#1B5E20', '#0D47A1'];
 
+const COPY = {
+  en: {
+    complete: 'Assessment complete.',
+    completeSub: (n) => `All ${n} dimensions fully answered. Your results are ready.`,
+    viewResults: 'View Results →',
+    proxy: 'Proxy',
+    d5Title: 'D5 uses proxy-based indicators only.',
+    d5Body: 'Scores reflect observable organizational signals, not direct self-assessment. Results are indicative and weighted at 15% of the global score.',
+    skipped: 'Skipped',
+    evidenceCap: '⚠ Without documented evidence, this score will be capped at 2/5.',
+    scoringGuide: 'Scoring guide for this indicator',
+    evidenceLabel: 'Evidence reference (optional)',
+    evidencePlaceholder: 'Describe the evidence supporting your score...',
+    effective: (s, capped) => `Effective score: ${s}/5${capped ? ' (capped)' : ''}`,
+    noScore: 'No score selected',
+    skip: 'Skip this indicator',
+    undoSkip: 'Undo skip',
+    skipLimit: (dim, n) => `Skip limit reached for ${dim}. Maximum ${n} indicator${n > 1 ? 's' : ''} may be skipped per dimension.`,
+    liveScore: 'Live Score',
+    capActive: (n) => `⚠ Evidence cap active on ${n} indicator${n > 1 ? 's' : ''}`,
+    scoringRules: 'Scoring Rules',
+    ruleBct: 'BCT indicators cannot be skipped',
+    ruleCap: 'Score ≥ 3 without evidence → capped at 2/5',
+    ruleSkip: (n, dim) => `Max ${n} skips allowed in ${dim}`,
+    overall: 'Overall Progress',
+    prev: '← Previous',
+    answeredOf: (a, b) => `${a} of ${b} indicators answered`,
+    next: 'Next →',
+  },
+  fr: {
+    complete: 'Évaluation terminée.',
+    completeSub: (n) => `Les ${n} dimensions sont entièrement renseignées. Vos résultats sont prêts.`,
+    viewResults: 'Voir les résultats →',
+    proxy: 'Proxy',
+    d5Title: 'D5 utilise uniquement des indicateurs indirects (proxy).',
+    d5Body: 'Les scores reflètent des signaux organisationnels observables, pas une auto-évaluation directe. Les résultats sont indicatifs et pondérés à 15 % du score global.',
+    skipped: 'Ignoré',
+    evidenceCap: '⚠ Sans preuve documentée, ce score sera plafonné à 2/5.',
+    scoringGuide: 'Grille de notation de cet indicateur',
+    evidenceLabel: 'Référence de la preuve (facultatif)',
+    evidencePlaceholder: 'Décrivez la preuve qui justifie votre score...',
+    effective: (s, capped) => `Score effectif : ${s}/5${capped ? ' (plafonné)' : ''}`,
+    noScore: 'Aucun score sélectionné',
+    skip: 'Ignorer cet indicateur',
+    undoSkip: 'Annuler',
+    skipLimit: (dim, n) => `Limite atteinte pour ${dim}. Au maximum ${n} indicateur${n > 1 ? 's' : ''} peuvent être ignorés par dimension.`,
+    liveScore: 'Score en direct',
+    capActive: (n) => `⚠ Plafond de preuve actif sur ${n} indicateur${n > 1 ? 's' : ''}`,
+    scoringRules: 'Règles de notation',
+    ruleBct: 'Les indicateurs BCT ne peuvent pas être ignorés',
+    ruleCap: 'Score ≥ 3 sans preuve → plafonné à 2/5',
+    ruleSkip: (n, dim) => `${n} omission${n > 1 ? 's' : ''} maximum dans ${dim}`,
+    overall: 'Avancement global',
+    prev: '← Précédent',
+    answeredOf: (a, b) => `${a} sur ${b} indicateurs renseignés`,
+    next: 'Suivant →',
+  },
+};
+
 export default function Questionnaire() {
   const navigate = useNavigate();
+  const c = COPY[useSettingsStore(s => s.language)] || COPY.en;
   const answers = useAppStore(s => s.answers);
   const activeDimension = useAppStore(s => s.activeDimension);
   const activeSubDim = useAppStore(s => s.activeSubDim);
@@ -95,15 +158,15 @@ export default function Questionnaire() {
               ✓
             </div>
             <div>
-              <div className="text-sm font-semibold text-green-800">Assessment complete.</div>
-              <div className="text-xs text-green-600 mt-0.5">All {dims.length} dimensions fully answered. Your results are ready.</div>
+              <div className="text-sm font-semibold text-green-800">{c.complete}</div>
+              <div className="text-xs text-green-600 mt-0.5">{c.completeSub(dims.length)}</div>
             </div>
           </div>
           <button
             onClick={() => navigate('/results')}
             className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg text-sm hover:bg-green-700 flex-shrink-0"
           >
-            View Results →
+            {c.viewResults}
           </button>
         </div>
       )}
@@ -144,7 +207,7 @@ export default function Questionnaire() {
               </div>
               <div className="text-[10px] opacity-80 mt-0.5">{d.name.split(' ')[0]}</div>
               {d.proxy
-                ? <div className="text-[9px] mt-0.5 opacity-90 font-semibold">Proxy</div>
+                ? <div className="text-[9px] mt-0.5 opacity-90 font-semibold">{c.proxy}</div>
                 : <div className="text-[9px] mt-0.5 opacity-70">{answered}/{dimInds.length}</div>
               }
             </button>
@@ -198,9 +261,8 @@ export default function Questionnaire() {
             <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 flex items-start gap-3">
               <span className="text-gray-400 text-base flex-shrink-0 mt-0.5">ℹ</span>
               <p className="text-xs text-gray-600 leading-relaxed">
-                <span className="font-semibold text-gray-700">D5 uses proxy-based indicators only.</span>{' '}
-                Scores reflect observable organizational signals, not direct self-assessment.
-                Results are indicative and weighted at 15% of the global score.
+                <span className="font-semibold text-gray-700">{c.d5Title}</span>{' '}
+                {c.d5Body}
               </p>
             </div>
           )}
@@ -229,7 +291,7 @@ export default function Questionnaire() {
                   {ind.bct && <BCTBadge />}
                   {ind.dim === 'D5' && <ProxyBadge />}
                   {skipped && (
-                    <span className="text-xs text-gray-400 italic">Skipped</span>
+                    <span className="text-xs text-gray-400 italic">{c.skipped}</span>
                   )}
                 </div>
 
@@ -269,7 +331,7 @@ export default function Questionnaire() {
                     {/* Evidence cap warning */}
                     {capped && (
                       <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs px-3 py-2 rounded mt-2">
-                        ⚠ Without documented evidence, this score will be capped at 2/5.
+                        {c.evidenceCap}
                       </div>
                     )}
 
@@ -280,7 +342,7 @@ export default function Questionnaire() {
                         className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 cursor-pointer"
                       >
                         <span>{rubricOpen ? '▲' : '▼'}</span>
-                        <span>Scoring guide for this indicator</span>
+                        <span>{c.scoringGuide}</span>
                       </button>
                       {rubricOpen && (
                         <div className="mt-2 border border-gray-100 rounded-lg overflow-hidden">
@@ -315,10 +377,10 @@ export default function Questionnaire() {
 
                     {/* Evidence */}
                     <div className="mt-3">
-                      <label className="text-xs text-gray-500">Evidence reference (optional)</label>
+                      <label className="text-xs text-gray-500">{c.evidenceLabel}</label>
                       <textarea
                         className="w-full border border-gray-200 rounded-lg p-2 text-xs text-gray-700 mt-1 h-16 resize-none focus:outline-none focus:ring-1 focus:ring-ey-yellow"
-                        placeholder="Describe the evidence supporting your score..."
+                        placeholder={c.evidencePlaceholder}
                         value={evidence}
                         onChange={e => setEvidence(ind.id, e.target.value)}
                       />
@@ -328,9 +390,7 @@ export default function Questionnaire() {
                     <div className="mt-2">
                       <div className="flex items-center justify-between">
                         <span className={`text-xs font-medium ${capped ? 'text-orange-500' : 'text-gray-500'}`}>
-                          {effScore !== null
-                            ? `Effective score: ${effScore}/5${capped ? ' (capped)' : ''}`
-                            : 'No score selected'}
+                          {effScore !== null ? c.effective(effScore, capped) : c.noScore}
                         </span>
                         {!ind.bct && (
                           <button
@@ -341,7 +401,7 @@ export default function Questionnaire() {
                               } else if (atSkipLimit) {
                                 setSkipErrors(e => ({
                                   ...e,
-                                  [ind.id]: `Skip limit reached for ${ind.dim}. Maximum ${skipLimit} indicator${skipLimit > 1 ? 's' : ''} may be skipped per dimension.`,
+                                  [ind.id]: c.skipLimit(ind.dim, skipLimit),
                                 }));
                               } else {
                                 skipIndicator(ind.id);
@@ -350,7 +410,7 @@ export default function Questionnaire() {
                             }}
                             className="text-xs text-gray-400 hover:text-gray-600"
                           >
-                            {skipped ? 'Undo skip' : 'Skip this indicator'}
+                            {skipped ? c.undoSkip : c.skip}
                           </button>
                         )}
                       </div>
@@ -369,7 +429,7 @@ export default function Questionnaire() {
                       onClick={() => unskipIndicator(ind.id)}
                       className="text-xs text-gray-400 hover:text-gray-600"
                     >
-                      Undo skip
+                      {c.undoSkip}
                     </button>
                   </div>
                 )}
@@ -383,7 +443,7 @@ export default function Questionnaire() {
           {/* Live score */}
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-3">
-              {activeDimension} Live Score
+              {activeDimension} {c.liveScore}
             </div>
             {(() => {
               const s = getDimScore(activeDimension);
@@ -420,7 +480,7 @@ export default function Questionnaire() {
                   </div>
                   {cappedCount > 0 && (
                     <div className="mt-2 text-[10px] text-orange-600 bg-orange-50 rounded px-2 py-1">
-                      ⚠ Evidence cap active on {cappedCount} indicator{cappedCount > 1 ? 's' : ''}
+                      {c.capActive(cappedCount)}
                     </div>
                   )}
                 </>
@@ -430,12 +490,12 @@ export default function Questionnaire() {
 
           {/* Rules reminder */}
           <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-3">Scoring Rules</div>
+            <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-3">{c.scoringRules}</div>
             <div className="flex flex-col gap-2">
               {[
-                { color: '#FFE600', text: 'BCT indicators cannot be skipped' },
-                { color: '#E65100', text: 'Score ≥ 3 without evidence → capped at 2/5' },
-                { color: '#27ACAA', text: `Max ${getSkipLimit(activeDimension)} skips allowed in ${activeDimension}` },
+                { color: '#FFE600', text: c.ruleBct },
+                { color: '#E65100', text: c.ruleCap },
+                { color: '#27ACAA', text: c.ruleSkip(getSkipLimit(activeDimension), activeDimension) },
               ].map(r => (
                 <div key={r.text} className="flex items-start gap-2">
                   <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1" style={{ background: r.color }} />
@@ -447,7 +507,7 @@ export default function Questionnaire() {
 
           {/* All dimensions progress */}
           <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-3">Overall Progress</div>
+            <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-3">{c.overall}</div>
             <div className="flex flex-col gap-2">
               {Object.entries(DIMENSIONS).map(([dim, d]) => {
                 const dimInds = INDICATORS.filter(i => i.dim === dim);
@@ -481,24 +541,24 @@ export default function Questionnaire() {
           onClick={goPrev}
           className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
         >
-          ← Previous
+          {c.prev}
         </button>
         <span className="text-sm text-gray-500">
-          {getAnsweredCount()} of {INDICATORS.length} indicators answered
+          {c.answeredOf(getAnsweredCount(), INDICATORS.length)}
         </span>
         {isLastSubDim() ? (
           <button
             onClick={() => navigate('/results')}
             className="px-5 py-2 bg-ey-yellow text-ey-charcoal font-semibold rounded-lg text-sm hover:bg-yellow-400"
           >
-            View Results →
+            {c.viewResults}
           </button>
         ) : (
           <button
             onClick={goNext}
             className="px-5 py-2 bg-ey-charcoal text-ey-yellow font-semibold rounded-lg text-sm hover:bg-gray-800"
           >
-            Next →
+            {c.next}
           </button>
         )}
       </div>
