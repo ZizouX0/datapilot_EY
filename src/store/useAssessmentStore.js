@@ -158,16 +158,27 @@ const useAssessmentStore = create((set, get) => ({
       answered_by: user?.id || null,
       updated_at: new Date().toISOString(),
     };
-    const { error } = await supabase
-      .from('assessment_answers')
-      .upsert(row, { onConflict: 'assessment_id,indicator_id' });
-    if (error) return { error: error.message };
+    // Optimistic update so the UI responds instantly (feels like the solo flow),
+    // then persist. RLS allows assigned dimensions, so a rollback is rarely needed.
+    const prev = get().answers[indicatorId];
     set(s => ({
       answers: {
         ...s.answers,
         [indicatorId]: { score: row.score, evidence: row.evidence, skipped: row.skipped },
       },
     }));
+    const { error } = await supabase
+      .from('assessment_answers')
+      .upsert(row, { onConflict: 'assessment_id,indicator_id' });
+    if (error) {
+      // Roll back the optimistic change on failure.
+      set(s => {
+        const a2 = { ...s.answers };
+        if (prev === undefined) delete a2[indicatorId]; else a2[indicatorId] = prev;
+        return { answers: a2 };
+      });
+      return { error: error.message };
+    }
     return { error: null };
   },
 
