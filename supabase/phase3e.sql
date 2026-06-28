@@ -31,7 +31,8 @@ begin
     new.raw_user_meta_data ->> 'title',
     new.raw_user_meta_data ->> 'bank_name',
     new.raw_user_meta_data ->> 'phone'
-  );
+  )
+  on conflict (id) do nothing;
   return new;
 end;
 $$;

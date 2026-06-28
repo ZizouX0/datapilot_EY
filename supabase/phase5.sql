@@ -25,7 +25,8 @@ begin
     new.raw_user_meta_data ->> 'bank_name',
     new.raw_user_meta_data ->> 'phone',
     nullif(new.raw_user_meta_data ->> 'department_id', '')::uuid
-  );
+  )
+  on conflict (id) do nothing;
   return new;
 end;
 $$;

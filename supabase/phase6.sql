@@ -96,7 +96,16 @@ create policy "answers_delete" on public.assessment_answers for delete to authen
   );
 
 -- 3. At most one OPEN DRAFT assessment per bank (stops duplicate/stranded drafts
---    when "create" is clicked twice or by two coordinators).
+--    when "create" is clicked twice or by two coordinators). First close out any
+--    pre-existing duplicate drafts (keep the newest per bank) so the unique index
+--    below can actually be created.
+delete from public.assessments a
+ using (
+   select id, row_number() over (partition by bank_name order by created_at desc) as rn
+     from public.assessments where status = 'draft'
+ ) d
+ where a.id = d.id and d.rn > 1;
+
 create unique index if not exists assessments_one_open_draft
   on public.assessments (bank_name) where status = 'draft';
 
