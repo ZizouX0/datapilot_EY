@@ -2,10 +2,88 @@ import { useEffect, useMemo, useState } from 'react';
 import useUsersStore from '../../store/useUsersStore';
 import useAuthStore from '../../store/useAuthStore';
 import useDepartmentsStore from '../../store/useDepartmentsStore';
+import useSettingsStore from '../../store/useSettingsStore';
 import { roleLabel, manageableRoles, invitableRole, rank, ROLE_RANK } from '../../lib/roles';
 import { POSITIONS, POSITION_OTHER } from '../../data/positions';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Co-located EN/FR copy for this screen (the global i18n covers the shell; long
+// page copy lives with the page so both languages stay reviewable together).
+const COPY = {
+  en: {
+    title: 'Users & roles',
+    subtitleOwner: 'Every bank’s org tree. You invite each bank’s Super Admin; they build their own team.',
+    subtitle: 'Your bank’s org tree. Invite the tier directly below you; everyone here belongs to your bank.',
+    refresh: '↻ Refresh',
+    inviteA: (role) => `Invite a ${role}`,
+    joinsAs: (role) => <>Joins as <strong>{role}</strong></>,
+    emailPlaceholder: 'name@bank.com.tn',
+    positionOptional: 'Position (optional)',
+    typePosition: 'Type the position',
+    bankRequired: 'Bank name (required)',
+    deptOptional: 'Department (optional — assign later)',
+    adminInheritSet: (role, dept) => <>This {role} will be added to your department: <strong>{dept}</strong>.</>,
+    adminInheritNone: (role) => <>You have no department set — ask your Super Admin to assign you one, otherwise the {role}s you invite won’t be placed in a department.</>,
+    sending: 'Sending…',
+    sendInvite: 'Send invite',
+    inviteSent: (email, role) => `Invitation sent to ${email} as ${role}.`,
+    fallbackNote: 'Fallback: Supabase dashboard → Authentication → Users → Invite user.',
+    loading: 'Loading…',
+    noUsers: 'No users yet.',
+    eyPlatform: 'EY platform',
+    members: (n) => `${n} ${n === 1 ? 'member' : 'members'}`,
+    noPosition: 'No position set',
+    editPosition: 'Edit position / title',
+    you: 'you',
+    cantChangeRole: "You can't change this account's role",
+    disabled: 'Disabled',
+    active: 'Active',
+    reset: 'Reset',
+    enable: 'Enable',
+    disable: 'Disable',
+    positionPrompt: (email) => `Position / title for ${email}:`,
+    toggleConfirm: (disabled, email) => `${disabled ? 'Re-enable' : 'Disable'} the account ${email}?`,
+    resetConfirm: (email) => `Send a password-reset email to ${email}?`,
+    resetSent: (email) => `Password-reset email sent to ${email}.`,
+  },
+  fr: {
+    title: 'Utilisateurs et rôles',
+    subtitleOwner: 'L’organigramme de chaque banque. Vous invitez le Super Admin de chaque banque ; il constitue sa propre équipe.',
+    subtitle: 'L’organigramme de votre banque. Invitez le niveau directement en dessous du vôtre ; tout le monde ici appartient à votre banque.',
+    refresh: '↻ Actualiser',
+    inviteA: (role) => `Inviter un ${role}`,
+    joinsAs: (role) => <>Rejoint en tant que <strong>{role}</strong></>,
+    emailPlaceholder: 'nom@banque.com.tn',
+    positionOptional: 'Poste (facultatif)',
+    typePosition: 'Saisissez le poste',
+    bankRequired: 'Nom de la banque (obligatoire)',
+    deptOptional: 'Département (facultatif — à affecter plus tard)',
+    adminInheritSet: (role, dept) => <>Ce {role} sera ajouté à votre département : <strong>{dept}</strong>.</>,
+    adminInheritNone: (role) => <>Vous n’avez aucun département défini — demandez à votre Super Admin de vous en affecter un, sinon les {role}s que vous invitez ne seront rattachés à aucun département.</>,
+    sending: 'Envoi…',
+    sendInvite: 'Envoyer l’invitation',
+    inviteSent: (email, role) => `Invitation envoyée à ${email} en tant que ${role}.`,
+    fallbackNote: 'Solution de secours : tableau de bord Supabase → Authentication → Users → Invite user.',
+    loading: 'Chargement…',
+    noUsers: 'Aucun utilisateur pour l’instant.',
+    eyPlatform: 'Plateforme EY',
+    members: (n) => `${n} membre${n > 1 ? 's' : ''}`,
+    noPosition: 'Aucun poste défini',
+    editPosition: 'Modifier le poste / titre',
+    you: 'vous',
+    cantChangeRole: 'Vous ne pouvez pas modifier le rôle de ce compte',
+    disabled: 'Désactivé',
+    active: 'Actif',
+    reset: 'Réinitialiser',
+    enable: 'Activer',
+    disable: 'Désactiver',
+    positionPrompt: (email) => `Poste / titre pour ${email} :`,
+    toggleConfirm: (disabled, email) => `${disabled ? 'Réactiver' : 'Désactiver'} le compte ${email} ?`,
+    resetConfirm: (email) => `Envoyer un e-mail de réinitialisation du mot de passe à ${email} ?`,
+    resetSent: (email) => `E-mail de réinitialisation du mot de passe envoyé à ${email}.`,
+  },
+};
 
 // Build a parent→child forest from invited_by lineage within one bank.
 function buildForest(list) {
@@ -33,6 +111,8 @@ export default function AdminUsers() {
   const myRole = useAuthStore(s => s.role);
   const myDeptId = useAuthStore(s => s.departmentId);
   const isOwner = myRole === 'owner';
+  const lang = useSettingsStore(s => s.language);
+  const c = COPY[lang] || COPY.en;
 
   // Departments power the invite flow (Model B): a Super Admin picks the
   // department of the Admin they invite; an Admin's analysts inherit the Admin's
@@ -98,7 +178,7 @@ export default function AdminUsers() {
     if (err) {
       setInviteMsg({ ok: false, text: err });
     } else {
-      setInviteMsg({ ok: true, text: `Invitation sent to ${inviteEmail.trim()} as ${roleLabel(inviteRole)}.` });
+      setInviteMsg({ ok: true, text: c.inviteSent(inviteEmail.trim(), roleLabel(inviteRole)) });
       setInviteEmail(''); setInvitePosition(''); setInviteOther(''); setInviteBank(''); setInviteDept('');
     }
   }
@@ -111,7 +191,7 @@ export default function AdminUsers() {
   }
 
   async function handleEditTitle(u) {
-    const next = window.prompt(`Position / title for ${u.email}:`, u.title || '');
+    const next = window.prompt(c.positionPrompt(u.email), u.title || '');
     if (next === null) return;
     setBusyId(u.id); setRowError(null); setRowMsg(null);
     const { error: err } = await setUserTitle(u.id, next);
@@ -120,8 +200,7 @@ export default function AdminUsers() {
   }
 
   async function handleToggleDisabled(u) {
-    const verb = u.disabled ? 'Re-enable' : 'Disable';
-    if (!window.confirm(`${verb} the account ${u.email}?`)) return;
+    if (!window.confirm(c.toggleConfirm(u.disabled, u.email))) return;
     setBusyId(u.id); setRowError(null); setRowMsg(null);
     const { error: err } = await setUserDisabled(u.id, !u.disabled);
     setBusyId(null);
@@ -129,12 +208,12 @@ export default function AdminUsers() {
   }
 
   async function handleResetPassword(u) {
-    if (!window.confirm(`Send a password-reset email to ${u.email}?`)) return;
+    if (!window.confirm(c.resetConfirm(u.email))) return;
     setBusyId(u.id); setRowError(null); setRowMsg(null);
     const { error: err } = await resetPassword(u.email);
     setBusyId(null);
     if (err) setRowError(err);
-    else setRowMsg(`Password-reset email sent to ${u.email}.`);
+    else setRowMsg(c.resetSent(u.email));
   }
 
   // One person in the tree, indented by depth, with the controls they're allowed.
@@ -153,16 +232,16 @@ export default function AdminUsers() {
           {depth > 0 && <span className="text-gray-300 -ml-3">└</span>}
           <div className="min-w-0 flex-1">
             <div className="font-medium text-gray-800 flex items-center gap-1.5 truncate">
-              {node.title || <span className="text-gray-400 italic font-normal">No position set</span>}
+              {node.title || <span className="text-gray-400 italic font-normal">{c.noPosition}</span>}
               {canManageRole && (
                 <button
                   onClick={() => handleEditTitle(node)}
                   disabled={busyId === node.id}
-                  title="Edit position / title"
+                  title={c.editPosition}
                   className="text-gray-300 hover:text-gray-600 text-xs disabled:opacity-40"
                 >✎</button>
               )}
-              {isSelf && <span className="text-[10px] text-gray-400 uppercase tracking-wide">you</span>}
+              {isSelf && <span className="text-[10px] text-gray-400 uppercase tracking-wide">{c.you}</span>}
             </div>
             <div className="text-xs text-gray-400 truncate">{node.email}</div>
           </div>
@@ -172,7 +251,7 @@ export default function AdminUsers() {
             value={node.role}
             disabled={busyId === node.id || !canManageRole}
             onChange={e => handleRoleChange(node.id, e.target.value)}
-            title={canManageRole ? '' : "You can't change this account's role"}
+            title={canManageRole ? '' : c.cantChangeRole}
             className="border border-gray-300 rounded-lg px-2 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-ey-yellow disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {roleOptions.map(r => <option key={r} value={r}>{roleLabel(r)}</option>)}
@@ -182,7 +261,7 @@ export default function AdminUsers() {
           <span className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide ${
             node.disabled ? 'bg-gray-200 text-gray-600' : 'bg-green-100 text-green-700'
           }`}>
-            {node.disabled ? 'Disabled' : 'Active'}
+            {node.disabled ? c.disabled : c.active}
           </span>
 
           {/* Off-boarding */}
@@ -193,19 +272,19 @@ export default function AdminUsers() {
                   onClick={() => handleResetPassword(node)}
                   disabled={busyId === node.id}
                   className="text-xs text-gray-500 hover:text-gray-900 disabled:opacity-40"
-                >Reset</button>
+                >{c.reset}</button>
               )}
               {showDisable && (
                 <button
                   onClick={() => handleToggleDisabled(node)}
                   disabled={busyId === node.id}
                   className={`text-xs disabled:opacity-40 ${node.disabled ? 'text-green-600 hover:text-green-800' : 'text-red-500 hover:text-red-700'}`}
-                >{node.disabled ? 'Enable' : 'Disable'}</button>
+                >{node.disabled ? c.enable : c.disable}</button>
               )}
             </div>
           )}
         </div>
-        {node.children.map(c => renderNode(c, depth + 1))}
+        {node.children.map(child => renderNode(child, depth + 1))}
       </div>
     );
   }
@@ -218,17 +297,15 @@ export default function AdminUsers() {
     <div>
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-800">Users &amp; roles</h2>
+          <h2 className="text-lg font-semibold text-gray-800">{c.title}</h2>
           <p className="text-sm text-gray-500">
-            {isOwner
-              ? 'Every bank’s org tree. You invite each bank’s Super Admin; they build their own team.'
-              : 'Your bank’s org tree. Invite the tier directly below you; everyone here belongs to your bank.'}
+            {isOwner ? c.subtitleOwner : c.subtitle}
           </p>
         </div>
         <button
           onClick={listUsers}
           className="text-xs font-medium text-gray-600 border border-gray-300 rounded-lg px-3 py-1.5 hover:bg-gray-50"
-        >↻ Refresh</button>
+        >{c.refresh}</button>
       </div>
 
       {/* Invite — role is fixed to the tier one step below the inviter. */}
@@ -236,16 +313,16 @@ export default function AdminUsers() {
         <form onSubmit={handleInvite} className="mb-5 rounded-xl border border-gray-200 bg-white p-4">
           <div className="flex items-center justify-between mb-2">
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              Invite a {roleLabel(inviteRole)}
+              {c.inviteA(roleLabel(inviteRole))}
             </label>
-            <span className="text-[11px] text-gray-400">Joins as <strong>{roleLabel(inviteRole)}</strong></span>
+            <span className="text-[11px] text-gray-400">{c.joinsAs(roleLabel(inviteRole))}</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <input
               type="email"
               value={inviteEmail}
               onChange={e => setInviteEmail(e.target.value)}
-              placeholder="name@bank.com.tn"
+              placeholder={c.emailPlaceholder}
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
             />
             <select
@@ -253,7 +330,7 @@ export default function AdminUsers() {
               onChange={e => setInvitePosition(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ey-yellow"
             >
-              <option value="">Position (optional)</option>
+              <option value="">{c.positionOptional}</option>
               {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
               <option value={POSITION_OTHER}>{POSITION_OTHER}…</option>
             </select>
@@ -262,7 +339,7 @@ export default function AdminUsers() {
                 type="text"
                 value={inviteOther}
                 onChange={e => setInviteOther(e.target.value)}
-                placeholder="Type the position"
+                placeholder={c.typePosition}
                 className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
               />
             )}
@@ -271,7 +348,7 @@ export default function AdminUsers() {
                 type="text"
                 value={inviteBank}
                 onChange={e => setInviteBank(e.target.value)}
-                placeholder="Bank name (required)"
+                placeholder={c.bankRequired}
                 className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
               />
             )}
@@ -282,7 +359,7 @@ export default function AdminUsers() {
                 onChange={e => setInviteDept(e.target.value)}
                 className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ey-yellow"
               >
-                <option value="">Department (optional — assign later)</option>
+                <option value="">{c.deptOptional}</option>
                 {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
               </select>
             )}
@@ -292,8 +369,8 @@ export default function AdminUsers() {
           {myRole === 'admin' && (
             <p className="text-[11px] text-gray-500 mt-2">
               {myDeptName
-                ? <>This {roleLabel(inviteRole)} will be added to your department: <strong>{myDeptName}</strong>.</>
-                : <>You have no department set — ask your Super Admin to assign you one, otherwise the {roleLabel(inviteRole)}s you invite won’t be placed in a department.</>}
+                ? c.adminInheritSet(roleLabel(inviteRole), myDeptName)
+                : c.adminInheritNone(roleLabel(inviteRole))}
             </p>
           )}
           <div className="mt-2">
@@ -302,7 +379,7 @@ export default function AdminUsers() {
               disabled={!canSubmitInvite}
               className="bg-ey-yellow text-ey-charcoal font-semibold rounded-lg px-4 py-2 text-sm hover:bg-yellow-400 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {inviting ? 'Sending…' : 'Send invite'}
+              {inviting ? c.sending : c.sendInvite}
             </button>
           </div>
           {inviteMsg && (
@@ -312,7 +389,7 @@ export default function AdminUsers() {
               {inviteMsg.text}
               {!inviteMsg.ok && inviteMsg.text.includes('not configured') && (
                 <span className="block mt-1 text-xs text-gray-500">
-                  Fallback: Supabase dashboard → Authentication → Users → Invite user.
+                  {c.fallbackNote}
                 </span>
               )}
             </p>
@@ -324,14 +401,14 @@ export default function AdminUsers() {
       {rowError && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4">{rowError}</p>}
       {rowMsg && <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-4">{rowMsg}</p>}
 
-      {loading && <p className="text-sm text-gray-400 py-6 text-center">Loading…</p>}
-      {!loading && users.length === 0 && <p className="text-sm text-gray-400 py-6 text-center">No users yet.</p>}
+      {loading && <p className="text-sm text-gray-400 py-6 text-center">{c.loading}</p>}
+      {!loading && users.length === 0 && <p className="text-sm text-gray-400 py-6 text-center">{c.noUsers}</p>}
 
       {/* EY platform group (owners) — only EY sees this. */}
       {!loading && groups.eyUsers.length > 0 && (
         <div className="rounded-xl border border-gray-200 overflow-hidden mb-4">
           <div className="bg-ey-charcoal text-white px-4 py-2 text-xs font-semibold uppercase tracking-wide">
-            EY platform
+            {c.eyPlatform}
           </div>
           {renderTree(groups.eyUsers)}
         </div>
@@ -342,7 +419,7 @@ export default function AdminUsers() {
         <div key={bankName} className="rounded-xl border border-gray-200 overflow-hidden mb-4">
           <div className="bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-600 flex justify-between">
             <span>{bankName}</span>
-            <span className="text-gray-400 normal-case">{list.length} {list.length === 1 ? 'member' : 'members'}</span>
+            <span className="text-gray-400 normal-case">{c.members(list.length)}</span>
           </div>
           {renderTree(list)}
         </div>
