@@ -67,6 +67,8 @@ const STRINGS = {
   'account.bankHint':      { en: 'Set by your administrator — shared across your team.', fr: 'Défini par votre administrateur — partagé avec votre équipe.' },
   'account.bankHintSuper': { en: 'As super-admin, this bank is inherited by everyone you invite.', fr: 'En tant que super-admin, cette banque est héritée par toutes les personnes que vous invitez.' },
   'account.bankUnset':     { en: 'Not set yet',   fr: 'Pas encore défini' },
+  'account.department':    { en: 'Department',     fr: 'Département' },
+  'account.departmentNone':{ en: 'Not assigned',  fr: 'Non affecté' },
 
   // Account — SMS verification (Phone MFA)
   'account.sms.title':    { en: 'SMS verification', fr: 'Vérification par SMS' },

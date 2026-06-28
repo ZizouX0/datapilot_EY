@@ -32,7 +32,8 @@ export default function Account() {
   const [profile, setProfile] = useState(null);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [bank, setBank] = useState(''); // editable only for super-admins
+  const [bank, setBank] = useState(''); // read-only display
+  const [departmentName, setDepartmentName] = useState(null); // read-only display
   const [savingInfo, setSavingInfo] = useState(false);
   const [infoMsg, setInfoMsg] = useState(null); // { ok, text }
 
@@ -66,7 +67,7 @@ export default function Account() {
     let alive = true;
     supabase
       .from('profiles')
-      .select('full_name, title, role, disabled, created_at, phone, bank_name')
+      .select('full_name, title, role, disabled, created_at, phone, bank_name, department_id')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
@@ -76,6 +77,13 @@ export default function Account() {
         setPhone(data.phone || '');
         setBank(data.bank_name || '');
         if (data.phone) setEnrollPhone(data.phone);
+        // Resolve the department name for the read-only display (analysts).
+        if (data.department_id) {
+          supabase.from('departments').select('name').eq('id', data.department_id).single()
+            .then(({ data: dep }) => { if (alive && dep) setDepartmentName(dep.name); });
+        } else {
+          setDepartmentName(null);
+        }
       });
     return () => { alive = false; };
   }, [user?.id]);
@@ -391,6 +399,16 @@ export default function Account() {
                 {bank || <span className="text-gray-400 italic">{t('account.bankUnset')}</span>}
               </div>
               <p className="text-[11px] text-gray-400 mt-1">{t('account.bankHint')}</p>
+            </div>
+          )}
+
+          {/* Department — relevant for analysts (and admin dept heads). Read-only. */}
+          {(role === 'analyst' || role === 'admin') && (
+            <div>
+              <label className={labelCls}>{t('account.department')}</label>
+              <div className={roCls}>
+                {departmentName || <span className="text-gray-400 italic">{t('account.departmentNone')}</span>}
+              </div>
             </div>
           )}
 

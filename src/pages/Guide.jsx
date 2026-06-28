@@ -14,6 +14,8 @@ const COPY = {
     groupTitle: 'The group assessment workflow',
     groupSub: 'One shared assessment, filled by several departments, finalized by a coordinator. Here’s the whole flow and who does each step.',
     goAdmin: 'Go to the admin area →',
+    ownerTitle: 'Administering the platform',
+    ownerBody: 'You operate DataPilot across every bank. From the admin area you invite each bank’s Super Admin, maintain the EY master questionnaire, and review submissions from all banks.',
     soloNote: 'Prefer one person to do everything? An analyst can still run a full solo assessment — group mode is optional.',
     analystTitle: 'How you fill an assessment',
     analystGroupTitle: 'Group assessment (if assigned)',
@@ -29,7 +31,7 @@ const COPY = {
       { n: 4, who: 'Admin', title: 'Review & finalize', where: 'Admin → Group assessment', desc: 'Watch progress and scores update live. When everyone is done, finalize — the result lands in Submissions with full reports.' },
     ],
     roleInfo: {
-      owner: { title: 'You are EY (platform owner)', blurb: 'You oversee every bank on DataPilot, maintain the master questionnaire, and can review every submission.', can: ['Invite each bank’s Super Admin and set their bank.', 'Edit the EY master questionnaire that banks copy from.', 'Review submissions across all banks.'], flow: 'group' },
+      owner: { title: 'You are EY (platform owner)', blurb: 'You oversee every bank on DataPilot, maintain the master questionnaire, and can review every submission.', can: ['Invite each bank’s Super Admin and set their bank.', 'Edit the EY master questionnaire that banks copy from.', 'Review submissions across all banks.'], flow: 'owner' },
       superadmin: { title: 'You are a Super Admin', blurb: 'You set up your bank’s structure — departments and people — and oversee its assessments.', can: ['Create departments and assign analysts to them (Departments tab).', 'Create and run group assessments, and finalize them.', 'Invite and manage Admins and Analysts in your bank.'], flow: 'group' },
       admin: { title: 'You are an Admin (coordinator)', blurb: 'You run assessments for your bank and look after your analysts.', can: ['Create a group assessment and map dimensions to departments.', 'Track progress and finalize the assessment into a submission.', 'Tailor your bank’s questionnaire and review submissions.'], flow: 'group' },
       analyst: { title: 'You are an Analyst', blurb: 'You fill in assessments — either on your own, or your department’s part of a shared one.', can: ['Run a solo assessment from start to finish.', 'Contribute to a group assessment — you’ll see only your department’s dimensions.', 'See your score, gaps, compliance and download the report.'], flow: 'analyst' },
@@ -51,6 +53,8 @@ const COPY = {
     groupTitle: 'Le déroulé de l’évaluation groupée',
     groupSub: 'Une évaluation partagée, remplie par plusieurs départements, finalisée par un coordinateur. Voici tout le déroulé et qui fait chaque étape.',
     goAdmin: 'Aller à l’espace admin →',
+    ownerTitle: 'Administration de la plateforme',
+    ownerBody: 'Vous gérez DataPilot pour toutes les banques. Depuis l’espace admin, vous invitez le Super Admin de chaque banque, maintenez le questionnaire maître EY et consultez les évaluations de toutes les banques.',
     soloNote: 'Vous préférez qu’une seule personne fasse tout ? Un analyste peut toujours réaliser une évaluation solo complète — le mode groupé est facultatif.',
     analystTitle: 'Comment remplir une évaluation',
     analystGroupTitle: 'Évaluation groupée (si affectée)',
@@ -66,7 +70,7 @@ const COPY = {
       { n: 4, who: 'Admin', title: 'Revoir et finaliser', where: 'Admin → Évaluation groupée', desc: 'Suivez l’avancement et les scores en direct. Une fois tout terminé, finalisez — le résultat arrive dans les Évaluations avec les rapports complets.' },
     ],
     roleInfo: {
-      owner: { title: 'Vous êtes EY (propriétaire de la plateforme)', blurb: 'Vous supervisez chaque banque sur DataPilot, maintenez le questionnaire maître et pouvez consulter chaque évaluation.', can: ['Inviter le Super Admin de chaque banque et définir sa banque.', 'Modifier le questionnaire maître EY que les banques copient.', 'Consulter les évaluations de toutes les banques.'], flow: 'group' },
+      owner: { title: 'Vous êtes EY (propriétaire de la plateforme)', blurb: 'Vous supervisez chaque banque sur DataPilot, maintenez le questionnaire maître et pouvez consulter chaque évaluation.', can: ['Inviter le Super Admin de chaque banque et définir sa banque.', 'Modifier le questionnaire maître EY que les banques copient.', 'Consulter les évaluations de toutes les banques.'], flow: 'owner' },
       superadmin: { title: 'Vous êtes Super Admin', blurb: 'Vous configurez la structure de votre banque — départements et personnes — et supervisez ses évaluations.', can: ['Créer des départements et y affecter les analystes (onglet Départements).', 'Créer et piloter des évaluations groupées, et les finaliser.', 'Inviter et gérer les Admins et Analystes de votre banque.'], flow: 'group' },
       admin: { title: 'Vous êtes Admin (coordinateur)', blurb: 'Vous pilotez les évaluations de votre banque et encadrez vos analystes.', can: ['Créer une évaluation groupée et affecter les dimensions aux départements.', 'Suivre l’avancement et finaliser l’évaluation en une soumission.', 'Adapter le questionnaire de votre banque et consulter les évaluations.'], flow: 'group' },
       analyst: { title: 'Vous êtes Analyste', blurb: 'Vous remplissez les évaluations — seul, ou la partie de votre département dans une évaluation partagée.', can: ['Réaliser une évaluation solo du début à la fin.', 'Contribuer à une évaluation groupée — vous ne voyez que les dimensions de votre département.', 'Voir votre score, vos écarts, la conformité et télécharger le rapport.'], flow: 'analyst' },
@@ -119,7 +123,16 @@ export default function Guide() {
       </div>
 
       {/* Workflow */}
-      {info.flow === 'analyst' ? (
+      {info.flow === 'owner' ? (
+        <div className="rounded-xl border border-gray-200 bg-white p-5">
+          <h2 className="text-lg font-semibold text-gray-800 mb-1">{c.ownerTitle}</h2>
+          <p className="text-sm text-gray-600">{c.ownerBody}</p>
+          <button
+            onClick={() => navigate('/admin')}
+            className="mt-4 bg-ey-yellow text-ey-charcoal font-semibold rounded-lg px-4 py-2 text-sm hover:bg-yellow-400"
+          >{c.goAdmin}</button>
+        </div>
+      ) : info.flow === 'analyst' ? (
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <h2 className="text-lg font-semibold text-gray-800 mb-3">{c.analystTitle}</h2>
           <div className="flex flex-col gap-4">
