@@ -1,9 +1,101 @@
 import { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import useAppStore from '../store/useAppStore';
+import useSettingsStore from '../store/useSettingsStore';
 import ScoreBadge from '../components/ui/ScoreBadge';
 import DimensionPill from '../components/ui/DimensionPill';
 import ReportCover from '../components/ReportCover';
+
+const COPY = {
+  en: {
+    coverTitle: 'BCT Regulatory Compliance',
+    coverSubtitle: 'Circulaire N°2025-08 & BCBS 239 alignment',
+    title: 'BCT Regulatory Compliance',
+    subtitle: 'BCT Circulaire N°2025-08 and BCBS 239 alignment status',
+    kpiCompliantLabel: 'Compliant Indicators',
+    kpiComplianceRate: (r) => `${r}% compliance rate`,
+    kpiExposureLabel: 'Regulatory Exposure',
+    kpiExposureSub: 'Based on compliance rate',
+    kpiNonCompliantLabel: 'Non-Compliant',
+    kpiNonCompliantSub: 'Indicators scoring below 3',
+    kpiPendingLabel: 'Pending',
+    kpiPendingSub: 'Not yet answered',
+    exposureLow: 'Low',
+    exposureMedium: 'Medium',
+    exposureHigh: 'High',
+    rulesNote: 'Compliant = effective score ≥ 3 / 5. Regulatory exposure: Low ≥ 80% compliant · Medium 50–79% · High below 50%.',
+    actionRequired: (n) => `Action required — ${n} item${n > 1 ? 's' : ''} to address`,
+    actionRequiredSub: 'Close these to raise BCT compliance and reduce regulatory exposure.',
+    statusNonCompliant: (e) => `Non-compliant · ${e}/5`,
+    toReachCompliance: 'To reach compliance:',
+    pending: 'Pending',
+    notYetAssessed: 'Not yet assessed — answer this indicator to determine compliance.',
+    allCompliant: (n) => `✓ All ${n} mandatory BCT indicators are compliant. No outstanding actions.`,
+    colIndicator: 'Indicator',
+    colDimension: 'Dimension',
+    colReference: 'Reference',
+    colScore: 'Score',
+    colStatus: 'Status',
+    colEvidence: 'Evidence',
+    compliant: 'Compliant',
+    nonCompliant: 'Non-compliant',
+    noEvidence: 'No evidence provided',
+    summary: (compliant, total) => `${compliant} of ${total} BCT indicators compliant.`,
+    summaryExposure: (e) => `Regulatory exposure: ${e}`,
+    summaryRate: (r) => `${r}% of BCT indicators compliant`,
+    savePdf: '⤓ Save as PDF',
+    saveEvidence: 'Save BCT Evidence Package',
+    saveHint: 'Opens your browser’s save window — choose "Save as PDF" to download the file.',
+  },
+  fr: {
+    coverTitle: 'Conformité réglementaire BCT',
+    coverSubtitle: 'Alignement Circulaire N°2025-08 & BCBS 239',
+    title: 'Conformité réglementaire BCT',
+    subtitle: 'État d’alignement Circulaire BCT N°2025-08 et BCBS 239',
+    kpiCompliantLabel: 'Indicateurs conformes',
+    kpiComplianceRate: (r) => `Taux de conformité de ${r} %`,
+    kpiExposureLabel: 'Exposition réglementaire',
+    kpiExposureSub: 'Selon le taux de conformité',
+    kpiNonCompliantLabel: 'Non conformes',
+    kpiNonCompliantSub: 'Indicateurs notés en dessous de 3',
+    kpiPendingLabel: 'En attente',
+    kpiPendingSub: 'Pas encore renseignés',
+    exposureLow: 'Faible',
+    exposureMedium: 'Moyenne',
+    exposureHigh: 'Élevée',
+    rulesNote: 'Conforme = score effectif ≥ 3 / 5. Exposition réglementaire : Faible ≥ 80 % conformes · Moyenne 50–79 % · Élevée en dessous de 50 %.',
+    actionRequired: (n) => `Action requise — ${n} élément${n > 1 ? 's' : ''} à traiter`,
+    actionRequiredSub: 'Traitez-les pour améliorer la conformité BCT et réduire l’exposition réglementaire.',
+    statusNonCompliant: (e) => `Non conforme · ${e}/5`,
+    toReachCompliance: 'Pour atteindre la conformité :',
+    pending: 'En attente',
+    notYetAssessed: 'Pas encore évalué — renseignez cet indicateur pour déterminer la conformité.',
+    allCompliant: (n) => `✓ Les ${n} indicateurs BCT obligatoires sont tous conformes. Aucune action en suspens.`,
+    colIndicator: 'Indicateur',
+    colDimension: 'Dimension',
+    colReference: 'Référence',
+    colScore: 'Score',
+    colStatus: 'Statut',
+    colEvidence: 'Preuve',
+    compliant: 'Conforme',
+    nonCompliant: 'Non conforme',
+    noEvidence: 'Aucune preuve fournie',
+    summary: (compliant, total) => `${compliant} indicateurs BCT conformes sur ${total}.`,
+    summaryExposure: (e) => `Exposition réglementaire : ${e}`,
+    summaryRate: (r) => `${r} % des indicateurs BCT conformes`,
+    savePdf: '⤓ Enregistrer en PDF',
+    saveEvidence: 'Enregistrer le dossier de preuves BCT',
+    saveHint: 'Ouvre la fenêtre d’enregistrement de votre navigateur — choisissez « Enregistrer en PDF » pour télécharger le fichier.',
+  },
+};
+
+// Maps a raw exposure value ('Low'/'Medium'/'High') to its localized label.
+function exposureLabel(c, exposure) {
+  if (exposure === 'Low') return c.exposureLow;
+  if (exposure === 'Medium') return c.exposureMedium;
+  if (exposure === 'High') return c.exposureHigh;
+  return exposure;
+}
 
 function getArticleRef(id) {
   const bcbs = ['D1.3-03'];
@@ -18,6 +110,8 @@ export default function Compliance() {
   const getEffectiveScore = useAppStore(s => s.getEffectiveScore);
   const answers = useAppStore(s => s.answers);
   const profile = useAppStore(s => s.profile);
+  const lang = useSettingsStore(s => s.language);
+  const c = COPY[lang] || COPY.en;
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
@@ -47,15 +141,15 @@ export default function Compliance() {
   return (
     <div ref={printRef}>
       <ReportCover
-        title="BCT Regulatory Compliance"
-        subtitle="Circulaire N°2025-08 & BCBS 239 alignment"
+        title={c.coverTitle}
+        subtitle={c.coverSubtitle}
         profile={profile}
       />
       <div className="print-content">
       {/* Title */}
       <div className="mb-4">
-        <h2 className="text-xl font-bold text-gray-800">BCT Regulatory Compliance</h2>
-        <p className="text-sm text-gray-500 mt-0.5">BCT Circulaire N°2025-08 and BCBS 239 alignment status</p>
+        <h2 className="text-xl font-bold text-gray-800">{c.title}</h2>
+        <p className="text-sm text-gray-500 mt-0.5">{c.subtitle}</p>
       </div>
 
       {/* KPI row */}
@@ -63,27 +157,27 @@ export default function Compliance() {
         {[
           {
             num: `${bctData.compliant} / ${bctData.total}`,
-            label: 'Compliant Indicators',
-            sub: `${bctData.rate}% compliance rate`,
+            label: c.kpiCompliantLabel,
+            sub: c.kpiComplianceRate(bctData.rate),
             topColor: complianceColor,
           },
           {
-            num: bctData.exposure,
-            label: 'Regulatory Exposure',
-            sub: 'Based on compliance rate',
+            num: exposureLabel(c, bctData.exposure),
+            label: c.kpiExposureLabel,
+            sub: c.kpiExposureSub,
             topColor: exposureColor.color,
             numStyle: { color: exposureColor.color },
           },
           {
             num: bctData.nonCompliant,
-            label: 'Non-Compliant',
-            sub: 'Indicators scoring below 3',
+            label: c.kpiNonCompliantLabel,
+            sub: c.kpiNonCompliantSub,
             topColor: bctData.nonCompliant > 0 ? '#B71C1C' : '#1B5E20',
           },
           {
             num: bctData.pending,
-            label: 'Pending',
-            sub: 'Not yet answered',
+            label: c.kpiPendingLabel,
+            sub: c.kpiPendingSub,
             topColor: '#9E9E9E',
           },
         ].map(kpi => (
@@ -103,8 +197,7 @@ export default function Compliance() {
 
       {/* Compliance rules note */}
       <p className="text-[11px] text-gray-400 -mt-3 mb-5">
-        Compliant = effective score ≥ 3 / 5. Regulatory exposure: Low ≥ 80% compliant ·
-        Medium 50–79% · High below 50%.
+        {c.rulesNote}
       </p>
 
       {/* Action required — non-compliant + pending items, with remediation */}
@@ -112,10 +205,10 @@ export default function Compliance() {
         <div className="report-table rounded-xl border border-red-200 overflow-hidden mb-6">
           <div className="px-4 py-3 bg-red-50 border-b border-red-100">
             <div className="text-sm font-bold text-red-800">
-              Action required — {actionItems} item{actionItems > 1 ? 's' : ''} to address
+              {c.actionRequired(actionItems)}
             </div>
             <div className="text-xs text-red-600 mt-0.5">
-              Close these to raise BCT compliance and reduce regulatory exposure.
+              {c.actionRequiredSub}
             </div>
           </div>
 
@@ -127,14 +220,14 @@ export default function Compliance() {
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <span className="font-mono text-[10px] text-gray-500">{ind.id}</span>
                   <span className="px-2 py-0.5 rounded bg-red-100 text-red-700 text-[10px] font-semibold">
-                    Non-compliant · {eff}/5
+                    {c.statusNonCompliant(eff)}
                   </span>
                   <span className="font-mono text-[10px] text-ey-purple">{getArticleRef(ind.id)}</span>
                 </div>
                 <div className="text-xs font-medium text-gray-800 leading-snug">{ind.q}</div>
                 {fix && (
                   <div className="text-[11px] text-gray-600 mt-1 leading-snug">
-                    <span className="font-semibold text-gray-500">To reach compliance:</span> {fix}
+                    <span className="font-semibold text-gray-500">{c.toReachCompliance}</span> {fix}
                   </div>
                 )}
               </div>
@@ -145,19 +238,19 @@ export default function Compliance() {
             <div key={ind.id} className="px-4 py-3 border-t border-red-100">
               <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <span className="font-mono text-[10px] text-gray-500">{ind.id}</span>
-                <span className="px-2 py-0.5 rounded bg-gray-200 text-gray-600 text-[10px] font-semibold">Pending</span>
+                <span className="px-2 py-0.5 rounded bg-gray-200 text-gray-600 text-[10px] font-semibold">{c.pending}</span>
                 <span className="font-mono text-[10px] text-ey-purple">{getArticleRef(ind.id)}</span>
               </div>
               <div className="text-xs font-medium text-gray-800 leading-snug">{ind.q}</div>
               <div className="text-[11px] text-gray-500 mt-1 italic">
-                Not yet assessed — answer this indicator to determine compliance.
+                {c.notYetAssessed}
               </div>
             </div>
           ))}
         </div>
       ) : (
         <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 mb-6 text-sm font-medium text-green-800">
-          ✓ All {bctData.total} mandatory BCT indicators are compliant. No outstanding actions.
+          {c.allCompliant(bctData.total)}
         </div>
       )}
 
@@ -167,12 +260,12 @@ export default function Compliance() {
           className="grid text-[10px] font-bold uppercase tracking-wide text-gray-500 bg-gray-50 border-b border-gray-200 px-4 py-2.5"
           style={{ gridTemplateColumns: '1.6fr 0.7fr 0.7fr 0.5fr 0.8fr 1.4fr' }}
         >
-          <div>Indicator</div>
-          <div>Dimension</div>
-          <div>Reference</div>
-          <div>Score</div>
-          <div>Status</div>
-          <div>Evidence</div>
+          <div>{c.colIndicator}</div>
+          <div>{c.colDimension}</div>
+          <div>{c.colReference}</div>
+          <div>{c.colScore}</div>
+          <div>{c.colStatus}</div>
+          <div>{c.colEvidence}</div>
         </div>
         {bctInds.map(ind => {
           const eff = getEffectiveScore(ind.id);
@@ -205,15 +298,15 @@ export default function Compliance() {
               </div>
               <div>
                 {pending ? (
-                  <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-500 text-[10px] font-semibold">Pending</span>
+                  <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-500 text-[10px] font-semibold">{c.pending}</span>
                 ) : compliant ? (
-                  <span className="px-2 py-0.5 rounded bg-green-100 text-green-700 text-[10px] font-semibold">Compliant</span>
+                  <span className="px-2 py-0.5 rounded bg-green-100 text-green-700 text-[10px] font-semibold">{c.compliant}</span>
                 ) : (
-                  <span className="px-2 py-0.5 rounded bg-red-100 text-red-700 text-[10px] font-semibold">Non-compliant</span>
+                  <span className="px-2 py-0.5 rounded bg-red-100 text-red-700 text-[10px] font-semibold">{c.nonCompliant}</span>
                 )}
               </div>
               <div className="text-xs text-gray-500 italic">
-                {ans.evidence ? ans.evidence.slice(0, 70) : 'No evidence provided'}
+                {ans.evidence ? ans.evidence.slice(0, 70) : c.noEvidence}
               </div>
             </div>
           );
@@ -223,9 +316,9 @@ export default function Compliance() {
       {/* Summary */}
       <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
         <p className="text-sm font-semibold text-gray-800">
-          {bctData.compliant} of {bctData.total} BCT indicators compliant.{' '}
+          {c.summary(bctData.compliant, bctData.total)}{' '}
           <span style={{ color: exposureColor.color }}>
-            Regulatory exposure: {bctData.exposure}
+            {c.summaryExposure(exposureLabel(c, bctData.exposure))}
           </span>
         </p>
         <div className="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -234,7 +327,7 @@ export default function Compliance() {
             style={{ width: `${bctData.rate}%`, background: complianceColor }}
           />
         </div>
-        <div className="text-xs text-gray-400 mt-1">{bctData.rate}% of BCT indicators compliant</div>
+        <div className="text-xs text-gray-400 mt-1">{c.summaryRate(bctData.rate)}</div>
       </div>
 
       {/* Export buttons */}
@@ -244,17 +337,17 @@ export default function Compliance() {
             onClick={handlePrint}
             className="px-4 py-2 bg-ey-yellow text-ey-charcoal font-semibold rounded-lg text-sm hover:bg-yellow-400"
           >
-            ⤓ Save as PDF
+            {c.savePdf}
           </button>
           <button
             onClick={handlePrint}
             className="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm hover:bg-gray-50"
           >
-            Save BCT Evidence Package
+            {c.saveEvidence}
           </button>
         </div>
         <span className="text-[11px] text-gray-400">
-          Opens your browser's save window — choose "Save as PDF" to download the file.
+          {c.saveHint}
         </span>
       </div>
       </div>
