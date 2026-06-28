@@ -298,10 +298,12 @@ export default function GapAnalysis() {
     matrix[q].push(dim);
   });
 
-  // Selected dim recommendations
-  const selScore = getDimScore(selectedDim);
+  // Selected dim recommendations. selectedDim defaults to 'D1', which may not
+  // exist (deleted/renamed) and custom dims (D6+) have no canned recommendations.
+  const selDim = DIMENSIONS[selectedDim] ? selectedDim : (Object.keys(DIMENSIONS)[0] || selectedDim);
+  const selScore = getDimScore(selDim);
   const band = getBand(selScore);
-  const actions = RECOMMENDATIONS[selectedDim][band];
+  const actions = (RECOMMENDATIONS[selDim] || {})[band] || [];
 
   // Enriched roadmap
   const { phases, summary } = buildRoadmap({ getSubDimScore, getEffectiveScore, targetLevel });
@@ -434,8 +436,8 @@ export default function GapAnalysis() {
                 {c.topActionsTitle}
               </div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm font-semibold" style={{ color: DIMENSIONS[selectedDim].color }}>
-                  {selectedDim} — {DIMENSIONS[selectedDim].name}
+                <span className="text-sm font-semibold" style={{ color: DIMENSIONS[selDim].color }}>
+                  {selDim} — {DIMENSIONS[selDim].name}
                 </span>
                 <span
                   className="text-[10px] px-1.5 py-0.5 rounded font-semibold"
@@ -452,7 +454,7 @@ export default function GapAnalysis() {
                   <div key={i} className="flex items-start gap-2">
                     <div
                       className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5"
-                      style={{ background: DIMENSIONS[selectedDim].color }}
+                      style={{ background: DIMENSIONS[selDim].color }}
                     >
                       {i + 1}
                     </div>

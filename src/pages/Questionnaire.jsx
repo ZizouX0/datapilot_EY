@@ -40,6 +40,7 @@ const COPY = {
     prev: '← Previous',
     answeredOf: (a, b) => `${a} of ${b} indicators answered`,
     next: 'Next →',
+    noQuestionnaire: 'No questionnaire is configured yet. Ask your administrator to set it up.',
   },
   fr: {
     complete: 'Évaluation terminée.',
@@ -68,6 +69,7 @@ const COPY = {
     prev: '← Précédent',
     answeredOf: (a, b) => `${a} sur ${b} indicateurs renseignés`,
     next: 'Suivant →',
+    noQuestionnaire: 'Aucun questionnaire n’est encore configuré. Demandez à votre administrateur de le mettre en place.',
   },
 };
 
@@ -75,8 +77,8 @@ export default function Questionnaire() {
   const navigate = useNavigate();
   const c = COPY[useSettingsStore(s => s.language)] || COPY.en;
   const answers = useAppStore(s => s.answers);
-  const activeDimension = useAppStore(s => s.activeDimension);
-  const activeSubDim = useAppStore(s => s.activeSubDim);
+  const storeDim = useAppStore(s => s.activeDimension);
+  const storeSub = useAppStore(s => s.activeSubDim);
   const setAnswer = useAppStore(s => s.setAnswer);
   const setEvidence = useAppStore(s => s.setEvidence);
   const skipIndicator = useAppStore(s => s.skipIndicator);
@@ -98,9 +100,22 @@ export default function Questionnaire() {
   const [skipErrors, setSkipErrors] = useState({});
 
   const dims = Object.keys(DIMENSIONS);
-  const currentDimData = DIMENSIONS[activeDimension];
-  const subDims = currentDimData.subDims;
+  // Crash-safety: the persisted activeDimension/activeSubDim may no longer exist
+  // (questionnaire edited, or the user switched banks). Fall back to the first.
+  const activeDimension = DIMENSIONS[storeDim] ? storeDim : dims[0];
+  const currentDimData = activeDimension ? DIMENSIONS[activeDimension] : null;
+  const subDims = currentDimData?.subDims || [];
+  const activeSubDim = subDims.includes(storeSub) ? storeSub : subDims[0];
   const currentInds = INDICATORS.filter(i => i.sub === activeSubDim);
+
+  // No dimensions configured at all → don't crash, show an empty state.
+  if (!currentDimData) {
+    return (
+      <div className="max-w-xl mx-auto mt-10 rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500">
+        {c.noQuestionnaire}
+      </div>
+    );
+  }
 
   function scrollTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -524,7 +539,7 @@ export default function Questionnaire() {
                     <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all"
-                        style={{ width: `${(done / dimInds.length) * 100}%`, background: d.color }}
+                        style={{ width: `${dimInds.length ? (done / dimInds.length) * 100 : 0}%`, background: d.color }}
                       />
                     </div>
                   </div>

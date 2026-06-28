@@ -94,7 +94,9 @@ export function buildRoadmap({ getSubDimScore, getEffectiveScore, targetLevel })
       // Distribute the dimension's recommendations across its sub-dims so two
       // sub-dims of the same dimension don't render identical advice.
       const band = getBand(current);
-      const recs = RECOMMENDATIONS[dim][band];
+      // Custom/renamed dimensions (e.g. an admin-added D6) have no canned
+      // recommendations — fall back to an empty list instead of crashing.
+      const recs = (RECOMMENDATIONS[dim] || {})[band] || [];
       const order = meta.subDims.indexOf(sd);
       const actions = recs.length
         ? [recs[order % recs.length], recs[(order + 1) % recs.length]].filter(

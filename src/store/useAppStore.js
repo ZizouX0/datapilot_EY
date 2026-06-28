@@ -59,6 +59,12 @@ const useAppStore = create(
     const answered = scores.filter(s => s.score !== null);
     if (answered.length === 0) return null;
     const totalWeight = answered.reduce((a, s) => a + s.weight, 0);
+    // If weights are degenerate (all zero), fall back to an unweighted mean so
+    // the global score is never NaN.
+    if (totalWeight <= 0) {
+      const mean = answered.reduce((a, s) => a + s.score, 0) / answered.length;
+      return parseFloat(mean.toFixed(2));
+    }
     const weighted = answered.reduce((a, s) => a + s.score * (s.weight / totalWeight), 0);
     return parseFloat(weighted.toFixed(2));
   },
@@ -178,7 +184,7 @@ const useAppStore = create(
     const dims = Object.keys(DIMENSIONS);
     const scores = dims.map(d => ({ dim: d, score: get().getDimScore(d), weight: DIMENSIONS[d].weight }));
     const answered = scores.filter(s => s.score !== null);
-    const totalWeight = answered.reduce((a, s) => a + s.weight, 0);
+    const totalWeight = answered.reduce((a, s) => a + s.weight, 0) || 1;
     return answered
       .map(s => {
         const capped = get().hasCappedIndicators(s.dim);
@@ -283,7 +289,9 @@ const useAppStore = create(
   },
 
   setActiveDimension(dim) {
-    set({ activeDimension: dim, activeSubDim: DIMENSIONS[dim].subDims[0] });
+    const d = DIMENSIONS[dim];
+    if (!d) return; // ignore a dimension that no longer exists
+    set({ activeDimension: dim, activeSubDim: d.subDims[0] });
   },
 
   setActiveSubDim(sub) {
