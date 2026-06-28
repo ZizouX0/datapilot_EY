@@ -177,6 +177,7 @@ export default function Account() {
   }
 
   async function handleRemovePhoto() {
+    if (!window.confirm(t('account.removePhotoConfirm'))) return;
     setInfoMsg(null);
     setUploading(true);
     await supabase.storage.from('avatars').remove([`${user.id}/avatar`]);
@@ -192,6 +193,10 @@ export default function Account() {
 
   async function handleSaveInfo(e) {
     e.preventDefault();
+    if (phone.trim() && !E164_RE.test(phone.trim())) {
+      setInfoMsg({ ok: false, text: t('account.phoneInvalid') });
+      return;
+    }
     setSavingInfo(true);
     setInfoMsg(null);
     // Bank is read-only in-app (assigned by EY at invite); not sent here.

@@ -62,6 +62,8 @@ const STRINGS = {
   'account.phone':         { en: 'Phone number',  fr: 'Numéro de téléphone' },
   'account.phonePlaceholder': { en: 'e.g. +216 20 123 456', fr: 'ex. +216 20 123 456' },
   'account.phoneHint':     { en: 'Used as a recovery contact for your account.', fr: 'Utilisé comme contact de récupération pour votre compte.' },
+  'account.phoneInvalid':  { en: 'Enter a valid number in international format, e.g. +21620123456.', fr: 'Entrez un numéro valide au format international, ex. +21620123456.' },
+  'account.removePhotoConfirm': { en: 'Remove your profile photo?', fr: 'Supprimer votre photo de profil ?' },
   'account.bank':          { en: 'Bank',          fr: 'Banque' },
   'account.bankPlaceholder': { en: 'Your organisation’s bank', fr: 'La banque de votre organisation' },
   'account.bankHint':      { en: 'Set by your administrator — shared across your team.', fr: 'Défini par votre administrateur — partagé avec votre équipe.' },

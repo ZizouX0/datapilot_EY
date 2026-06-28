@@ -197,7 +197,7 @@ export default function Profile() {
           <div className="flex gap-3 pt-2">
             <button
               onClick={handleSave}
-              disabled={!form.bankName || !form.respondentName || !emailValid}
+              disabled={!form.respondentName.trim() || !emailValid}
               className="flex-1 bg-ey-yellow text-ey-charcoal font-semibold rounded-lg py-2.5 text-sm hover:bg-yellow-400 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {c.save}
