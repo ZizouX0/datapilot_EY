@@ -1,4 +1,24 @@
 import DimensionPill from '../ui/DimensionPill';
+import useSettingsStore from '../../store/useSettingsStore';
+
+const COPY = {
+  en: {
+    target: (t) => `Target ${t}`,
+    bctItems: (n) => `BCT · ${n} item${n > 1 ? 's' : ''}`,
+    effort: (level) => `${level} effort`,
+    weight: (pct) => `weight ${pct}%`,
+    regulatoryItems: 'Regulatory items to close',
+    aiTailored: '✦ AI-tailored',
+  },
+  fr: {
+    target: (t) => `Cible ${t}`,
+    bctItems: (n) => `BCT · ${n} élément${n > 1 ? 's' : ''}`,
+    effort: (level) => `effort ${level}`,
+    weight: (pct) => `poids ${pct}%`,
+    regulatoryItems: 'Éléments réglementaires à traiter',
+    aiTailored: '✦ Adapté par IA',
+  },
+};
 
 const EFFORT_STYLE = {
   High: { bg: '#FDECEA', color: '#B71C1C' },
@@ -8,6 +28,8 @@ const EFFORT_STYLE = {
 
 // Mini current → target progress bar with a target marker.
 export function ProgressBar({ current, target, color }) {
+  const lang = useSettingsStore(s => s.language);
+  const c = COPY[lang] || COPY.en;
   const curPct = Math.max(0, Math.min(100, (current / 5) * 100));
   const tgtPct = Math.max(0, Math.min(100, (target / 5) * 100));
   return (
@@ -19,7 +41,7 @@ export function ProgressBar({ current, target, color }) {
       <div
         className="absolute top-1/2 -translate-y-1/2 w-0.5 h-3.5 bg-ey-charcoal"
         style={{ left: `${tgtPct}%` }}
-        title={`Target ${target.toFixed(1)}`}
+        title={c.target(target.toFixed(1))}
       />
     </div>
   );
@@ -28,6 +50,8 @@ export function ProgressBar({ current, target, color }) {
 // One roadmap action card. `roadmap-card` class lets print CSS keep it whole
 // across page boundaries. `aiActions` (optional) overrides the standard actions.
 export default function RoadmapCard({ item, aiActions }) {
+  const lang = useSettingsStore(s => s.language);
+  const c = COPY[lang] || COPY.en;
   const usingAi = Array.isArray(aiActions) && aiActions.length > 0;
   const actions = usingAi ? aiActions : item.actions;
   return (
@@ -53,17 +77,17 @@ export default function RoadmapCard({ item, aiActions }) {
       <div className="flex flex-wrap items-center gap-1.5 mb-1">
         {item.hasBctGap && (
           <span className="text-[9px] font-bold border border-orange-400 text-orange-600 px-1.5 py-0.5 rounded">
-            BCT · {item.bctGaps.length} item{item.bctGaps.length > 1 ? 's' : ''}
+            {c.bctItems(item.bctGaps.length)}
           </span>
         )}
         <span
           className="text-[9px] font-semibold px-1.5 py-0.5 rounded"
           style={{ background: EFFORT_STYLE[item.effort].bg, color: EFFORT_STYLE[item.effort].color }}
         >
-          {item.effort} effort
+          {c.effort(item.effort)}
         </span>
         <span className="text-[9px] font-medium text-gray-400">
-          weight {Math.round(item.weight * 100)}%
+          {c.weight(Math.round(item.weight * 100))}
         </span>
       </div>
 
@@ -83,7 +107,7 @@ export default function RoadmapCard({ item, aiActions }) {
       {item.hasBctGap && (
         <div className="mb-2 rounded bg-orange-50 border border-orange-100 px-2 py-1.5">
           <div className="text-[8px] font-bold uppercase tracking-wide text-orange-600 mb-0.5">
-            Regulatory items to close
+            {c.regulatoryItems}
           </div>
           {item.bctGaps.slice(0, 3).map(g => (
             <div key={g.id} className="text-[10px] text-orange-800 leading-snug">
@@ -98,7 +122,7 @@ export default function RoadmapCard({ item, aiActions }) {
         {usingAi && (
           <div className="flex items-center gap-1 mb-0.5">
             <span className="text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">
-              ✦ AI-tailored
+              {c.aiTailored}
             </span>
           </div>
         )}

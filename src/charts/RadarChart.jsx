@@ -6,9 +6,15 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
+import useSettingsStore from '../store/useSettingsStore';
+
+const COPY = {
+  en: { currentScore: 'Current score', targetLevel: 'Target level' },
+  fr: { currentScore: 'Score actuel', targetLevel: 'Niveau cible' },
+};
 
 // Shared chart children so the screen and print variants stay in sync.
-function chartChildren() {
+function chartChildren(c) {
   return [
     <PolarGrid key="grid" stroke="#E0E0E0" />,
     <PolarAngleAxis
@@ -18,7 +24,7 @@ function chartChildren() {
     />,
     <Radar
       key="current"
-      name="Current score"
+      name={c.currentScore}
       dataKey="current"
       stroke="#3D108A"
       fill="#3D108A"
@@ -27,7 +33,7 @@ function chartChildren() {
     />,
     <Radar
       key="target"
-      name="Target level"
+      name={c.targetLevel}
       dataKey="target"
       stroke="#FFE600"
       fill="none"
@@ -48,6 +54,8 @@ function chartChildren() {
 
 export default function RadarChart({ data }) {
   const margin = { top: 10, right: 30, bottom: 10, left: 30 };
+  const lang = useSettingsStore(s => s.language);
+  const c = COPY[lang] || COPY.en;
 
   return (
     <>
@@ -55,7 +63,7 @@ export default function RadarChart({ data }) {
       <div className="no-print">
         <ResponsiveContainer width="100%" height={280}>
           <ReRadarChart data={data} margin={margin}>
-            {chartChildren()}
+            {chartChildren(c)}
           </ReRadarChart>
         </ResponsiveContainer>
       </div>
@@ -65,7 +73,7 @@ export default function RadarChart({ data }) {
       <div className="print-only">
         <div style={{ width: 520, margin: '0 auto' }}>
           <ReRadarChart width={520} height={320} data={data} margin={margin}>
-            {chartChildren()}
+            {chartChildren(c)}
           </ReRadarChart>
         </div>
       </div>

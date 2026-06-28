@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import useAppStore, { MATURITY_LEVELS } from '../store/useAppStore';
 import useSubmissionsStore from '../store/useSubmissionsStore';
+import useSettingsStore from '../store/useSettingsStore';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { DIMENSIONS, INDICATORS } from '../data/indicators';
 import RadarChart from '../charts/RadarChart';
@@ -18,6 +19,119 @@ const INTERP = [
   { range: '3.40–4.19', action: 'Optimize with continuous improvement and automated reporting' },
   { range: '4.20–5.0', action: 'Benchmark externally and drive sector-level data innovation' },
 ];
+
+const COPY = {
+  en: {
+    reportTitle: 'Data Maturity Assessment',
+    reportSubtitle: 'Global maturity & dimension scoring',
+    documentTitle: (bank) => `DataPilot - ${bank || 'Bank'} - Maturity Report`,
+    submitting: 'Submitting…',
+    submitForReview: '↑ Submit for review',
+    saveAsPdf: '⤓ Save as PDF',
+    submittedOk: 'Assessment submitted for review.',
+    pdfHint: 'Opens your browser\'s save window — choose "Save as PDF" to download the file.',
+    executiveSummary: 'Executive Summary',
+    theBank: 'The bank',
+    summaryScores: (bank, pct, score) => (<><strong>{bank}</strong> scores <strong>{pct}%</strong>{' '}({score} / 5), placing it at maturity{' '}</>),
+    summaryLevel: (level, cmmi, gartner) => (<><strong>Level {level} — {cmmi}</strong> ({gartner}).</>),
+    summaryStrength: (name, score) => (<> Its strongest area is <strong>{name}</strong> ({score}/5).</>),
+    summaryPriority: (name, score) => (<> The largest gap is <strong>{name}</strong> ({score}/5),
+      which should be prioritised.</>),
+    summaryBct: (exposure, compliant, total) => (<>{' '}BCT regulatory exposure is <strong>{exposure}</strong>, with {compliant} of{' '}
+      {total} mandatory indicators compliant.</>),
+    topStrengths: 'Top Strengths',
+    priorityFocus: 'Priority Focus Areas',
+    globalMaturityIndex: 'Global Maturity Index',
+    noIndicators: 'No indicators answered yet',
+    dimensionRadar: 'Dimension Radar',
+    dimensionScores: 'Dimension Scores',
+    formulaPlaceholder: 'Formula will appear once indicators are answered',
+    setTarget: 'Set target maturity level',
+    indicatorsScored: 'Indicators scored',
+    coverage: (n) => `${n}% coverage`,
+    indicatorsSkipped: 'Indicators skipped',
+    excludedFromScoring: 'Excluded from scoring',
+    bctCompliant: 'BCT compliant',
+    regulatoryExposure: (e) => `Regulatory exposure: ${e}`,
+    criticalGaps: 'Critical gaps',
+    dimensionsBelow: 'Dimensions below 2.0/5',
+    scoreInterpretation: 'Score Interpretation Grid',
+    bctComplianceStatus: 'BCT Regulatory Compliance Status',
+    bctComplianceLine: (compliant, total) => `${compliant} of ${total} BCT indicators compliant.`,
+    regulatoryExposureLabel: (e) => `Regulatory exposure: ${e}`,
+    thIndicator: 'Indicator',
+    thScore: 'Score',
+    thStatus: 'Status',
+    thEvidence: 'Evidence',
+    pending: 'Pending',
+    compliant: 'Compliant',
+    nonCompliant: 'Non-compliant',
+    noEvidence: 'No evidence provided',
+    improvementRoadmap: 'Improvement Roadmap',
+    methodologyReferences: 'Methodology & References',
+    methodScale: (n) => `Maturity is scored 1–5 on a CMMI-aligned scale; the global index is a weighted average of the ${n} dimensions.`,
+    methodEvidence: 'A score of 3 or above requires documented evidence; without it the score is capped at 2/5.',
+    methodSkip: 'Up to 20% of indicators per dimension may be skipped; BCT-flagged indicators are mandatory and cannot be skipped.',
+    methodProxy: (names, isPlural) => `${names} ${isPlural ? 'are' : 'is'} assessed through objective proxy signals rather than direct self-declaration.`,
+    methodRefs: 'Regulatory references: BCT Circulaire N°2025-08 and BCBS 239 (risk data aggregation & reporting).',
+    proxySuffix: 'proxy',
+  },
+  fr: {
+    reportTitle: 'Évaluation de la maturité des données',
+    reportSubtitle: 'Score de maturité global et par dimension',
+    documentTitle: (bank) => `DataPilot - ${bank || 'Banque'} - Rapport de maturité`,
+    submitting: 'Envoi…',
+    submitForReview: '↑ Soumettre pour revue',
+    saveAsPdf: '⤓ Enregistrer en PDF',
+    submittedOk: 'Évaluation soumise pour revue.',
+    pdfHint: 'Ouvre la fenêtre d\'enregistrement de votre navigateur — choisissez « Enregistrer au format PDF » pour télécharger le fichier.',
+    executiveSummary: 'Synthèse exécutive',
+    theBank: 'La banque',
+    summaryScores: (bank, pct, score) => (<><strong>{bank}</strong> obtient <strong>{pct}%</strong>{' '}({score} / 5), ce qui la situe au niveau de maturité{' '}</>),
+    summaryLevel: (level, cmmi, gartner) => (<><strong>Niveau {level} — {cmmi}</strong> ({gartner}).</>),
+    summaryStrength: (name, score) => (<> Son point fort est <strong>{name}</strong> ({score}/5).</>),
+    summaryPriority: (name, score) => (<> Le plus grand écart concerne <strong>{name}</strong> ({score}/5),
+      à traiter en priorité.</>),
+    summaryBct: (exposure, compliant, total) => (<>{' '}L'exposition réglementaire BCT est <strong>{exposure}</strong>, avec {compliant} indicateurs obligatoires conformes sur{' '}
+      {total}.</>),
+    topStrengths: 'Principaux points forts',
+    priorityFocus: 'Axes prioritaires',
+    globalMaturityIndex: 'Indice de maturité global',
+    noIndicators: 'Aucun indicateur renseigné pour l\'instant',
+    dimensionRadar: 'Radar des dimensions',
+    dimensionScores: 'Scores par dimension',
+    formulaPlaceholder: 'La formule apparaîtra une fois les indicateurs renseignés',
+    setTarget: 'Définir le niveau de maturité cible',
+    indicatorsScored: 'Indicateurs notés',
+    coverage: (n) => `${n}% de couverture`,
+    indicatorsSkipped: 'Indicateurs ignorés',
+    excludedFromScoring: 'Exclus du calcul',
+    bctCompliant: 'Conformes BCT',
+    regulatoryExposure: (e) => `Exposition réglementaire : ${e}`,
+    criticalGaps: 'Écarts critiques',
+    dimensionsBelow: 'Dimensions sous 2,0/5',
+    scoreInterpretation: 'Grille d\'interprétation des scores',
+    bctComplianceStatus: 'Statut de conformité réglementaire BCT',
+    bctComplianceLine: (compliant, total) => `${compliant} indicateurs BCT conformes sur ${total}.`,
+    regulatoryExposureLabel: (e) => `Exposition réglementaire : ${e}`,
+    thIndicator: 'Indicateur',
+    thScore: 'Score',
+    thStatus: 'Statut',
+    thEvidence: 'Preuve',
+    pending: 'En attente',
+    compliant: 'Conforme',
+    nonCompliant: 'Non conforme',
+    noEvidence: 'Aucune preuve fournie',
+    improvementRoadmap: 'Feuille de route d\'amélioration',
+    methodologyReferences: 'Méthodologie et références',
+    methodScale: (n) => `La maturité est notée de 1 à 5 sur une échelle alignée CMMI ; l'indice global est une moyenne pondérée des ${n} dimensions.`,
+    methodEvidence: 'Un score de 3 ou plus exige une preuve documentée ; sans elle, le score est plafonné à 2/5.',
+    methodSkip: 'Jusqu\'à 20 % des indicateurs par dimension peuvent être ignorés ; les indicateurs marqués BCT sont obligatoires et ne peuvent être ignorés.',
+    methodProxy: (names, isPlural) => `${names} ${isPlural ? 'sont évaluées' : 'est évaluée'} via des signaux proxy objectifs plutôt que par auto-déclaration directe.`,
+    methodRefs: 'Références réglementaires : BCT Circulaire N°2025-08 et BCBS 239 (agrégation et reporting des données de risque).',
+    proxySuffix: 'proxy',
+  },
+};
 
 export default function Results() {
   const printRef = useRef();
@@ -42,16 +156,19 @@ export default function Results() {
   const saving = useSubmissionsStore(s => s.saving);
   const [submitMsg, setSubmitMsg] = useState(null); // { ok, text }
 
+  const lang = useSettingsStore(s => s.language);
+  const c = COPY[lang] || COPY.en;
+
   async function handleSubmit() {
     setSubmitMsg(null);
     const { error: err } = await saveSubmission(buildSubmission());
     if (err) setSubmitMsg({ ok: false, text: err });
-    else setSubmitMsg({ ok: true, text: 'Assessment submitted for review.' });
+    else setSubmitMsg({ ok: true, text: c.submittedOk });
   }
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: `DataPilot - ${profile.bankName || 'Bank'} - Maturity Report`,
+    documentTitle: c.documentTitle(profile.bankName),
   });
 
   const lvl = getMaturityLevel(globalScore);
@@ -60,7 +177,7 @@ export default function Results() {
   const bctInds = getBCTIndicators();
 
   const radarData = Object.entries(DIMENSIONS).map(([key, d]) => ({
-    name: key === 'D5' ? `${d.name} (proxy)` : d.name,
+    name: key === 'D5' ? `${d.name} (${c.proxySuffix})` : d.name,
     current: getDimScore(key) ?? 0,
     target: targetLevel,
   }));
@@ -78,8 +195,8 @@ export default function Results() {
   return (
     <div ref={printRef}>
       <ReportCover
-        title="Data Maturity Assessment"
-        subtitle="Global maturity & dimension scoring"
+        title={c.reportTitle}
+        subtitle={c.reportSubtitle}
         profile={profile}
       />
       <div className="print-content">
@@ -92,18 +209,18 @@ export default function Results() {
               disabled={saving}
               className="px-4 py-2 bg-ey-charcoal text-white font-semibold rounded-lg text-sm hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {saving ? 'Submitting…' : '↑ Submit for review'}
+              {saving ? c.submitting : c.submitForReview}
             </button>
           )}
           <button
             onClick={handlePrint}
             className="px-4 py-2 bg-ey-yellow text-ey-charcoal font-semibold rounded-lg text-sm hover:bg-yellow-400"
           >
-            ⤓ Save as PDF
+            {c.saveAsPdf}
           </button>
         </div>
         <span className="text-[11px] text-gray-400">
-          Opens your browser's save window — choose "Save as PDF" to download the file.
+          {c.pdfHint}
         </span>
         {submitMsg && (
           <span className={`text-[12px] rounded-lg px-3 py-1.5 border ${
@@ -120,21 +237,14 @@ export default function Results() {
       {globalScore !== null && (
         <div className="bg-white rounded-xl border border-gray-200 border-l-4 border-l-ey-purple p-5 mb-6">
           <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-2">
-            Executive Summary
+            {c.executiveSummary}
           </div>
           <p className="text-sm text-gray-700 leading-relaxed">
-            <strong>{profile.bankName || 'The bank'}</strong> scores <strong>{pct}%</strong>{' '}
-            ({globalScore.toFixed(2)} / 5), placing it at maturity{' '}
-            <strong>Level {lvl.level} — {lvl.cmmi}</strong> ({lvl.gartner}).
-            {strengths[0] && (
-              <> Its strongest area is <strong>{strengths[0].name}</strong> ({strengths[0].score.toFixed(2)}/5).</>
-            )}
-            {priorities[0] && (
-              <> The largest gap is <strong>{priorities[0].name}</strong> ({priorities[0].score.toFixed(2)}/5),
-              which should be prioritised.</>
-            )}
-            {' '}BCT regulatory exposure is <strong>{bctData.exposure}</strong>, with {bctData.compliant} of{' '}
-            {bctData.total} mandatory indicators compliant.
+            {c.summaryScores(profile.bankName || c.theBank, pct, globalScore.toFixed(2))}
+            {c.summaryLevel(lvl.level, lvl.cmmi, lvl.gartner)}
+            {strengths[0] && c.summaryStrength(strengths[0].name, strengths[0].score.toFixed(2))}
+            {priorities[0] && c.summaryPriority(priorities[0].name, priorities[0].score.toFixed(2))}
+            {c.summaryBct(bctData.exposure, bctData.compliant, bctData.total)}
           </p>
         </div>
       )}
@@ -143,8 +253,8 @@ export default function Results() {
       {rankedDims.length > 0 && (
         <div className="grid grid-cols-2 gap-4 mb-6">
           {[
-            { title: 'Top Strengths', items: strengths, accent: '#1B5E20', label: 'strongest' },
-            { title: 'Priority Focus Areas', items: priorities, accent: '#B71C1C', label: 'biggest gaps' },
+            { title: c.topStrengths, items: strengths, accent: '#1B5E20', label: 'strongest' },
+            { title: c.priorityFocus, items: priorities, accent: '#B71C1C', label: 'biggest gaps' },
           ].map(col => (
             <div key={col.title} className="bg-white rounded-xl border border-gray-200 p-5">
               <div className="text-[9px] font-bold tracking-widest uppercase mb-3" style={{ color: col.accent }}>
@@ -174,7 +284,7 @@ export default function Results() {
         {/* Card 1: Global score */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-3">
-            Global Maturity Index
+            {c.globalMaturityIndex}
           </div>
           {globalScore !== null ? (
             <>
@@ -194,14 +304,14 @@ export default function Results() {
               <div className="text-xs text-gray-400 mt-2">BCT Circulaire N°2025-08</div>
             </>
           ) : (
-            <div className="text-gray-400 text-sm">No indicators answered yet</div>
+            <div className="text-gray-400 text-sm">{c.noIndicators}</div>
           )}
         </div>
 
         {/* Card 2: Radar */}
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-2">
-            Dimension Radar
+            {c.dimensionRadar}
           </div>
           <RadarChart data={radarData} />
         </div>
@@ -209,18 +319,18 @@ export default function Results() {
         {/* Card 3: Dimension bars */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-3">
-            Dimension Scores
+            {c.dimensionScores}
           </div>
           <DimensionBars showGap targetLevel={targetLevel} expandable />
           <div className="mt-4 pt-3 border-t border-gray-100 text-[10px] font-mono text-gray-400 leading-relaxed">
-            {getFormulaString() || 'Formula will appear once indicators are answered'}
+            {getFormulaString() || c.formulaPlaceholder}
           </div>
         </div>
       </div>
 
       {/* Target level selector */}
       <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
-        <div className="text-xs font-semibold text-gray-600 mb-3">Set target maturity level</div>
+        <div className="text-xs font-semibold text-gray-600 mb-3">{c.setTarget}</div>
         <div className="flex gap-2">
           {MATURITY_LEVELS.map(l => (
             <button
@@ -244,26 +354,26 @@ export default function Results() {
         {[
           {
             num: `${getScoredCount()} / ${INDICATORS.length}`,
-            label: 'Indicators scored',
-            sub: `${Math.round((getScoredCount() / INDICATORS.length) * 100)}% coverage`,
+            label: c.indicatorsScored,
+            sub: c.coverage(Math.round((getScoredCount() / INDICATORS.length) * 100)),
             color: '#3D108A',
           },
           {
             num: `${getTotalSkipCount()} / ${INDICATORS.length}`,
-            label: 'Indicators skipped',
-            sub: 'Excluded from scoring',
+            label: c.indicatorsSkipped,
+            sub: c.excludedFromScoring,
             color: '#188CE5',
           },
           {
             num: `${bctData.compliant} / ${bctData.total}`,
-            label: 'BCT compliant',
-            sub: `Regulatory exposure: ${bctData.exposure}`,
+            label: c.bctCompliant,
+            sub: c.regulatoryExposure(bctData.exposure),
             color: bctData.rate >= 80 ? '#1B5E20' : bctData.rate >= 50 ? '#E65100' : '#B71C1C',
           },
           {
             num: getCriticalGapsCount(),
-            label: 'Critical gaps',
-            sub: 'Dimensions below 2.0/5',
+            label: c.criticalGaps,
+            sub: c.dimensionsBelow,
             color: '#B71C1C',
           },
         ].map(kpi => (
@@ -280,7 +390,7 @@ export default function Results() {
       {/* Maturity interpretation grid */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
         <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-3">
-          Score Interpretation Grid
+          {c.scoreInterpretation}
         </div>
         <div className="grid grid-cols-5 gap-3">
           {MATURITY_LEVELS.map((l, i) => {
@@ -311,25 +421,25 @@ export default function Results() {
       {/* BCT compliance panel */}
       <div className="bg-white rounded-xl border border-gray-200 p-5">
         <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-1">
-          BCT Regulatory Compliance Status
+          {c.bctComplianceStatus}
         </div>
         <p className="text-sm text-gray-700 mb-3">
-          {bctData.compliant} of {bctData.total} BCT indicators compliant.{' '}
+          {c.bctComplianceLine(bctData.compliant, bctData.total)}{' '}
           <span className={`font-semibold ${
             bctData.exposure === 'Low' ? 'text-green-700' :
             bctData.exposure === 'Medium' ? 'text-orange-600' : 'text-red-700'
           }`}>
-            Regulatory exposure: {bctData.exposure}
+            {c.regulatoryExposureLabel(bctData.exposure)}
           </span>
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-gray-500 text-[10px] uppercase tracking-wide">
-                <th className="text-left py-2.5 px-3 font-semibold">Indicator</th>
-                <th className="text-left py-2.5 px-3 font-semibold">Score</th>
-                <th className="text-left py-2.5 px-3 font-semibold">Status</th>
-                <th className="text-left py-2.5 px-3 font-semibold">Evidence</th>
+                <th className="text-left py-2.5 px-3 font-semibold">{c.thIndicator}</th>
+                <th className="text-left py-2.5 px-3 font-semibold">{c.thScore}</th>
+                <th className="text-left py-2.5 px-3 font-semibold">{c.thStatus}</th>
+                <th className="text-left py-2.5 px-3 font-semibold">{c.thEvidence}</th>
               </tr>
             </thead>
             <tbody>
@@ -352,15 +462,15 @@ export default function Results() {
                     </td>
                     <td className="py-2 pr-4">
                       {pending ? (
-                        <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-500 text-[10px] font-semibold">Pending</span>
+                        <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-500 text-[10px] font-semibold">{c.pending}</span>
                       ) : compliant ? (
-                        <span className="px-2 py-0.5 rounded bg-green-100 text-green-700 text-[10px] font-semibold">Compliant</span>
+                        <span className="px-2 py-0.5 rounded bg-green-100 text-green-700 text-[10px] font-semibold">{c.compliant}</span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded bg-red-100 text-red-700 text-[10px] font-semibold">Non-compliant</span>
+                        <span className="px-2 py-0.5 rounded bg-red-100 text-red-700 text-[10px] font-semibold">{c.nonCompliant}</span>
                       )}
                     </td>
                     <td className="py-2 text-gray-500 italic">
-                      {ans.evidence ? ans.evidence.slice(0, 60) : 'No evidence provided'}
+                      {ans.evidence ? ans.evidence.slice(0, 60) : c.noEvidence}
                     </td>
                   </tr>
                 );
@@ -373,7 +483,7 @@ export default function Results() {
       {/* Improvement roadmap — appended so one PDF covers diagnosis + plan */}
       <div className="mt-6">
         <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-3">
-          Improvement Roadmap
+          {c.improvementRoadmap}
         </div>
         <RoadmapSection />
       </div>
@@ -381,16 +491,16 @@ export default function Results() {
       {/* Methodology & references appendix */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 mt-6 text-xs text-gray-600 leading-relaxed">
         <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-3">
-          Methodology &amp; References
+          {c.methodologyReferences}
         </div>
         <ul className="flex flex-col gap-1.5 list-disc pl-4">
-          <li>Maturity is scored 1–5 on a CMMI-aligned scale; the global index is a weighted average of the {dimensionCount} dimensions.</li>
-          <li>A score of 3 or above requires documented evidence; without it the score is capped at 2/5.</li>
-          <li>Up to 20% of indicators per dimension may be skipped; BCT-flagged indicators are mandatory and cannot be skipped.</li>
+          <li>{c.methodScale(dimensionCount)}</li>
+          <li>{c.methodEvidence}</li>
+          <li>{c.methodSkip}</li>
           {proxyDimNames.length > 0 && (
-            <li>{proxyDimNames.join(', ')} {proxyDimNames.length > 1 ? 'are' : 'is'} assessed through objective proxy signals rather than direct self-declaration.</li>
+            <li>{c.methodProxy(proxyDimNames.join(', '), proxyDimNames.length > 1)}</li>
           )}
-          <li>Regulatory references: BCT Circulaire N°2025-08 and BCBS 239 (risk data aggregation &amp; reporting).</li>
+          <li>{c.methodRefs}</li>
         </ul>
       </div>
       </div>

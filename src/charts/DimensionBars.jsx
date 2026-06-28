@@ -1,11 +1,19 @@
 import { useState } from 'react';
 import { DIMENSIONS, SUBDIM_NAMES } from '../data/indicators';
 import useAppStore from '../store/useAppStore';
+import useSettingsStore from '../store/useSettingsStore';
+
+const COPY = {
+  en: { proxy: 'Proxy' },
+  fr: { proxy: 'Proxy' },
+};
 
 export default function DimensionBars({ showGap = false, targetLevel = 3, expandable = false }) {
   const [expanded, setExpanded] = useState({});
   const getDimScore = useAppStore(s => s.getDimScore);
   const getSubDimScore = useAppStore(s => s.getSubDimScore);
+  const lang = useSettingsStore(s => s.language);
+  const c = COPY[lang] || COPY.en;
 
   const dims = Object.keys(DIMENSIONS);
 
@@ -28,7 +36,7 @@ export default function DimensionBars({ showGap = false, targetLevel = 3, expand
                 {d.name}
                 <span className="text-gray-400 ml-1">·{Math.round(d.weight * 100)}%</span>
                 {d.proxy && (
-                  <span className="ml-1 text-[10px] bg-gray-100 text-gray-500 px-1 rounded">Proxy</span>
+                  <span className="ml-1 text-[10px] bg-gray-100 text-gray-500 px-1 rounded">{c.proxy}</span>
                 )}
               </span>
               {score !== null ? (
