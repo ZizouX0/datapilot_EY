@@ -1,10 +1,38 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
+import useSettingsStore from '../store/useSettingsStore';
 import { isSupabaseConfigured } from '../lib/supabase';
 import LanguageToggle from '../components/ui/LanguageToggle';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const COPY = {
+  en: {
+    subtitle: 'Data Maturity Steering Tool',
+    leftIntro: 'Secure access for authorized assessors. Sign in with the credentials provided by your DataPilot administrator.',
+    footer: 'EY Advisory Tunisia · PFE 2026 Internship Project',
+    signInTitle: 'Sign in',
+    signInSub: "Access is invite-only. Contact your administrator if you don't have an account.",
+    emailLabel: 'Email',
+    emailPh: 'name@bank.com.tn',
+    passwordLabel: 'Password',
+    submit: 'Sign in →',
+    submitting: 'Signing in…',
+  },
+  fr: {
+    subtitle: 'Outil de pilotage de la maturité des données',
+    leftIntro: 'Accès sécurisé réservé aux évaluateurs autorisés. Connectez-vous avec les identifiants fournis par votre administrateur DataPilot.',
+    footer: 'EY Advisory Tunisie · Projet de stage PFE 2026',
+    signInTitle: 'Connexion',
+    signInSub: "L’accès se fait sur invitation uniquement. Contactez votre administrateur si vous n’avez pas de compte.",
+    emailLabel: 'E-mail',
+    emailPh: 'nom@banque.com.tn',
+    passwordLabel: 'Mot de passe',
+    submit: 'Se connecter →',
+    submitting: 'Connexion en cours…',
+  },
+};
 
 // Real authentication screen (Supabase email + password). Access is invite-only:
 // accounts are created by an administrator, public sign-up is disabled. This page
@@ -14,6 +42,8 @@ export default function Login() {
   const location = useLocation();
   const signIn = useAuthStore(s => s.signIn);
   const error = useAuthStore(s => s.error);
+  const lang = useSettingsStore(s => s.language);
+  const c = COPY[lang] || COPY.en;
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,25 +77,24 @@ export default function Login() {
           <div className="text-6xl font-bold text-ey-yellow leading-none">EY</div>
           <div className="w-16 h-1 bg-ey-yellow my-4" />
           <div className="text-3xl font-light text-white">DataPilot</div>
-          <div className="text-gray-400 text-sm mt-1">Data Maturity Steering Tool</div>
+          <div className="text-gray-400 text-sm mt-1">{c.subtitle}</div>
 
           <p className="text-sm text-gray-300 leading-relaxed mt-8 max-w-sm">
-            Secure access for authorized assessors. Sign in with the credentials
-            provided by your DataPilot administrator.
+            {c.leftIntro}
           </p>
         </div>
 
         <div className="text-gray-500 text-xs mt-8">
-          EY Advisory Tunisia · PFE 2026 Internship Project
+          {c.footer}
         </div>
       </div>
 
       {/* Right panel — sign-in form */}
       <div className="flex-1 bg-gray-50 flex items-center justify-center p-10">
         <div className="bg-white rounded-xl border border-gray-200 p-8 w-full max-w-md shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-800 mb-1">Sign in</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-1">{c.signInTitle}</h2>
           <p className="text-sm text-gray-500 mb-6">
-            Access is invite-only. Contact your administrator if you don't have an account.
+            {c.signInSub}
           </p>
 
           {!isSupabaseConfigured && (
@@ -81,13 +110,13 @@ export default function Login() {
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                Email
+                {c.emailLabel}
               </label>
               <input
                 type="email"
                 autoComplete="email"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow focus:border-transparent"
-                placeholder="name@bank.com.tn"
+                placeholder={c.emailPh}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 disabled={!isSupabaseConfigured}
@@ -96,7 +125,7 @@ export default function Login() {
 
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                Password
+                {c.passwordLabel}
               </label>
               <input
                 type="password"
@@ -120,7 +149,7 @@ export default function Login() {
               disabled={!canSubmit || !isSupabaseConfigured}
               className="mt-2 w-full bg-ey-yellow text-ey-charcoal font-semibold rounded-lg py-3 text-sm hover:bg-yellow-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {submitting ? 'Signing in…' : 'Sign in →'}
+              {submitting ? c.submitting : c.submit}
             </button>
           </form>
         </div>
