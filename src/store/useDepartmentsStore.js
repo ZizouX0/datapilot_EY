@@ -37,7 +37,7 @@ const useDepartmentsStore = create((set, get) => ({
       .insert({ bank_name: bank, name: clean })
       .select('id, bank_name, name, created_at')
       .single();
-    if (error) return { error: error.message };
+    if (error) return { error: error.code === '23505' ? 'DUPLICATE' : error.message };
     set(s => ({ departments: [...s.departments, data].sort(byName) }));
     return { data };
   },
@@ -46,7 +46,7 @@ const useDepartmentsStore = create((set, get) => ({
     const clean = (name || '').trim();
     if (!clean) return { error: 'A department name is required.' };
     const { error } = await supabase.from('departments').update({ name: clean }).eq('id', id);
-    if (error) return { error: error.message };
+    if (error) return { error: error.code === '23505' ? 'DUPLICATE' : error.message };
     set(s => ({ departments: s.departments.map(d => (d.id === id ? { ...d, name: clean } : d)).sort(byName) }));
     return { error: null };
   },

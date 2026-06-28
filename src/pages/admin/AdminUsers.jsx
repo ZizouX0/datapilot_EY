@@ -144,7 +144,10 @@ export default function AdminUsers() {
   const canSubmitInvite =
     !inviting && !!inviteRole &&
     EMAIL_RE.test(inviteEmail.trim()) &&
-    (!isOwner || inviteBank.trim().length > 0);
+    (!isOwner || inviteBank.trim().length > 0) &&
+    // An Admin with no department would create analysts who inherit no department
+    // (and can't be self-assigned). Block the invite until they have one.
+    (myRole !== 'admin' || !!myDeptId);
 
   // Group users by bank for the tree; EY owners sit in their own platform group.
   const groups = useMemo(() => {

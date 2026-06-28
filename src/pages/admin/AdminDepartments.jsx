@@ -23,6 +23,7 @@ const COPY = {
     assignSub: 'Only analysts fill assessments. Put each analyst in the department that owns the dimensions they’ll answer.',
     noAnalysts: 'No analysts in your bank yet — invite them under “Users & roles”.',
     none: '— No department —',
+    duplicate: 'A department with that name already exists.',
     ownerNote: 'Departments are managed per bank by each bank’s Super Admin. As EY, you oversee every bank but don’t set up their internal departments.',
     renamePrompt: 'Department name:',
     allExist: 'All standard departments already exist.',
@@ -46,6 +47,7 @@ const COPY = {
     assignSub: 'Seuls les analystes remplissent les évaluations. Placez chaque analyste dans le département qui possède les dimensions qu’il traitera.',
     noAnalysts: 'Aucun analyste dans votre banque pour l’instant — invitez-les via « Utilisateurs et rôles ».',
     none: '— Aucun département —',
+    duplicate: 'Un département portant ce nom existe déjà.',
     ownerNote: 'Les départements sont gérés banque par banque par le Super Admin de chaque banque. En tant qu’EY, vous supervisez chaque banque mais ne configurez pas leurs départements internes.',
     renamePrompt: 'Nom du département :',
     allExist: 'Tous les départements standard existent déjà.',
@@ -96,7 +98,7 @@ export default function AdminDepartments() {
     setBusy(true); setMsg(null);
     const { error: err } = await create(name);
     setBusy(false);
-    if (err) flash(false, err);
+    if (err) flash(false, err === 'DUPLICATE' ? c.duplicate : err);
     else { setNewDept(''); flash(true, c.added(name)); }
   }
 
@@ -104,7 +106,7 @@ export default function AdminDepartments() {
     setBusy(true); setMsg(null);
     const { error: err, added } = await seedTunisiaDefaults();
     setBusy(false);
-    if (err) flash(false, err);
+    if (err) flash(false, err === 'DUPLICATE' ? c.duplicate : err);
     else flash(true, added ? c.seeded(added) : c.allExist);
   }
 
@@ -114,7 +116,7 @@ export default function AdminDepartments() {
     setRowBusy(d.id); setMsg(null);
     const { error: err } = await rename(d.id, next);
     setRowBusy(null);
-    if (err) flash(false, err);
+    if (err) flash(false, err === 'DUPLICATE' ? c.duplicate : err);
   }
 
   async function handleDelete(d) {
@@ -122,14 +124,14 @@ export default function AdminDepartments() {
     setRowBusy(d.id); setMsg(null);
     const { error: err } = await remove(d.id);
     setRowBusy(null);
-    if (err) flash(false, err);
+    if (err) flash(false, err === 'DUPLICATE' ? c.duplicate : err);
   }
 
   async function handleAssign(userId, departmentId) {
     setRowBusy(userId); setMsg(null);
     const { error: err } = await setUserDepartment(userId, departmentId || null);
     setRowBusy(null);
-    if (err) flash(false, err);
+    if (err) flash(false, err === 'DUPLICATE' ? c.duplicate : err);
   }
 
   if (isOwner) {

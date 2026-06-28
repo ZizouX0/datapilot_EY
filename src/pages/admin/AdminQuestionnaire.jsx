@@ -41,6 +41,9 @@ const COPY = {
     dimsWeights: 'Dimensions & weights',
     addDimension: '+ Add dimension',
     weightsNote: "Weights are relative — percentages show each dimension's share of the overall score and need not add up to 100%.",
+    weightInvalid: 'Weight must be a number ≥ 0.',
+    nameRequired: 'Name is required.',
+    totalWeight: (n) => `Total weight: ${n}`,
     noDimensions: 'No dimensions. Add one to begin.',
     indicatorsRubrics: 'Indicators & rubrics',
     indicatorsIntro: 'Indicators are grouped by sub-dimension.',
@@ -89,6 +92,9 @@ const COPY = {
     dimsWeights: 'Dimensions et pondérations',
     addDimension: '+ Ajouter une dimension',
     weightsNote: 'Les pondérations sont relatives — les pourcentages indiquent la part de chaque dimension dans le score global et n’ont pas à totaliser 100 %.',
+    weightInvalid: 'La pondération doit être un nombre ≥ 0.',
+    nameRequired: 'Le nom est requis.',
+    totalWeight: (n) => `Pondération totale : ${n}`,
     noDimensions: 'Aucune dimension. Ajoutez-en une pour commencer.',
     indicatorsRubrics: 'Indicateurs et grilles',
     indicatorsIntro: 'Les indicateurs sont regroupés par sous-dimension.',
@@ -119,7 +125,10 @@ function DimensionRow({ code, dim, totalWeight, canEdit, onSave, onDelete }) {
   const [status, setStatus] = useState('idle');
   const [err, setErr] = useState(null);
 
-  const pct = totalWeight > 0 ? Math.round((Number(weight) / totalWeight) * 100) : 0;
+  const wNum = parseFloat(weight);
+  const weightValid = Number.isFinite(wNum) && wNum >= 0;
+  const nameValid = name.trim().length > 0;
+  const pct = totalWeight > 0 && weightValid ? Math.round((wNum / totalWeight) * 100) : 0;
   const dirty =
     name !== dim.name ||
     Number(weight) !== dim.weight ||
@@ -127,8 +136,10 @@ function DimensionRow({ code, dim, totalWeight, canEdit, onSave, onDelete }) {
     desc !== (dim.desc || '');
 
   async function save() {
+    if (!weightValid) { setStatus('error'); setErr(c.weightInvalid); return; }
+    if (!nameValid) { setStatus('error'); setErr(c.nameRequired); return; }
     setStatus('saving'); setErr(null);
-    const { error } = await onSave(code, { name, weight: Number(weight), color, description: desc });
+    const { error } = await onSave(code, { name: name.trim(), weight: wNum, color, description: desc });
     if (error) { setStatus('error'); setErr(error); return; }
     setStatus('saved'); setTimeout(() => setStatus('idle'), 1500);
   }
@@ -147,14 +158,14 @@ function DimensionRow({ code, dim, totalWeight, canEdit, onSave, onDelete }) {
           className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow disabled:bg-gray-50 disabled:text-gray-600"
         />
         <input
-          type="number" step="0.05" min="0" value={weight} onChange={e => setWeight(e.target.value)} disabled={!canEdit}
-          className="w-20 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow disabled:bg-gray-50 disabled:text-gray-600"
+          type="number" step="0.05" min="0" max="100" value={weight} onChange={e => setWeight(e.target.value)} disabled={!canEdit}
+          className={`w-20 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow disabled:bg-gray-50 disabled:text-gray-600 ${weightValid ? 'border-gray-300' : 'border-red-400 bg-red-50'}`}
         />
         <span className="text-xs text-gray-500 w-10 text-right">{pct}%</span>
         {canEdit && (
           <>
             <button
-              onClick={save} disabled={!dirty || status === 'saving'}
+              onClick={save} disabled={!dirty || status === 'saving' || !weightValid || !nameValid}
               className="text-xs font-semibold rounded-lg px-3 py-1.5 bg-ey-charcoal text-white hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
             >
               {status === 'saving' ? c.saving : status === 'saved' ? c.saved : c.save}
@@ -384,9 +395,14 @@ export default function AdminQuestionnaire() {
             </button>
           )}
         </div>
-        <p className="text-sm text-gray-500 mb-3">
-          {c.weightsNote}
-        </p>
+        <div className="flex items-center justify-between mb-3 gap-3">
+          <p className="text-sm text-gray-500">{c.weightsNote}</p>
+          {dimEntries.length > 0 && (
+            <span className="text-xs font-semibold text-gray-600 whitespace-nowrap bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1">
+              {c.totalWeight(totalWeight.toFixed(2))}
+            </span>
+          )}
+        </div>
         <div className="rounded-xl border border-gray-200 bg-white divide-y divide-gray-100">
           {dimEntries.map(([code, dim]) => (
             <DimensionRow key={code} code={code} dim={dim} totalWeight={totalWeight}

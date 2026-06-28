@@ -30,6 +30,7 @@ const COPY = {
     evidencePlaceholder: 'Describe the evidence supporting your score…',
     skip: 'Skip this indicator',
     undoSkip: 'Undo skip',
+    skipLimit: (dim, n) => `Skip limit reached for ${dim}. Maximum ${n} indicator${n > 1 ? 's' : ''} may be skipped per dimension.`,
     footer: 'Your answers are saved automatically. Your coordinator reviews everyone’s input and finalizes the assessment.',
     finalized: 'Finalized',
     finalizedNote: 'This assessment has been finalized. Your answers are shown below, read-only.',
@@ -55,6 +56,7 @@ const COPY = {
     evidencePlaceholder: 'Décrivez la preuve qui justifie votre score…',
     skip: 'Ignorer cet indicateur',
     undoSkip: 'Annuler',
+    skipLimit: (dim, n) => `Limite atteinte pour ${dim}. Au maximum ${n} indicateur${n > 1 ? 's' : ''} peuvent être ignorés par dimension.`,
     footer: 'Vos réponses sont enregistrées automatiquement. Votre coordinateur examine les contributions de chacun et finalise l’évaluation.',
     finalized: 'Finalisée',
     finalizedNote: 'Cette évaluation a été finalisée. Vos réponses sont affichées ci-dessous, en lecture seule.',
@@ -116,6 +118,16 @@ export default function GroupContributor() {
     const { error } = await saveAnswer(ind.id, ind.dim, patch);
     setBusyId(null);
     if (error) setErr(error);
+  }
+
+  // Skip toggle with the same 20%-per-dimension limit the solo flow enforces.
+  function toggleSkip(ind, currentlySkipped) {
+    if (!currentlySkipped) {
+      const limit = Math.floor(INDICATORS.filter(i => i.dim === ind.dim).length * 0.20);
+      const currentSkips = INDICATORS.filter(i => i.dim === ind.dim && answers[i.id]?.skipped).length;
+      if (currentSkips >= limit) { setErr(c.skipLimit(ind.dim, limit)); return; }
+    }
+    persist(ind, { skipped: !currentlySkipped, score: currentlySkipped ? (answers[ind.id]?.score ?? null) : null });
   }
 
   const evidenceValue = (id) => (id in evidenceDraft ? evidenceDraft[id] : (answers[id]?.evidence ?? ''));
@@ -232,7 +244,7 @@ export default function GroupContributor() {
                         <div className="mt-2 flex justify-end">
                           <button
                             disabled={busyId === ind.id}
-                            onClick={() => persist(ind, { skipped: !skipped, score: skipped ? score : null })}
+                            onClick={() => toggleSkip(ind, skipped)}
                             className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-40"
                           >{skipped ? c.undoSkip : c.skip}</button>
                         </div>
