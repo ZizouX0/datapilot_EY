@@ -22,6 +22,7 @@ export default async function handler(req, res) {
       title: payload.title,
       role: payload.role,
       bank: payload.bank,
+      department: payload.department,
     });
     res.status(200).json(result);
   } catch (err) {

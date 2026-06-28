@@ -17,7 +17,7 @@ function fail(statusCode, message) {
   return err;
 }
 
-export async function inviteUserCore({ token, email, redirectTo, title, role, bank }) {
+export async function inviteUserCore({ token, email, redirectTo, title, role, bank, department }) {
   const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -40,7 +40,7 @@ export async function inviteUserCore({ token, email, redirectTo, title, role, ba
   //    bank so the invitee inherits it (per-inviter tree: super-admin → admin →
   //    analyst all share one bank).
   const { data: profile, error: profErr } = await admin
-    .from('profiles').select('role, bank_name').eq('id', userData.user.id).single();
+    .from('profiles').select('role, bank_name, department_id').eq('id', userData.user.id).single();
   if (profErr) throw fail(403, 'Could not verify your permissions.');
   const callerRole = profile?.role;
   if (rank(callerRole) < ROLE_RANK.admin) {
@@ -69,6 +69,24 @@ export async function inviteUserCore({ token, email, redirectTo, title, role, ba
     effectiveBank = inviterBank; // inherited; any passed bank is ignored
   }
 
+  // 4b) Resolve the department (Model B lineage). An Admin's invitees (analysts)
+  //     inherit the Admin's OWN department automatically. A Super Admin may
+  //     place the Admin they invite into a chosen department (validated to their
+  //     bank). EY owners set no department on the Super Admin they invite.
+  let effectiveDepartment = null;
+  if (callerRole === 'admin') {
+    effectiveDepartment = profile?.department_id || null; // inherited; ignore any passed value
+  } else if (callerRole === 'superadmin') {
+    const wantDept = typeof department === 'string' ? department.trim() : (department || null);
+    if (wantDept) {
+      const { data: dept, error: deptErr } = await admin
+        .from('departments').select('id, bank_name').eq('id', wantDept).single();
+      if (deptErr || !dept) throw fail(400, 'That department no longer exists.');
+      if (dept.bank_name !== effectiveBank) throw fail(400, 'That department belongs to another bank.');
+      effectiveDepartment = dept.id;
+    }
+  }
+
   // 5) Send the invitation. Creates the auth user (the DB trigger creates their
   //    profile) and emails them a link to set a password. Title and bank ride
   //    along as metadata; the handle_new_user trigger copies them onto the
@@ -80,6 +98,7 @@ export async function inviteUserCore({ token, email, redirectTo, title, role, ba
   const meta = {};
   if (cleanTitle) meta.title = cleanTitle;
   if (effectiveBank) meta.bank_name = effectiveBank;
+  if (effectiveDepartment) meta.department_id = effectiveDepartment;
   if (Object.keys(meta).length) options.data = meta;
   const { data, error } = await admin.auth.admin.inviteUserByEmail(
     String(email).trim(),
@@ -95,6 +114,7 @@ export async function inviteUserCore({ token, email, redirectTo, title, role, ba
     const patch = { invited_by: callerId };
     if (wantRole !== 'analyst') patch.role = wantRole;
     if (effectiveBank) patch.bank_name = effectiveBank;
+    if (effectiveDepartment) patch.department_id = effectiveDepartment;
     await admin.from('profiles').update(patch).eq('id', newUserId);
   }
 

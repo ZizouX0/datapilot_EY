@@ -79,7 +79,7 @@ const useUsersStore = create((set, get) => ({
   // optional `title` describes the account's position; `role` is the tier to
   // grant (default analyst, server-validated against the caller's rank); `bank`
   // is only used when an EY owner invites someone into a specific bank.
-  async inviteUser(email, { title, role, bank } = {}) {
+  async inviteUser(email, { title, role, bank, department } = {}) {
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
     if (!token) return { error: 'Your session has expired — sign in again.' };
@@ -94,6 +94,7 @@ const useUsersStore = create((set, get) => ({
           title: (title || '').trim() || undefined,
           role: role || undefined,
           bank: (bank || '').trim() || undefined,
+          department: department || undefined,
           redirectTo: `${window.location.origin}/set-password`,
         }),
       });

@@ -55,7 +55,7 @@ function inviteApiPlugin() {
           const auth = req.headers.authorization || ''
           const token = auth.startsWith('Bearer ') ? auth.slice(7) : ''
           const { inviteUserCore } = await import('./api/_invite-core.js')
-          const result = await inviteUserCore({ token, email: payload.email, redirectTo: payload.redirectTo, title: payload.title, role: payload.role, bank: payload.bank })
+          const result = await inviteUserCore({ token, email: payload.email, redirectTo: payload.redirectTo, title: payload.title, role: payload.role, bank: payload.bank, department: payload.department })
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify(result))
         } catch (err) {

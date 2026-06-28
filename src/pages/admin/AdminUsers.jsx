@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import useUsersStore from '../../store/useUsersStore';
 import useAuthStore from '../../store/useAuthStore';
+import useDepartmentsStore from '../../store/useDepartmentsStore';
 import { roleLabel, manageableRoles, invitableRole, rank, ROLE_RANK } from '../../lib/roles';
 import { POSITIONS, POSITION_OTHER } from '../../data/positions';
 
@@ -30,7 +31,13 @@ export default function AdminUsers() {
   } = useUsersStore();
   const currentUserId = useAuthStore(s => s.user?.id);
   const myRole = useAuthStore(s => s.role);
+  const myDeptId = useAuthStore(s => s.departmentId);
   const isOwner = myRole === 'owner';
+
+  // Departments power the invite flow (Model B): a Super Admin picks the
+  // department of the Admin they invite; an Admin's analysts inherit the Admin's
+  // own department automatically (handled server-side).
+  const { departments, list: listDepartments } = useDepartmentsStore();
   const canOffboard = rank(myRole) >= ROLE_RANK.superadmin;
   const inviteRole = invitableRole(myRole); // the single tier I may create
   const manageRoles = manageableRoles(myRole);
@@ -43,10 +50,15 @@ export default function AdminUsers() {
   const [invitePosition, setInvitePosition] = useState('');
   const [inviteOther, setInviteOther] = useState('');
   const [inviteBank, setInviteBank] = useState('');
+  const [inviteDept, setInviteDept] = useState('');
   const [inviting, setInviting] = useState(false);
   const [inviteMsg, setInviteMsg] = useState(null);
 
   useEffect(() => { listUsers(); }, [listUsers]);
+  // Load departments for the invite controls (Super Admin dropdown / Admin note).
+  useEffect(() => { if (rank(myRole) >= ROLE_RANK.admin && !isOwner) listDepartments(); }, [myRole, isOwner, listDepartments]);
+
+  const myDeptName = departments.find(d => d.id === myDeptId)?.name || null;
 
   const inviteTitle = invitePosition === POSITION_OTHER ? inviteOther : invitePosition;
   const canSubmitInvite =
@@ -78,13 +90,16 @@ export default function AdminUsers() {
       title: inviteTitle,
       role: inviteRole,
       bank: isOwner ? inviteBank : undefined,
+      // Super Admin chooses the Admin's department; an Admin's analysts inherit
+      // the Admin's own department server-side (no field needed here).
+      department: myRole === 'superadmin' ? inviteDept : undefined,
     });
     setInviting(false);
     if (err) {
       setInviteMsg({ ok: false, text: err });
     } else {
       setInviteMsg({ ok: true, text: `Invitation sent to ${inviteEmail.trim()} as ${roleLabel(inviteRole)}.` });
-      setInviteEmail(''); setInvitePosition(''); setInviteOther(''); setInviteBank('');
+      setInviteEmail(''); setInvitePosition(''); setInviteOther(''); setInviteBank(''); setInviteDept('');
     }
   }
 
@@ -260,7 +275,27 @@ export default function AdminUsers() {
                 className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
               />
             )}
+            {/* Super Admin: choose the department this Admin will lead. */}
+            {myRole === 'superadmin' && (
+              <select
+                value={inviteDept}
+                onChange={e => setInviteDept(e.target.value)}
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ey-yellow"
+              >
+                <option value="">Department (optional — assign later)</option>
+                {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+              </select>
+            )}
           </div>
+
+          {/* Admin: analysts inherit the Admin's own department automatically. */}
+          {myRole === 'admin' && (
+            <p className="text-[11px] text-gray-500 mt-2">
+              {myDeptName
+                ? <>This {roleLabel(inviteRole)} will be added to your department: <strong>{myDeptName}</strong>.</>
+                : <>You have no department set — ask your Super Admin to assign you one, otherwise the {roleLabel(inviteRole)}s you invite won’t be placed in a department.</>}
+            </p>
+          )}
           <div className="mt-2">
             <button
               type="submit"
