@@ -242,7 +242,7 @@ export default function AdminGroupAssessment() {
         <div className="flex items-center gap-6">
           <div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{c.globalScore}</div>
-            <div className="text-3xl font-bold font-mono text-ey-charcoal">{s.globalScore ?? '—'}<span className="text-base text-gray-400">/5</span></div>
+            <div className="text-3xl font-bold font-mono text-ey-charcoal">{s.globalScore != null ? s.globalScore.toFixed(2) : '—'}<span className="text-base text-gray-400">/5</span></div>
           </div>
           <div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{c.maturity}</div>

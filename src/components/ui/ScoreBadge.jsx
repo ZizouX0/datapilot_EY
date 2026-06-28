@@ -16,7 +16,7 @@ export default function ScoreBadge({ score }) {
       </span>
     );
   }
-  const lvl = MATURITY_LEVELS[Math.min(score - 1, 4)];
+  const lvl = MATURITY_LEVELS[Math.max(0, Math.min(score - 1, 4))];
   return (
     <span
       className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold"

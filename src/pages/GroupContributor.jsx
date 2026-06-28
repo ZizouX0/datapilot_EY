@@ -139,7 +139,7 @@ export default function GroupContributor() {
           <div className="mt-3 flex items-center gap-6">
             <div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{c.global}</div>
-              <div className="text-2xl font-bold font-mono text-ey-charcoal">{sc.globalScore ?? '—'}<span className="text-sm text-gray-400">/5</span></div>
+              <div className="text-2xl font-bold font-mono text-ey-charcoal">{sc.globalScore != null ? sc.globalScore.toFixed(2) : '—'}<span className="text-sm text-gray-400">/5</span></div>
             </div>
             <div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{c.maturity}</div>

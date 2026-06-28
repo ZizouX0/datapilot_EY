@@ -234,7 +234,7 @@ export default function Results() {
       </div>
 
       {/* Executive summary — auto-written verdict for a non-technical reader */}
-      {globalScore !== null && (
+      {Number.isFinite(globalScore) && (
         <div className="bg-white rounded-xl border border-gray-200 border-l-4 border-l-ey-purple p-5 mb-6">
           <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-2">
             {c.executiveSummary}
@@ -286,7 +286,7 @@ export default function Results() {
           <div className="text-[9px] font-bold tracking-widest uppercase text-gray-400 mb-3">
             {c.globalMaturityIndex}
           </div>
-          {globalScore !== null ? (
+          {Number.isFinite(globalScore) ? (
             <>
               <div className="text-5xl font-bold tabular-nums" style={{ color: lvl.color }}>
                 {pct}%
@@ -355,7 +355,7 @@ export default function Results() {
           {
             num: `${getScoredCount()} / ${INDICATORS.length}`,
             label: c.indicatorsScored,
-            sub: c.coverage(Math.round((getScoredCount() / INDICATORS.length) * 100)),
+            sub: c.coverage(INDICATORS.length ? Math.round((getScoredCount() / INDICATORS.length) * 100) : 0),
             color: '#3D108A',
           },
           {
