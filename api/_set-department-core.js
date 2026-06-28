@@ -37,16 +37,23 @@ export async function setDepartmentCore({ token, targetId, departmentId }) {
   const { data: caller, error: callerErr } = await admin
     .from('profiles').select('role, bank_name').eq('id', callerId).single();
   if (callerErr) throw fail(403, 'Could not verify your permissions.');
-  if (rank(caller?.role) < ROLE_RANK.superadmin) {
-    throw fail(403, 'Super-admin access required to assign departments.');
+  // Model B: any coordinator (admin or above) may assign departments, scoped to
+  // their own bank and to people strictly below their own rank (i.e. analysts
+  // for an admin). EY owner may do anything.
+  if (rank(caller?.role) < ROLE_RANK.admin) {
+    throw fail(403, 'Administrator access required to assign departments.');
   }
 
-  // 3) Load the target; confine non-EY callers to their own bank.
+  // 3) Load the target; confine non-EY callers to their own bank, and only allow
+  //    managing someone strictly below the caller's rank.
   const { data: target, error: targetErr } = await admin
     .from('profiles').select('role, bank_name').eq('id', targetId).single();
   if (targetErr || !target) throw fail(404, 'That user no longer exists.');
   if (caller.role !== 'owner' && (!caller.bank_name || caller.bank_name !== target.bank_name)) {
     throw fail(403, 'You can only manage users in your own bank.');
+  }
+  if (caller.role !== 'owner' && rank(target.role) >= rank(caller.role)) {
+    throw fail(403, 'You can only assign departments to users below your role (e.g. analysts).');
   }
 
   // 4) Validate the department (null clears the assignment). It must belong to

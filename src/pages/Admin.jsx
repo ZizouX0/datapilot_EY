@@ -19,7 +19,7 @@ const TABS = [
   { id: 'submissions', labelKey: 'adm.tab.submissions' },
   { id: 'group', labelKey: 'adm.tab.group', roles: ['superadmin', 'admin'] },
   { id: 'questionnaire', labelKey: 'adm.tab.questionnaire', roles: ['owner', 'admin'] },
-  { id: 'departments', labelKey: 'adm.tab.departments', roles: ['superadmin'] },
+  { id: 'departments', labelKey: 'adm.tab.departments', roles: ['superadmin', 'admin'] },
   { id: 'users', labelKey: 'adm.tab.users' },
 ];
 

@@ -69,14 +69,13 @@ export async function inviteUserCore({ token, email, redirectTo, title, role, ba
     effectiveBank = inviterBank; // inherited; any passed bank is ignored
   }
 
-  // 4b) Resolve the department (Model B lineage). An Admin's invitees (analysts)
-  //     inherit the Admin's OWN department automatically. A Super Admin may
-  //     place the Admin they invite into a chosen department (validated to their
-  //     bank). EY owners set no department on the Super Admin they invite.
+  // 4b) Resolve the department (Model B). A coordinator (admin or super-admin)
+  //     CHOOSES the invitee's department from the form — or leaves it blank. A
+  //     blank department means the invitee has none: an analyst with no
+  //     department does a SOLO assessment. EY owners set no department on the
+  //     Super Admin they invite. The chosen department must belong to the bank.
   let effectiveDepartment = null;
-  if (callerRole === 'admin') {
-    effectiveDepartment = profile?.department_id || null; // inherited; ignore any passed value
-  } else if (callerRole === 'superadmin') {
+  if (callerRole === 'admin' || callerRole === 'superadmin') {
     const wantDept = typeof department === 'string' ? department.trim() : (department || null);
     if (wantDept) {
       const { data: dept, error: deptErr } = await admin

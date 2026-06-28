@@ -22,9 +22,9 @@ const COPY = {
     positionOptional: 'Position (optional)',
     typePosition: 'Type the position',
     bankRequired: 'Bank name (required)',
-    deptOptional: 'Department (optional — assign later)',
-    adminInheritSet: (role, dept) => <>This {role} will be added to your department: <strong>{dept}</strong>.</>,
-    adminInheritNone: (role) => <>You have no department set — ask your Super Admin to assign you one, otherwise the {role}s you invite won’t be placed in a department.</>,
+    deptNone: 'Department (optional — leave blank for solo)',
+    deptHintGroup: 'This analyst will fill their department’s part of the group assessment.',
+    deptHintSolo: 'No department — this analyst will do a solo assessment.',
     sending: 'Sending…',
     sendInvite: 'Send invite',
     inviteSent: (email, role) => `Invitation sent to ${email} as ${role}.`,
@@ -58,9 +58,9 @@ const COPY = {
     positionOptional: 'Poste (facultatif)',
     typePosition: 'Saisissez le poste',
     bankRequired: 'Nom de la banque (obligatoire)',
-    deptOptional: 'Département (facultatif — à affecter plus tard)',
-    adminInheritSet: (role, dept) => <>Ce {role} sera ajouté à votre département : <strong>{dept}</strong>.</>,
-    adminInheritNone: (role) => <>Vous n’avez aucun département défini — demandez à votre Super Admin de vous en affecter un, sinon les {role}s que vous invitez ne seront rattachés à aucun département.</>,
+    deptNone: 'Département (facultatif — laissez vide pour solo)',
+    deptHintGroup: 'Cet analyste remplira la partie de son département dans l’évaluation groupée.',
+    deptHintSolo: 'Aucun département — cet analyste réalisera une évaluation solo.',
     sending: 'Envoi…',
     sendInvite: 'Envoyer l’invitation',
     inviteSent: (email, role) => `Invitation envoyée à ${email} en tant que ${role}.`,
@@ -109,7 +109,6 @@ export default function AdminUsers() {
   } = useUsersStore();
   const currentUserId = useAuthStore(s => s.user?.id);
   const myRole = useAuthStore(s => s.role);
-  const myDeptId = useAuthStore(s => s.departmentId);
   const isOwner = myRole === 'owner';
   const lang = useSettingsStore(s => s.language);
   const c = COPY[lang] || COPY.en;
@@ -138,16 +137,12 @@ export default function AdminUsers() {
   // Load departments for the invite controls (Super Admin dropdown / Admin note).
   useEffect(() => { if (rank(myRole) >= ROLE_RANK.admin && !isOwner) listDepartments(); }, [myRole, isOwner, listDepartments]);
 
-  const myDeptName = departments.find(d => d.id === myDeptId)?.name || null;
 
   const inviteTitle = invitePosition === POSITION_OTHER ? inviteOther : invitePosition;
   const canSubmitInvite =
     !inviting && !!inviteRole &&
     EMAIL_RE.test(inviteEmail.trim()) &&
-    (!isOwner || inviteBank.trim().length > 0) &&
-    // An Admin with no department would create analysts who inherit no department
-    // (and can't be self-assigned). Block the invite until they have one.
-    (myRole !== 'admin' || !!myDeptId);
+    (!isOwner || inviteBank.trim().length > 0);
 
   // Group users by bank for the tree; EY owners sit in their own platform group.
   const groups = useMemo(() => {
@@ -175,7 +170,7 @@ export default function AdminUsers() {
       bank: isOwner ? inviteBank : undefined,
       // Super Admin chooses the Admin's department; an Admin's analysts inherit
       // the Admin's own department server-side (no field needed here).
-      department: myRole === 'superadmin' ? inviteDept : undefined,
+      department: !isOwner ? (inviteDept || undefined) : undefined,
     });
     setInviting(false);
     if (err) {
@@ -355,25 +350,23 @@ export default function AdminUsers() {
                 className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
               />
             )}
-            {/* Super Admin: choose the department this Admin will lead. */}
-            {myRole === 'superadmin' && (
+            {/* Coordinator (admin/super-admin): choose the invitee's department,
+                or leave blank. A blank department = no department (solo only). */}
+            {!isOwner && (
               <select
                 value={inviteDept}
                 onChange={e => setInviteDept(e.target.value)}
                 className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ey-yellow"
               >
-                <option value="">{c.deptOptional}</option>
+                <option value="">{c.deptNone}</option>
                 {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
               </select>
             )}
           </div>
 
-          {/* Admin: analysts inherit the Admin's own department automatically. */}
-          {myRole === 'admin' && (
+          {!isOwner && inviteRole === 'analyst' && (
             <p className="text-[11px] text-gray-500 mt-2">
-              {myDeptName
-                ? c.adminInheritSet(roleLabel(inviteRole), myDeptName)
-                : c.adminInheritNone(roleLabel(inviteRole))}
+              {inviteDept ? c.deptHintGroup : c.deptHintSolo}
             </p>
           )}
           <div className="mt-2">
