@@ -24,6 +24,7 @@ const useAssessmentStore = create((set, get) => ({
   // bank's current assessment.) Leaves assessment null if none exists yet.
   async loadActive() {
     if (!isSupabaseConfigured) { set({ error: 'Backend not configured.' }); return; }
+    if (get().loading) return; // avoid concurrent duplicate loads (NavBar + page)
     set({ loading: true, error: null });
     const { data: rows, error } = await supabase
       .from('assessments')
@@ -52,6 +53,17 @@ const useAssessmentStore = create((set, get) => ({
   async createAssessment({ title, targetLevel = 3 } = {}) {
     const { bankName, user } = useAuthStore.getState();
     if (!bankName) return { error: 'Your account has no bank set.' };
+    // Reuse an existing open draft instead of creating a duplicate (there is a
+    // one-open-draft-per-bank unique index in phase6.sql).
+    const { data: existing } = await supabase
+      .from('assessments')
+      .select('*').eq('bank_name', bankName).eq('status', 'draft')
+      .order('created_at', { ascending: false }).limit(1);
+    if (existing && existing[0]) {
+      await get()._loadDetails(existing[0]);
+      set({ assessment: existing[0] });
+      return { data: existing[0], reused: true };
+    }
     const { data, error } = await supabase
       .from('assessments')
       .insert({
@@ -86,28 +98,35 @@ const useAssessmentStore = create((set, get) => ({
     const a = get().assessment;
     if (!a) return { error: 'No active assessment.' };
     const idByName = new Map((departments || []).map(d => [d.name, d.id]));
-    const rows = Object.entries(TUNISIA_SUGGESTED_MAPPING)
+    // Only write assignments we can actually resolve to a department — a NULL
+    // department_id would make that dimension un-writable by anyone. Report the
+    // dimensions we couldn't map so the coordinator can set them manually.
+    const rows = [];
+    const unmatched = [];
+    Object.entries(TUNISIA_SUGGESTED_MAPPING)
       .filter(([dim]) => DIMENSIONS[dim])
-      .map(([dim, deptName]) => ({
-        assessment_id: a.id,
-        dim_code: dim,
-        department_id: idByName.get(deptName) || null,
-      }));
-    if (!rows.length) return { error: 'No matching dimensions to map.' };
+      .forEach(([dim, deptName]) => {
+        const id = idByName.get(deptName);
+        if (id) rows.push({ assessment_id: a.id, dim_code: dim, department_id: id });
+        else unmatched.push(dim);
+      });
+    if (!rows.length) return { error: 'None of the suggested departments exist yet — create them first (Departments tab).' };
     const { error } = await supabase
       .from('assessment_assignments')
       .upsert(rows, { onConflict: 'assessment_id,dim_code' });
     if (error) return { error: error.message };
     await get()._loadDetails(a);
-    return { error: null };
+    return { error: null, unmatched };
   },
 
   // The dimension codes the signed-in analyst's department is responsible for.
   myAssignedDims() {
     const deptId = useAuthStore.getState().departmentId;
     if (!deptId) return [];
+    // Require a real department match — never treat a NULL assignment as "mine"
+    // (JS null===null would be true, diverging from SQL NULL semantics).
     return get().assignments
-      .filter(x => x.department_id === deptId)
+      .filter(x => x.department_id && x.department_id === deptId)
       .map(x => x.dim_code);
   },
 
@@ -159,14 +178,19 @@ const useAssessmentStore = create((set, get) => ({
     const a = get().assessment;
     if (!a) return { error: 'No active assessment.' };
     if (a.status !== 'draft') return { error: 'This assessment is already finalized.' };
+
+    const answers = get().answers;
+    const s = computeScores(answers);
+    // Don't finalize an empty assessment into a meaningless submission.
+    if (s.globalScore === null) {
+      return { error: 'Nothing has been scored yet — add some answers before finalizing.' };
+    }
     set({ saving: true, error: null });
 
     const { data: { session } } = await supabase.auth.getSession();
     const user = session?.user;
     if (!user) { set({ saving: false }); return { error: 'Your session has expired — sign in again.' }; }
 
-    const answers = get().answers;
-    const s = computeScores(answers);
     const submission = {
       analyst_id: user.id,
       analyst_email: user.email,
@@ -186,15 +210,22 @@ const useAssessmentStore = create((set, get) => ({
       .from('submissions').insert(submission).select('id').single();
     if (subErr) { set({ saving: false }); return { error: subErr.message }; }
 
+    // Atomic, conditional transition: only flip a row that is STILL a draft.
+    // If someone finalized first, this matches no row — roll back our submission.
     const { data: updated, error: updErr } = await supabase
       .from('assessments')
       .update({ status: 'finalized', finalized_at: new Date().toISOString(), submission_id: sub.id })
       .eq('id', a.id)
+      .eq('status', 'draft')
       .select('*')
-      .single();
-    set({ saving: false });
-    if (updErr) return { error: updErr.message };
-    set({ assessment: updated });
+      .maybeSingle();
+    if (updErr) { set({ saving: false }); return { error: updErr.message }; }
+    if (!updated) {
+      await supabase.from('submissions').delete().eq('id', sub.id);
+      set({ saving: false });
+      return { error: 'This assessment was already finalized.' };
+    }
+    set({ saving: false, assessment: updated });
     return { data: { submissionId: sub.id } };
   },
 }));

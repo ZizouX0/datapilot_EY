@@ -1,4 +1,4 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import useAppStore from '../../store/useAppStore';
 import useAuthStore from '../../store/useAuthStore';
 import useSettingsStore from '../../store/useSettingsStore';
@@ -8,6 +8,11 @@ import LanguageToggle from '../ui/LanguageToggle';
 
 export default function Topbar() {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Reset/Skip act on the SOLO assessment (useAppStore). On the group page the
+  // analyst is filling the shared server draft, so those buttons would silently
+  // affect unrelated solo state — hide them there.
+  const onGroup = location.pathname === '/group';
   const toggleAutoFill = useAppStore(s => s.toggleAutoFill);
   const autoFilled = useAppStore(s => s.autoFilled);
   const resetAnswers = useAppStore(s => s.resetAnswers);
@@ -42,7 +47,7 @@ export default function Topbar() {
         <LanguageToggle variant="dark" />
 
         {/* Assessment-only chrome — hidden from admins, who don't run assessments. */}
-        {!isAdmin && (
+        {!isAdmin && !onGroup && (
           <>
             {/* Reset — clears every answer so the assessment is "all not done"
                 again and the analyst can fill it from scratch. */}

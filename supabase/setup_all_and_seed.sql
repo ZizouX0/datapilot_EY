@@ -5,6 +5,15 @@
 -- → phase3h (in order), then seeds 3 test accounts (superadmin/admin/analyst).
 -- Safe to re-run: every step is idempotent and the seed skips existing users.
 --
+-- IMPORTANT — Model B (group/department assessments) lives in SEPARATE files.
+-- After this one-shot, also run, in order:
+--     phase4.sql  (departments + shared assessment tables + RLS)
+--     phase5.sql  (department inheritance down the invite chain)
+--     phase6.sql  (answer-dimension integrity + hardening)
+-- Without those, the Departments / Group assessment features won't work.
+-- (This file is NOT re-runnable AFTER phase3f introduces the 'owner' role — its
+--  phase3 step would re-narrow the role CHECK; phase6.sql re-widens it.)
+--
 -- Test logins (password is the same for all three):  Test1234!
 --   super@datapilot.test     → superadmin
 --   admin@datapilot.test     → admin

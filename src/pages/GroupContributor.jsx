@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAssessmentStore from '../store/useAssessmentStore';
+import useAuthStore from '../store/useAuthStore';
 import useSettingsStore from '../store/useSettingsStore';
 import { INDICATORS, DIMENSIONS, SUBDIM_NAMES } from '../data/indicators';
 import BCTBadge from '../components/ui/BCTBadge';
@@ -30,6 +31,11 @@ const COPY = {
     skip: 'Skip this indicator',
     undoSkip: 'Undo skip',
     footer: 'Your answers are saved automatically. Your coordinator reviews everyone’s input and finalizes the assessment.',
+    finalized: 'Finalized',
+    finalizedNote: 'This assessment has been finalized. Your answers are shown below, read-only.',
+    global: 'Global score',
+    maturity: 'Maturity',
+    level: (n) => `Level ${n}`,
   },
   fr: {
     loading: 'Chargement…',
@@ -50,6 +56,11 @@ const COPY = {
     skip: 'Ignorer cet indicateur',
     undoSkip: 'Annuler',
     footer: 'Vos réponses sont enregistrées automatiquement. Votre coordinateur examine les contributions de chacun et finalise l’évaluation.',
+    finalized: 'Finalisée',
+    finalizedNote: 'Cette évaluation a été finalisée. Vos réponses sont affichées ci-dessous, en lecture seule.',
+    global: 'Score global',
+    maturity: 'Maturité',
+    level: (n) => `Niveau ${n}`,
   },
 };
 
@@ -58,19 +69,23 @@ const COPY = {
 // shared, server-side draft. The coordinator finalizes.
 export default function GroupContributor() {
   const navigate = useNavigate();
-  const { assessment, answers, loading, loadActive, saveAnswer, myAssignedDims } = useAssessmentStore();
+  const { assessment, answers, loading, loadActive, saveAnswer, myAssignedDims, scores } = useAssessmentStore();
+  useAssessmentStore(s => s.assignments); // re-render when assignments load
+  const refreshProfile = useAuthStore(s => s.refreshProfile);
   const lang = useSettingsStore(s => s.language);
   const c = COPY[lang] || COPY.en;
   const [busyId, setBusyId] = useState(null);
   const [err, setErr] = useState(null);
   const [evidenceDraft, setEvidenceDraft] = useState({});
 
-  useEffect(() => { loadActive(); }, [loadActive]);
+  // Refresh BOTH the profile (department may have just been assigned) and the
+  // assessment on entry, so a fresh assignment shows up without a re-login.
+  useEffect(() => { refreshProfile(); loadActive(); }, [refreshProfile, loadActive]);
 
   if (loading) return <p className="text-gray-400 py-32 text-center animate-pulse">{c.loading}</p>;
 
-  const isDraft = assessment && assessment.status === 'draft';
-  const myDims = isDraft ? myAssignedDims() : [];
+  const readOnly = !assessment || assessment.status !== 'draft';
+  const myDims = assessment ? myAssignedDims() : [];
   const dimsToShow = Object.keys(DIMENSIONS).filter(d => myDims.includes(d));
 
   if (dimsToShow.length === 0) {
@@ -94,6 +109,7 @@ export default function GroupContributor() {
     const a = answers[i.id];
     return a && (a.skipped || (a.score !== null && a.score !== undefined));
   }).length;
+  const sc = scores();
 
   async function persist(ind, patch) {
     setBusyId(ind.id); setErr(null);
@@ -107,14 +123,32 @@ export default function GroupContributor() {
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-4">
       <div className="rounded-xl border border-ey-yellow bg-yellow-50 px-5 py-4">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-ey-charcoal/60">{c.eyebrow}</div>
+        <div className="flex items-center gap-2">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-ey-charcoal/60">{c.eyebrow}</div>
+          {readOnly && (
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded uppercase tracking-wide bg-gray-200 text-gray-600">{c.finalized}</span>
+          )}
+        </div>
         <h1 className="text-lg font-semibold text-gray-800">{assessment.title || c.defaultTitle}</h1>
         <p className="text-sm text-gray-600 mt-0.5">
           {c.owns(dimsToShow.length)}{' '}
           <span className="font-medium">{dimsToShow.map(d => `${d} ${DIMENSIONS[d].name}`).join(', ')}</span>.
-          {' '}{c.autosave}
+          {' '}{readOnly ? c.finalizedNote : c.autosave}
         </p>
-        <div className="mt-2 text-xs text-gray-500">{c.answered(answered, myIndicators.length)}</div>
+        {readOnly ? (
+          <div className="mt-3 flex items-center gap-6">
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{c.global}</div>
+              <div className="text-2xl font-bold font-mono text-ey-charcoal">{sc.globalScore ?? '—'}<span className="text-sm text-gray-400">/5</span></div>
+            </div>
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{c.maturity}</div>
+              <div className="text-lg font-semibold text-gray-700">{sc.maturityLevel ? c.level(sc.maturityLevel) : '—'}</div>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-2 text-xs text-gray-500">{c.answered(answered, myIndicators.length)}</div>
+        )}
       </div>
 
       {err && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{err}</p>}
@@ -155,7 +189,7 @@ export default function GroupContributor() {
                               return (
                                 <button
                                   key={sval}
-                                  disabled={busyId === ind.id}
+                                  disabled={busyId === ind.id || readOnly}
                                   onClick={() => persist(ind, { score: sval, skipped: false })}
                                   className={`flex-1 py-2 rounded-lg border-2 text-center transition-all disabled:opacity-50 ${
                                     selected ? 'border-transparent text-white' : 'bg-gray-50 border-gray-200 hover:border-gray-400 text-gray-600'
@@ -176,13 +210,17 @@ export default function GroupContributor() {
                           <div className="mt-3">
                             <label className="text-xs text-gray-500">{c.evidenceLabel}</label>
                             <textarea
-                              className="w-full border border-gray-200 rounded-lg p-2 text-xs text-gray-700 mt-1 h-16 resize-none focus:outline-none focus:ring-1 focus:ring-ey-yellow"
+                              className="w-full border border-gray-200 rounded-lg p-2 text-xs text-gray-700 mt-1 h-16 resize-none focus:outline-none focus:ring-1 focus:ring-ey-yellow disabled:bg-gray-50"
                               placeholder={c.evidencePlaceholder}
                               value={evidenceValue(ind.id)}
+                              disabled={readOnly}
                               onChange={e => setEvidenceDraft(s => ({ ...s, [ind.id]: e.target.value }))}
                               onBlur={() => {
-                                if ((evidenceDraft[ind.id] ?? '') !== (ans.evidence ?? '')) {
-                                  persist(ind, { evidence: evidenceDraft[ind.id] ?? '' });
+                                if (ind.id in evidenceDraft) {
+                                  const draft = evidenceDraft[ind.id] ?? '';
+                                  // Compare against the LATEST stored value, not a stale render closure.
+                                  const stored = useAssessmentStore.getState().answers[ind.id]?.evidence ?? '';
+                                  if (draft !== stored) persist(ind, { evidence: draft });
                                 }
                               }}
                             />
@@ -190,7 +228,7 @@ export default function GroupContributor() {
                         </>
                       )}
 
-                      {!ind.bct && (
+                      {!ind.bct && !readOnly && (
                         <div className="mt-2 flex justify-end">
                           <button
                             disabled={busyId === ind.id}

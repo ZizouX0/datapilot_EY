@@ -113,7 +113,10 @@ export default function Welcome() {
   const groupAssessment = useAssessmentStore(s => s.assessment);
   useAssessmentStore(s => s.assignments); // re-render when assignments load
   const myAssignedDims = useAssessmentStore(s => s.myAssignedDims);
-  useEffect(() => { loadActive(); }, [loadActive]);
+  const refreshProfile = useAuthStore(s => s.refreshProfile);
+  // Refresh profile (department may have just been assigned) + load the bank's
+  // assessment, so the Contribute card appears without a re-login.
+  useEffect(() => { refreshProfile(); loadActive(); }, [refreshProfile, loadActive]);
   const groupDims = (groupAssessment && groupAssessment.status === 'draft') ? myAssignedDims() : [];
 
   const WORKFLOW = c.workflow(INDICATORS.length, Object.keys(DIMENSIONS).length);

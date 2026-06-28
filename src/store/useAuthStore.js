@@ -81,6 +81,14 @@ const useAuthStore = create((set, get) => ({
     reloadContentForBank();
   },
 
+  // Re-fetch the signed-in user's profile (role, bank, department, …) without a
+  // full re-auth. Used so a mid-session change — e.g. a Super Admin assigning
+  // this analyst to a department — shows up without signing out and back in.
+  async refreshProfile() {
+    const id = get().user?.id;
+    if (id) await get().fetchRole(id);
+  },
+
   // Wires up the session listener once. Call from a top-level effect. Returns
   // an unsubscribe function for cleanup.
   init() {
