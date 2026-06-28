@@ -242,6 +242,7 @@ export default function Welcome() {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow focus:border-transparent"
                 placeholder={c.fullNamePh}
                 value={form.respondentName}
+                maxLength={120}
                 onChange={e => setForm(f => ({ ...f, respondentName: e.target.value }))}
               />
             </div>

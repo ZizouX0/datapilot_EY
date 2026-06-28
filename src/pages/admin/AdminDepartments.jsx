@@ -24,6 +24,8 @@ const COPY = {
     noAnalysts: 'No analysts in your bank yet — invite them under “Users & roles”.',
     none: '— No department —',
     duplicate: 'A department with that name already exists.',
+    renamed: 'Department renamed.',
+    assigned: 'Assignment updated.',
     ownerNote: 'Departments are managed per bank by each bank’s Super Admin. As EY, you oversee every bank but don’t set up their internal departments.',
     renamePrompt: 'Department name:',
     allExist: 'All standard departments already exist.',
@@ -48,6 +50,8 @@ const COPY = {
     noAnalysts: 'Aucun analyste dans votre banque pour l’instant — invitez-les via « Utilisateurs et rôles ».',
     none: '— Aucun département —',
     duplicate: 'Un département portant ce nom existe déjà.',
+    renamed: 'Département renommé.',
+    assigned: 'Affectation mise à jour.',
     ownerNote: 'Les départements sont gérés banque par banque par le Super Admin de chaque banque. En tant qu’EY, vous supervisez chaque banque mais ne configurez pas leurs départements internes.',
     renamePrompt: 'Nom du département :',
     allExist: 'Tous les départements standard existent déjà.',
@@ -117,6 +121,7 @@ export default function AdminDepartments() {
     const { error: err } = await rename(d.id, next);
     setRowBusy(null);
     if (err) flash(false, err === 'DUPLICATE' ? c.duplicate : err);
+    else flash(true, c.renamed);
   }
 
   async function handleDelete(d) {
@@ -132,6 +137,7 @@ export default function AdminDepartments() {
     const { error: err } = await setUserDepartment(userId, departmentId || null);
     setRowBusy(null);
     if (err) flash(false, err === 'DUPLICATE' ? c.duplicate : err);
+    else flash(true, c.assigned);
   }
 
   if (isOwner) {
@@ -177,6 +183,7 @@ export default function AdminDepartments() {
             value={newDept}
             onChange={e => setNewDept(e.target.value)}
             placeholder={c.addPlaceholder}
+            maxLength={80}
             className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ey-yellow"
           />
           <datalist id="dept-catalog">
@@ -195,7 +202,7 @@ export default function AdminDepartments() {
         )}
         {departments.map(d => (
           <div key={d.id} className="flex items-center gap-3 py-2 border-b border-gray-100 last:border-b-0">
-            <span className="flex-1 text-sm text-gray-800">{d.name}</span>
+            <span className="flex-1 min-w-0 truncate text-sm text-gray-800" title={d.name}>{d.name}</span>
             <span className="text-[11px] text-gray-400">{c.members(counts[d.id] || 0)}</span>
             <button onClick={() => handleRename(d)} disabled={rowBusy === d.id} className="text-xs text-gray-500 hover:text-gray-900 disabled:opacity-40">{c.rename}</button>
             <button onClick={() => handleDelete(d)} disabled={rowBusy === d.id} className="text-xs text-red-500 hover:text-red-700 disabled:opacity-40">{c.del}</button>
