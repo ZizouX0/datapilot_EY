@@ -50,6 +50,8 @@ const COPY = {
     gTitle: 'Your department has dimensions to fill',
     gAssigned: (list) => `You’ve been assigned ${list} on your bank’s shared assessment.`,
     gContribute: 'Contribute to the group assessment →',
+    gReviewTitle: 'Your group assessment is finalized',
+    gReview: 'Review the group assessment →',
     gOrSolo: '…or run a solo assessment below',
     soloEyebrow: 'Solo assessment',
     workflow: (nInd, nDim) => [
@@ -87,6 +89,8 @@ const COPY = {
     gTitle: 'Votre département a des dimensions à remplir',
     gAssigned: (list) => `Les dimensions ${list} vous ont été affectées sur l’évaluation partagée de votre banque.`,
     gContribute: 'Contribuer à l’évaluation groupée →',
+    gReviewTitle: 'Votre évaluation groupée est finalisée',
+    gReview: 'Consulter l’évaluation groupée →',
     gOrSolo: '…ou réalisez une évaluation solo ci-dessous',
     soloEyebrow: 'Évaluation solo',
     workflow: (nInd, nDim) => [
@@ -117,7 +121,9 @@ export default function Welcome() {
   // Refresh profile (department may have just been assigned) + load the bank's
   // assessment, so the Contribute card appears without a re-login.
   useEffect(() => { refreshProfile(); loadActive(); }, [refreshProfile, loadActive]);
-  const groupDims = (groupAssessment && groupAssessment.status === 'draft') ? myAssignedDims() : [];
+  // Show the card for a draft (contribute) and a finalized assessment (review).
+  const groupFinalized = groupAssessment?.status === 'finalized';
+  const groupDims = groupAssessment ? myAssignedDims() : [];
 
   const WORKFLOW = c.workflow(INDICATORS.length, Object.keys(DIMENSIONS).length);
   const formattedToday = new Date(TODAY).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -193,7 +199,7 @@ export default function Welcome() {
           {groupDims.length > 0 && (
             <div className="bg-white rounded-xl border-2 border-ey-yellow p-5 shadow-sm">
               <div className="text-[10px] font-bold uppercase tracking-widest text-ey-charcoal/60">{c.gEyebrow}</div>
-              <h3 className="text-base font-semibold text-gray-800 mt-0.5">{c.gTitle}</h3>
+              <h3 className="text-base font-semibold text-gray-800 mt-0.5">{groupFinalized ? c.gReviewTitle : c.gTitle}</h3>
               <p className="text-sm text-gray-600 mt-1">
                 {c.gAssigned(groupDims.map(d => `${d} · ${DIMENSIONS[d].name}`).join(', '))}
               </p>
@@ -201,7 +207,7 @@ export default function Welcome() {
                 onClick={() => navigate('/group')}
                 className="mt-3 w-full bg-ey-charcoal text-ey-yellow font-semibold rounded-lg py-2.5 text-sm hover:bg-gray-800"
               >
-                {c.gContribute}
+                {groupFinalized ? c.gReview : c.gContribute}
               </button>
               <div className="text-[11px] text-gray-400 text-center mt-2">{c.gOrSolo}</div>
             </div>

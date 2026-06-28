@@ -155,6 +155,10 @@ const useAuthStore = create((set, get) => ({
   async signOut() {
     if (isSupabaseConfigured) await supabase.auth.signOut();
     set({ session: null, user: null, role: null, fullName: null, avatarUrl: null, bankName: null, phone: null, departmentId: null, error: null });
+    // Clear the solo assessment too, so the next person on a shared browser
+    // doesn't inherit the previous analyst's profile/answers. Dynamic import
+    // avoids a static cycle.
+    import('./useAppStore').then(m => m.default.getState().resetAll()).catch(() => {});
   },
 }));
 

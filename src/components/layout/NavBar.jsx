@@ -33,7 +33,9 @@ export default function NavBar() {
     if (!isAdmin && !groupAssessment) loadActive();
   }, [isAdmin, groupAssessment, loadActive]);
 
-  const groupDims = (!isAdmin && groupAssessment?.status === 'draft') ? myAssignedDims() : [];
+  // Show the group link for BOTH an open draft (to contribute) and a finalized
+  // assessment the analyst's department owned (to review the read-only result).
+  const groupDims = (!isAdmin && groupAssessment) ? myAssignedDims() : [];
   const hasGroup = groupDims.length > 0;
   const groupDone = hasGroup && INDICATORS.filter(i => groupDims.includes(i.dim)).every(i => {
     const a = groupAnswers[i.id];

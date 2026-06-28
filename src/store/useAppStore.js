@@ -65,7 +65,10 @@ const useAppStore = create(
 
   getMaturityLevel(score) {
     if (score === null || score === undefined) return MATURITY_LEVELS[0];
-    return MATURITY_LEVELS.find(l => score >= l.min && score <= l.max) || MATURITY_LEVELS[4];
+    // Highest band whose min ≤ score (gap-free, so a value like 1.795 between
+    // band maxima maps to the lower level, never silently to the top one).
+    const bands = MATURITY_LEVELS.filter(l => score >= l.min);
+    return bands.length ? bands[bands.length - 1] : MATURITY_LEVELS[0];
   },
 
   getPercentage(score) {
@@ -334,14 +337,16 @@ const useAppStore = create(
       version: 1,
       storage: createJSONStorage(() => localStorage),
       // Only persist user data — selectors/actions are recreated by the store.
+      // NEVER persist the "Skip evaluation" auto-fill: if it's active we persist
+      // the user's REAL answers (the stash), not the random ones, and we drop the
+      // autoFilled/_preFillStash flags entirely. So a test auto-fill can't survive
+      // a reload as a complete, submittable assessment.
       partialize: (state) => ({
         profile: state.profile,
-        answers: state.answers,
+        answers: state.autoFilled ? (state._preFillStash || {}) : state.answers,
         targetLevel: state.targetLevel,
         activeDimension: state.activeDimension,
         activeSubDim: state.activeSubDim,
-        autoFilled: state.autoFilled,
-        _preFillStash: state._preFillStash,
       }),
     }
   )

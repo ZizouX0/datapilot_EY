@@ -24,7 +24,6 @@ const useAssessmentStore = create((set, get) => ({
   // bank's current assessment.) Leaves assessment null if none exists yet.
   async loadActive() {
     if (!isSupabaseConfigured) { set({ error: 'Backend not configured.' }); return; }
-    if (get().loading) return; // avoid concurrent duplicate loads (NavBar + page)
     set({ loading: true, error: null });
     const { data: rows, error } = await supabase
       .from('assessments')
@@ -77,6 +76,12 @@ const useAssessmentStore = create((set, get) => ({
     if (error) return { error: error.message };
     set({ assessment: data, assignments: [], answers: {} });
     return { data };
+  },
+
+  // Coordinator: drop back to the "create" form (e.g. after finalizing) so the
+  // next create starts fresh with a name field, rather than silently inserting.
+  clearActive() {
+    set({ assessment: null, assignments: [], answers: {} });
   },
 
   // Coordinator: set (or clear) the department that owns a dimension.
@@ -179,13 +184,20 @@ const useAssessmentStore = create((set, get) => ({
     if (!a) return { error: 'No active assessment.' };
     if (a.status !== 'draft') return { error: 'This assessment is already finalized.' };
 
-    const answers = get().answers;
+    // Re-read the answers from the server so we finalize the LATEST state, not a
+    // possibly-stale local snapshot (analysts may have written since last load).
+    set({ saving: true, error: null });
+    const { data: freshRows, error: readErr } = await supabase
+      .from('assessment_answers').select('*').eq('assessment_id', a.id);
+    if (readErr) { set({ saving: false }); return { error: readErr.message }; }
+    const answers = answersFromRows(freshRows);
     const s = computeScores(answers);
     // Don't finalize an empty assessment into a meaningless submission.
     if (s.globalScore === null) {
+      set({ saving: false });
       return { error: 'Nothing has been scored yet — add some answers before finalizing.' };
     }
-    set({ saving: true, error: null });
+    set({ answers });
 
     const { data: { session } } = await supabase.auth.getSession();
     const user = session?.user;

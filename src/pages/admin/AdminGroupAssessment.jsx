@@ -16,6 +16,7 @@ const COPY = {
     suggested: '⚡ Suggested Tunisian mapping',
     needDepts: 'Create your departments first (Departments tab).',
     suggestedMsg: 'Applied the suggested Tunisian mapping. Adjust any dimension as needed.',
+    unmatchedNote: (dims) => `Note: ${dims} had no matching department — assign them manually.`,
     draft: 'Draft',
     finalized: 'Finalized',
     introDraft: 'Assign each dimension to the department that owns it. Analysts then fill only their dimensions.',
@@ -46,6 +47,7 @@ const COPY = {
     suggested: '⚡ Affectation tunisienne suggérée',
     needDepts: 'Créez d’abord vos départements (onglet Départements).',
     suggestedMsg: 'Affectation tunisienne suggérée appliquée. Ajustez chaque dimension si nécessaire.',
+    unmatchedNote: (dims) => `Remarque : ${dims} n’avaient pas de département correspondant — affectez-les manuellement.`,
     draft: 'Brouillon',
     finalized: 'Finalisée',
     introDraft: 'Affectez chaque dimension au département qui en est responsable. Les analystes ne remplissent alors que leurs dimensions.',
@@ -74,7 +76,7 @@ const COPY = {
 export default function AdminGroupAssessment() {
   const {
     assessment, assignments, answers, loading, saving, error,
-    loadActive, createAssessment, setAssignment, applySuggestedMapping, scores, finalize,
+    loadActive, createAssessment, setAssignment, applySuggestedMapping, scores, finalize, clearActive,
   } = useAssessmentStore();
   const { departments, list: listDepartments } = useDepartmentsStore();
   const lang = useSettingsStore(s => s.language);
@@ -128,10 +130,10 @@ export default function AdminGroupAssessment() {
   async function handleSuggested() {
     if (!departments.length) { flash(false, c.needDepts); return; }
     setBusy(true); setMsg(null);
-    const { error: err } = await applySuggestedMapping(departments);
+    const { error: err, unmatched } = await applySuggestedMapping(departments);
     setBusy(false);
     if (err) flash(false, err);
-    else flash(true, c.suggestedMsg);
+    else flash(true, unmatched && unmatched.length ? `${c.suggestedMsg} ${c.unmatchedNote(unmatched.join(', '))}` : c.suggestedMsg);
   }
 
   async function handleFinalize() {
@@ -260,7 +262,7 @@ export default function AdminGroupAssessment() {
         )}
         {finalized && (
           <button
-            onClick={handleCreate}
+            onClick={() => clearActive()}
             disabled={busy}
             className="text-sm font-semibold text-gray-600 border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50 disabled:opacity-40"
           >{c.startNew}</button>
