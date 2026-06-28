@@ -28,6 +28,7 @@ const useAuthStore = create((set, get) => ({
   user: null,
   role: null,        // 'superadmin' | 'admin' | 'analyst' | null (until loaded)
   fullName: null,    // the signed-in user's display name (from profiles)
+  title: null,       // job title / function (from profiles, set by the inviter)
   avatarUrl: null,   // the signed-in user's avatar URL (from profiles)
   bankName: null,    // the user's organisation bank (inherited from inviter)
   phone: null,       // the user's recovery/contact phone (from profiles)
@@ -51,18 +52,18 @@ const useAuthStore = create((set, get) => ({
   // admin access by accident.
   async fetchRole(userId) {
     if (!userId) {
-      set({ role: null, fullName: null, avatarUrl: null, bankName: null, phone: null, departmentId: null });
+      set({ role: null, fullName: null, title: null, avatarUrl: null, bankName: null, phone: null, departmentId: null });
       reloadContentForBank();
       return;
     }
     const { data, error } = await supabase
       .from('profiles')
-      .select('role, full_name, language, avatar_url, bank_name, phone, department_id')
+      .select('role, full_name, title, language, avatar_url, bank_name, phone, department_id')
       .eq('id', userId)
       .single();
     if (error) {
       // Missing row or RLS issue — fail closed to the least-privileged role.
-      set({ role: 'analyst', fullName: null, avatarUrl: null, bankName: null, phone: null, departmentId: null });
+      set({ role: 'analyst', fullName: null, title: null, avatarUrl: null, bankName: null, phone: null, departmentId: null });
       reloadContentForBank();
       return;
     }
@@ -70,6 +71,7 @@ const useAuthStore = create((set, get) => ({
     set({
       role: ROLES.includes(data?.role) ? data.role : 'analyst',
       fullName: data?.full_name || null,
+      title: data?.title || null,
       avatarUrl: data?.avatar_url || null,
       bankName: data?.bank_name || null,
       phone: data?.phone || null,
@@ -154,7 +156,7 @@ const useAuthStore = create((set, get) => ({
 
   async signOut() {
     if (isSupabaseConfigured) await supabase.auth.signOut();
-    set({ session: null, user: null, role: null, fullName: null, avatarUrl: null, bankName: null, phone: null, departmentId: null, error: null });
+    set({ session: null, user: null, role: null, fullName: null, title: null, avatarUrl: null, bankName: null, phone: null, departmentId: null, error: null });
     // Clear the solo assessment too, so the next person on a shared browser
     // doesn't inherit the previous analyst's profile/answers. Dynamic import
     // avoids a static cycle.

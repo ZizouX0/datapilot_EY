@@ -24,7 +24,6 @@ const STRINGS = {
   'top.resetConfirm': { en: 'Clear all your answers and start a fresh assessment?', fr: 'Effacer toutes vos réponses et démarrer une nouvelle évaluation ?' },
 
   // Navigation tabs
-  'nav.profile':    { en: 'Bank Profile',  fr: 'Profil de la banque' },
   'nav.assessment': { en: 'Assessment',    fr: 'Évaluation' },
   'nav.results':    { en: 'Results',       fr: 'Résultats' },
   'nav.gap':        { en: 'Gap Analysis',  fr: 'Analyse des écarts' },

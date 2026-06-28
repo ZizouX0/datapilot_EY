@@ -7,7 +7,6 @@ import useSettingsStore from '../../store/useSettingsStore';
 import { INDICATORS } from '../../data/indicators';
 
 const TABS = [
-  { key: 'nav.profile', path: '/profile', locked: false },
   { key: 'nav.assessment', path: '/assessment', locked: false },
   { key: 'nav.results', path: '/results', locked: true },
   { key: 'nav.gap', path: '/gap-analysis', locked: true },
@@ -15,7 +14,6 @@ const TABS = [
 ];
 
 export default function NavBar() {
-  const profile = useAppStore(s => s.profile);
   const isAssessmentComplete = useAppStore(s => s.isAssessmentComplete());
   const isAdmin = useAuthStore(s => s.isAdmin());
   const t = useSettingsStore(s => s.t);
@@ -49,11 +47,8 @@ export default function NavBar() {
     ? [{ key: 'nav.admin', path: '/admin', locked: false }]
     : (hasGroup ? [{ key: 'nav.group', path: '/group', locked: false }, ...TABS] : TABS);
 
-  const profileDone = !!(profile.bankName && profile.respondentName);
-
   const doneMap = {
     '/group': groupDone,
-    '/profile': profileDone,
     '/assessment': isAssessmentComplete,
     '/results': isAssessmentComplete,
     '/gap-analysis': isAssessmentComplete,

@@ -12,7 +12,6 @@ const Login = lazy(() => import('./pages/Login'));
 const SetPassword = lazy(() => import('./pages/SetPassword'));
 const Landing = lazy(() => import('./pages/Landing'));
 const Welcome = lazy(() => import('./pages/Welcome'));
-const Profile = lazy(() => import('./pages/Profile'));
 const Questionnaire = lazy(() => import('./pages/Questionnaire'));
 const GroupContributor = lazy(() => import('./pages/GroupContributor'));
 const Results = lazy(() => import('./pages/Results'));
@@ -118,7 +117,6 @@ function AppRoutes() {
 
       {/* Everything below requires authentication. */}
       {/* The assessment workflow is analyst-only; admins are sent to /admin. */}
-      <Route path="/profile" element={<RequireAuth><RequireAnalyst><Layout><Profile /></Layout></RequireAnalyst></RequireAuth>} />
       <Route path="/assessment" element={<RequireAuth><RequireAnalyst><Layout><Questionnaire /></Layout></RequireAnalyst></RequireAuth>} />
       {/* Group (Model B) contributor view — an analyst filling their department's
           assigned dimensions on the bank's shared assessment. */}
