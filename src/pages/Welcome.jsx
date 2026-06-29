@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import useAppStore from '../store/useAppStore';
 import useAuthStore from '../store/useAuthStore';
 import useAssessmentStore from '../store/useAssessmentStore';
@@ -38,7 +38,9 @@ const COPY = {
     gAssigned: (list) => `You’ve been assigned ${list} on your bank’s shared assessment.`,
     gContribute: 'Contribute to the group assessment →',
     gReview: 'Review the group assessment →',
-    gOrSolo: '…or run a solo assessment below',
+    gShowSolo: 'Run a solo assessment instead',
+    gHideSolo: 'Hide the solo assessment',
+    gSoloHint: 'Optional — a personal practice run of the full questionnaire. It’s separate from the group assessment and isn’t submitted for your bank.',
     soloEyebrow: 'Solo assessment',
     workflow: (nInd, nDim) => [
       { title: 'Sign in & set up', desc: "Your details come straight from your account — there's nothing to type." },
@@ -76,7 +78,9 @@ const COPY = {
     gAssigned: (list) => `Les dimensions ${list} vous ont été affectées sur l’évaluation partagée de votre banque.`,
     gContribute: 'Contribuer à l’évaluation groupée →',
     gReview: 'Consulter l’évaluation groupée →',
-    gOrSolo: '…ou réalisez une évaluation solo ci-dessous',
+    gShowSolo: 'Réaliser plutôt une évaluation solo',
+    gHideSolo: 'Masquer l’évaluation solo',
+    gSoloHint: 'Facultatif — un essai personnel du questionnaire complet. Indépendant de l’évaluation groupée, il n’est pas soumis pour votre banque.',
     soloEyebrow: 'Évaluation solo',
     workflow: (nInd, nDim) => [
       { title: 'Se connecter et configurer', desc: 'Vos informations proviennent directement de votre compte — rien à saisir.' },
@@ -121,6 +125,12 @@ export default function Welcome() {
   useEffect(() => { refreshProfile(); loadActive(); }, [refreshProfile, loadActive]);
   const groupFinalized = groupAssessment?.status === 'finalized';
   const groupDims = groupAssessment ? myAssignedDims() : [];
+  const hasGroup = groupDims.length > 0;
+
+  // When the analyst has a group assignment, the solo card is collapsed behind a
+  // toggle: group is the one obvious action, solo is opt-in. With no assignment,
+  // solo is the only flow and is always shown.
+  const [showSolo, setShowSolo] = useState(false);
 
   const WORKFLOW = c.workflow(INDICATORS.length, Object.keys(DIMENSIONS).length);
   const formattedToday = new Date(TODAY).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -199,14 +209,26 @@ export default function Welcome() {
               >
                 {groupFinalized ? c.gReview : c.gContribute}
               </button>
-              <div className="text-[11px] text-gray-400 text-center mt-2">{c.gOrSolo}</div>
+              {/* Solo is opt-in for assigned analysts — toggle, not a second primary action. */}
+              <button
+                onClick={() => setShowSolo(v => !v)}
+                className="mt-2 w-full text-[11px] font-medium text-gray-500 hover:text-gray-800 text-center"
+              >
+                {showSolo ? c.gHideSolo : c.gShowSolo}
+              </button>
             </div>
           )}
 
-          {/* Solo assessment — read-only confirmation from the account, then Start. */}
+          {/* Solo assessment — read-only confirmation from the account, then Start.
+              Always shown when there's no group assignment; opt-in (collapsed
+              behind the toggle above) when the analyst has one. */}
+          {(!hasGroup || showSolo) && (
           <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
-            {groupDims.length > 0 && (
-              <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">{c.soloEyebrow}</div>
+            {hasGroup && (
+              <>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">{c.soloEyebrow}</div>
+                <p className="text-xs text-gray-500 mb-3">{c.gSoloHint}</p>
+              </>
             )}
             <div className="flex items-start justify-between mb-1">
               <h2 className="text-xl font-semibold text-gray-800">{c.setupTitle}</h2>
@@ -237,6 +259,13 @@ export default function Welcome() {
               </button>
             </div>
           </div>
+          )}
+
+          {/* Sign-out stays reachable even when the solo card (which holds the
+              other sign-out link) is collapsed for an assigned analyst. */}
+          {hasGroup && !showSolo && (
+            <button onClick={handleSignOut} className="text-xs font-medium text-gray-400 hover:text-gray-700 text-center">{c.signOut}</button>
+          )}
         </div>
       </div>
     </div>
