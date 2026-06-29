@@ -23,9 +23,11 @@ function roadmapApiPlugin() {
         }
         try {
           const payload = await readJsonBody(req)
+          const auth = req.headers.authorization || ''
+          const token = auth.startsWith('Bearer ') ? auth.slice(7) : ''
           // Lazy import so the dev server boots even if the SDK isn't installed.
           const { generateRoadmapActions } = await import('./api/_roadmap-core.js')
-          const result = await generateRoadmapActions(payload)
+          const result = await generateRoadmapActions(payload, token)
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify(result))
         } catch (err) {

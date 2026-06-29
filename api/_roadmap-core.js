@@ -9,6 +9,10 @@
 // The API key is read from the environment server-side and never reaches the
 // browser. When unset, the endpoint returns 503 and the client falls back to
 // the built-in static recommendations.
+//
+// The caller's Supabase access token is verified first (any authenticated user)
+// so this paid-LLM endpoint can't be driven by anonymous internet traffic.
+import { createClient } from '@supabase/supabase-js';
 
 const API_KEY = process.env.AI_API_KEY || process.env.GEMINI_API_KEY;
 const BASE_URL = (process.env.AI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta/openai').replace(/\/$/, '');
@@ -53,11 +57,39 @@ function extractJson(text) {
   return start >= 0 && end > start ? raw.slice(start, end + 1) : raw;
 }
 
+// Verify the caller is a signed-in user before spending an LLM call. Any
+// authenticated user may generate a roadmap (it's their own assessment); we only
+// reject anonymous callers, who would otherwise be able to burn the AI quota.
+async function requireAuthenticatedCaller(token) {
+  const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) {
+    const err = new Error('Roadmap generation is not configured on the server (missing SUPABASE_SERVICE_ROLE_KEY).');
+    err.statusCode = 503;
+    throw err;
+  }
+  if (!token) {
+    const err = new Error('Not authenticated.');
+    err.statusCode = 401;
+    throw err;
+  }
+  const admin = createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
+  const { data, error } = await admin.auth.getUser(token);
+  if (error || !data?.user) {
+    const err = new Error('Invalid or expired session.');
+    err.statusCode = 401;
+    throw err;
+  }
+}
+
 /**
  * Generate tailored actions. Returns { actionsBySd, model }.
  * Throws an Error with a `.statusCode` property on configuration/API failure.
+ * `token` is the caller's Supabase access token (verified before any LLM spend).
  */
-export async function generateRoadmapActions(payload) {
+export async function generateRoadmapActions(payload, token) {
+  await requireAuthenticatedCaller(token);
+
   if (!API_KEY) {
     const err = new Error('No AI key configured. Set GEMINI_API_KEY (or AI_API_KEY) on the server.');
     err.statusCode = 503;

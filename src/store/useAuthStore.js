@@ -120,9 +120,13 @@ const useAuthStore = create((set, get) => ({
         await get().fetchRole(data.session.user.id);
       }
       set({ loading: false });
-    });
+    }).catch(() => set({ loading: false }));
 
-    return () => sub.subscription.unsubscribe();
+    // Safety net: if neither the listener nor getSession resolves (a hung
+    // network at boot), don't leave the whole app stuck on the loader forever.
+    const safety = setTimeout(() => { if (get().loading) set({ loading: false }); }, 15000);
+
+    return () => { clearTimeout(safety); sub.subscription.unsubscribe(); };
   },
 
   async signIn(email, password) {

@@ -81,12 +81,18 @@ const useContentStore = create((set, get) => ({
     }
     const bank = editBankFromAuth();
     try {
-      const primary = await fetchContent(bank);
+      // Cap the wait so a hung network never leaves the app stuck on the Boot
+      // loader forever — on timeout we fall through to the bundled defaults.
+      const withTimeout = (p, ms = 15000) => Promise.race([
+        p,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Content request timed out.')), ms)),
+      ]);
+      const primary = await withTimeout(fetchContent(bank));
       let { dims, inds } = primary;
       const seeded = !!(dims?.length && inds?.length);
       // A bank with no own copy yet → show the master template meanwhile.
       if (!seeded && bank !== '') {
-        const master = await fetchContent('');
+        const master = await withTimeout(fetchContent(''));
         dims = master.dims; inds = master.inds;
       }
       if (!dims?.length || !inds?.length) {

@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import useAppStore, { MATURITY_LEVELS } from '../store/useAppStore';
 import useSettingsStore from '../store/useSettingsStore';
+import { supabase } from '../lib/supabase';
 import { DIMENSIONS, SUBDIM_NAMES } from '../data/indicators';
 import { RECOMMENDATIONS, getBand } from '../data/recommendations';
 import { buildRoadmap, PHASE_META, phaseText, priorityText } from '../lib/roadmap';
@@ -323,9 +324,16 @@ export default function GapAnalysis() {
       bctGaps: it.bctGaps.map(g => ({ ref: g.ref, q: g.q })),
     }));
     try {
+      // Send the session token — the endpoint rejects anonymous callers so the
+      // paid LLM can't be driven by unauthenticated traffic.
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
       const res = await fetch('/api/roadmap', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ bankName: profile.bankName, targetLevel: summary.target, items }),
       });
       const data = await res.json();

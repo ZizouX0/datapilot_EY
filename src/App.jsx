@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import Topbar from './components/layout/Topbar';
 import NavBar from './components/layout/NavBar';
 import ProgressBar from './components/layout/ProgressBar';
+import ErrorBoundary from './components/ErrorBoundary';
 import useAppStore from './store/useAppStore';
 import useAuthStore from './store/useAuthStore';
 import useContentStore from './store/useContentStore';
@@ -172,10 +173,12 @@ export default function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <Boot>
-        <AppRoutes />
-      </Boot>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Boot>
+          <AppRoutes />
+        </Boot>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
