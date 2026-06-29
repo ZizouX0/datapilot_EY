@@ -157,10 +157,15 @@ const useAuthStore = create((set, get) => ({
   async signOut() {
     if (isSupabaseConfigured) await supabase.auth.signOut();
     set({ session: null, user: null, role: null, fullName: null, title: null, avatarUrl: null, bankName: null, phone: null, departmentId: null, error: null });
-    // Clear the solo assessment too, so the next person on a shared browser
-    // doesn't inherit the previous analyst's profile/answers. Dynamic import
-    // avoids a static cycle.
+    // Clear every store that holds the previous user's data, so the next person
+    // on a shared browser never sees it — not the solo answers, and not the
+    // group draft / admin lists (which may carry another bank's PII). Dynamic
+    // imports avoid static cycles.
     import('./useAppStore').then(m => m.default.getState().resetAll()).catch(() => {});
+    import('./useAssessmentStore').then(m => m.default.setState({ assessment: null, assignments: [], answers: {}, error: null })).catch(() => {});
+    import('./useUsersStore').then(m => m.default.setState({ users: [] })).catch(() => {});
+    import('./useDepartmentsStore').then(m => m.default.setState({ departments: [] })).catch(() => {});
+    import('./useSubmissionsStore').then(m => m.default.setState({ submissions: [] })).catch(() => {});
   },
 }));
 

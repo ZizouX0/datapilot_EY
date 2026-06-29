@@ -19,6 +19,11 @@ const COPY = {
     passwordLabel: 'Password',
     submit: 'Sign in →',
     submitting: 'Signing in…',
+    backendTitle: 'Authentication backend not configured',
+    backendSet: 'Set',
+    backendAnd: 'and',
+    backendInEnv: 'in your',
+    backendRestart: 'file, then restart the dev server. See',
   },
   fr: {
     subtitle: 'Outil de pilotage de la maturité des données',
@@ -31,6 +36,11 @@ const COPY = {
     passwordLabel: 'Mot de passe',
     submit: 'Se connecter →',
     submitting: 'Connexion en cours…',
+    backendTitle: 'Backend d’authentification non configuré',
+    backendSet: 'Définissez',
+    backendAnd: 'et',
+    backendInEnv: 'dans votre fichier',
+    backendRestart: ', puis redémarrez le serveur de développement. Voir',
   },
 };
 
@@ -99,11 +109,11 @@ export default function Login() {
 
           {!isSupabaseConfigured && (
             <div className="mb-5 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-800">
-              <div className="font-semibold mb-1">Authentication backend not configured</div>
-              Set <code className="font-mono">VITE_SUPABASE_URL</code> and{' '}
-              <code className="font-mono">VITE_SUPABASE_ANON_KEY</code> in your{' '}
-              <code className="font-mono">.env</code> file, then restart the dev server.
-              See <code className="font-mono">SUPABASE_SETUP.md</code>.
+              <div className="font-semibold mb-1">{c.backendTitle}</div>
+              {c.backendSet} <code className="font-mono">VITE_SUPABASE_URL</code> {c.backendAnd}{' '}
+              <code className="font-mono">VITE_SUPABASE_ANON_KEY</code> {c.backendInEnv}{' '}
+              <code className="font-mono">.env</code> {c.backendRestart}{' '}
+              <code className="font-mono">SUPABASE_SETUP.md</code>.
             </div>
           )}
 

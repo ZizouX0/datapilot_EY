@@ -47,6 +47,7 @@ export default function GroupContributor() {
   const { assessment, answers, loading, loadActive, saveAnswer, myAssignedDims } = useAssessmentStore();
   useAssessmentStore(s => s.assignments); // re-render when assignments load
   const refreshProfile = useAuthStore(s => s.refreshProfile);
+  useAuthStore(s => s.departmentId); // re-derive assigned dims when profile resolves
   const c = COPY[useSettingsStore(s => s.language)] || COPY.en;
 
   const [navDim, setNavDim] = useState(null);

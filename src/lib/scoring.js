@@ -43,15 +43,28 @@ export function globalScore(answers) {
     .map(d => ({ weight: DIMENSIONS[d].weight, score: dimScore(answers, d) }))
     .filter(s => s.score !== null);
   if (!arr.length) return null;
-  const totalWeight = arr.reduce((a, s) => a + s.weight, 0) || 1;
+  const totalWeight = arr.reduce((a, s) => a + s.weight, 0);
+  // Degenerate weights (all zero — e.g. an admin blanked the weight column) fall
+  // back to an unweighted mean, matching useAppStore.getGlobalScore exactly so
+  // the solo and group paths never score the same answers differently.
+  if (totalWeight <= 0) {
+    const mean = arr.reduce((a, s) => a + s.score, 0) / arr.length;
+    return parseFloat(mean.toFixed(2));
+  }
   const weighted = arr.reduce((a, s) => a + s.score * (s.weight / totalWeight), 0);
   return parseFloat(weighted.toFixed(2));
 }
 
 export function maturityLevel(score) {
   if (score === null || score === undefined) return null;
-  const l = MATURITY_LEVELS.find(x => score >= x.min && score <= x.max);
-  return l ? l.level : 5;
+  // Highest band whose min ≤ score (gap-free). The bands have gaps between each
+  // max and the next min (1.79→1.8, …); a `min ≤ score ≤ max` test would match
+  // NO band for an in-gap value like 1.795 and silently fall through. Selecting
+  // the highest band whose min is reached — and defaulting to level 1, not 5 —
+  // mirrors useAppStore.getMaturityLevel and never mislabels a low score as
+  // Optimized. This value is persisted to submissions.maturity_level on finalize.
+  const bands = MATURITY_LEVELS.filter(x => score >= x.min);
+  return bands.length ? bands[bands.length - 1].level : 1;
 }
 
 export function bctRate(answers) {

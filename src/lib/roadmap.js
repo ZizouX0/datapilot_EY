@@ -9,29 +9,42 @@ import { RECOMMENDATIONS, getBand } from '../data/recommendations';
 // regulatory gap and must surface in Phase 1 regardless of the sub-dim average.
 const BCT_COMPLIANCE_THRESHOLD = 3;
 
+// Visual styling per phase (language-independent). The display text lives in
+// PHASE_I18N so the roadmap reads in the user's language; `label` is kept here
+// only as a stable React key / fallback.
 export const PHASE_META = [
-  {
-    label: 'Phase 1',
-    sub: '0–3 months',
-    desc: 'Critical & regulatory remediation',
-    headerClass: 'bg-ey-charcoal text-white',
-    accent: '#B71C1C',
-  },
-  {
-    label: 'Phase 2',
-    sub: '3–6 months',
-    desc: 'Formalization & documentation',
-    headerClass: 'bg-ey-yellow text-ey-charcoal',
-    accent: '#E65100',
-  },
-  {
-    label: 'Phase 3',
-    sub: '6–12 months',
-    desc: 'Optimization & continuous improvement',
-    headerClass: 'bg-teal-600 text-white',
-    accent: '#188CE5',
-  },
+  { label: 'Phase 1', headerClass: 'bg-ey-charcoal text-white', accent: '#B71C1C' },
+  { label: 'Phase 2', headerClass: 'bg-ey-yellow text-ey-charcoal', accent: '#E65100' },
+  { label: 'Phase 3', headerClass: 'bg-teal-600 text-white', accent: '#188CE5' },
 ];
+
+// Translated display text for the three phases (label · sub-horizon · description).
+export const PHASE_I18N = {
+  en: [
+    { label: 'Phase 1', sub: '0–3 months', desc: 'Critical & regulatory remediation' },
+    { label: 'Phase 2', sub: '3–6 months', desc: 'Formalization & documentation' },
+    { label: 'Phase 3', sub: '6–12 months', desc: 'Optimization & continuous improvement' },
+  ],
+  fr: [
+    { label: 'Phase 1', sub: '0–3 mois', desc: 'Remédiation critique et réglementaire' },
+    { label: 'Phase 2', sub: '3–6 mois', desc: 'Formalisation et documentation' },
+    { label: 'Phase 3', sub: '6–12 mois', desc: 'Optimisation et amélioration continue' },
+  ],
+};
+
+// Translated labels for the stable priority/effort keys the builder emits.
+export const PRIORITY_I18N = {
+  en: { critical: 'Critical', high: 'High', moderate: 'Moderate', low: 'Low' },
+  fr: { critical: 'Critique', high: 'Élevée', moderate: 'Modérée', low: 'Faible' },
+};
+export const EFFORT_I18N = {
+  en: { High: 'High', Medium: 'Medium', Low: 'Low' },
+  fr: { High: 'Élevé', Medium: 'Moyen', Low: 'Faible' },
+};
+
+export const phaseText = (lang) => PHASE_I18N[lang] || PHASE_I18N.en;
+export const priorityText = (key, lang) => (PRIORITY_I18N[lang] || PRIORITY_I18N.en)[key] || key;
+export const effortText = (level, lang) => (EFFORT_I18N[lang] || EFFORT_I18N.en)[level] || level;
 
 // Pull the leading "BCT Art. X.Y" reference out of an indicator hint, if present.
 export function extractBctRef(hint) {
@@ -48,11 +61,13 @@ function estimateEffort(gap, weight) {
 }
 
 function priorityFor(current, hasBctGap) {
-  if (hasBctGap) return { label: 'Critical', bg: '#FDECEA', color: '#B71C1C' };
-  if (current < 2.0) return { label: 'Critical', bg: '#FDECEA', color: '#B71C1C' };
-  if (current < 2.6) return { label: 'High', bg: '#FFF3E0', color: '#E65100' };
-  if (current < 3.4) return { label: 'Moderate', bg: '#FFFDE7', color: '#827717' };
-  return { label: 'Low', bg: '#E8F5E9', color: '#1B5E20' };
+  // `key` is the stable, language-independent priority used for translation;
+  // `label` is the English fallback. Render via priorityText(key, lang).
+  if (hasBctGap) return { key: 'critical', label: 'Critical', bg: '#FDECEA', color: '#B71C1C' };
+  if (current < 2.0) return { key: 'critical', label: 'Critical', bg: '#FDECEA', color: '#B71C1C' };
+  if (current < 2.6) return { key: 'high', label: 'High', bg: '#FFF3E0', color: '#E65100' };
+  if (current < 3.4) return { key: 'moderate', label: 'Moderate', bg: '#FFFDE7', color: '#827717' };
+  return { key: 'low', label: 'Low', bg: '#E8F5E9', color: '#1B5E20' };
 }
 
 // Decide which phase a sub-dimension belongs to. Regulatory gaps always lead.

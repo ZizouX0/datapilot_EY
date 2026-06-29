@@ -4,7 +4,7 @@ import useAppStore, { MATURITY_LEVELS } from '../store/useAppStore';
 import useSettingsStore from '../store/useSettingsStore';
 import { DIMENSIONS, SUBDIM_NAMES } from '../data/indicators';
 import { RECOMMENDATIONS, getBand } from '../data/recommendations';
-import { buildRoadmap, PHASE_META } from '../lib/roadmap';
+import { buildRoadmap, PHASE_META, phaseText, priorityText } from '../lib/roadmap';
 import DimensionPill from '../components/ui/DimensionPill';
 import ReportCover from '../components/ReportCover';
 
@@ -163,6 +163,7 @@ function ProgressBar({ current, target, color, c }) {
 }
 
 function RoadmapCard({ item, aiActions, c }) {
+  const lang = useSettingsStore(s => s.language);
   const usingAi = Array.isArray(aiActions) && aiActions.length > 0;
   const actions = usingAi ? aiActions : item.actions;
   return (
@@ -180,7 +181,7 @@ function RoadmapCard({ item, aiActions, c }) {
           className="px-1.5 py-0.5 rounded text-[9px] font-bold flex-shrink-0"
           style={{ background: item.priority.bg, color: item.priority.color }}
         >
-          {item.priority.label}
+          {priorityText(item.priority.key, lang)}
         </span>
       </div>
 
@@ -524,13 +525,14 @@ export default function GapAnalysis() {
             <div className="roadmap-phases grid grid-cols-3 divide-x divide-gray-100">
               {PHASE_META.map((phase, phaseIdx) => {
                 const items = phases[phaseIdx];
+                const pt = phaseText(lang)[phaseIdx];
                 const header = (
                   <div className={`px-4 py-3 ${phase.headerClass}`}>
                     <div className="flex items-center justify-between">
-                      <div className="font-bold text-sm">{phase.label} · {phase.sub}</div>
+                      <div className="font-bold text-sm">{pt.label} · {pt.sub}</div>
                       <div className="text-xs font-bold opacity-90 tabular-nums">{items.length}</div>
                     </div>
-                    <div className="text-xs opacity-80 mt-0.5">{phase.desc}</div>
+                    <div className="text-xs opacity-80 mt-0.5">{pt.desc}</div>
                   </div>
                 );
                 return (

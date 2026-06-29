@@ -122,6 +122,9 @@ export default function Welcome() {
   useAssessmentStore(s => s.assignments); // re-render when assignments load
   const myAssignedDims = useAssessmentStore(s => s.myAssignedDims);
   const refreshProfile = useAuthStore(s => s.refreshProfile);
+  // Subscribe to departmentId so the group card re-derives once refreshProfile
+  // resolves (myAssignedDims reads it via getState(), outside any subscription).
+  useAuthStore(s => s.departmentId);
   useEffect(() => { refreshProfile(); loadActive(); }, [refreshProfile, loadActive]);
   const groupFinalized = groupAssessment?.status === 'finalized';
   const groupDims = groupAssessment ? myAssignedDims() : [];

@@ -1,5 +1,6 @@
 import DimensionPill from '../ui/DimensionPill';
 import useSettingsStore from '../../store/useSettingsStore';
+import { priorityText, effortText } from '../../lib/roadmap';
 
 const COPY = {
   en: {
@@ -69,7 +70,7 @@ export default function RoadmapCard({ item, aiActions }) {
           className="px-1.5 py-0.5 rounded text-[9px] font-bold flex-shrink-0"
           style={{ background: item.priority.bg, color: item.priority.color }}
         >
-          {item.priority.label}
+          {priorityText(item.priority.key, lang)}
         </span>
       </div>
 
@@ -84,7 +85,7 @@ export default function RoadmapCard({ item, aiActions }) {
           className="text-[9px] font-semibold px-1.5 py-0.5 rounded"
           style={{ background: EFFORT_STYLE[item.effort].bg, color: EFFORT_STYLE[item.effort].color }}
         >
-          {c.effort(item.effort)}
+          {c.effort(effortText(item.effort, lang))}
         </span>
         <span className="text-[9px] font-medium text-gray-400">
           {c.weight(Math.round(item.weight * 100))}

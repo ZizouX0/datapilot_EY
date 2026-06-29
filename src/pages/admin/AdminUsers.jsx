@@ -33,6 +33,7 @@ const COPY = {
     noUsers: 'No users yet.',
     eyPlatform: 'EY platform',
     members: (n) => `${n} ${n === 1 ? 'member' : 'members'}`,
+    noBank: '— No bank —',
     noPosition: 'No position set',
     editPosition: 'Edit position / title',
     you: 'you',
@@ -69,6 +70,7 @@ const COPY = {
     noUsers: 'Aucun utilisateur pour l’instant.',
     eyPlatform: 'Plateforme EY',
     members: (n) => `${n} membre${n > 1 ? 's' : ''}`,
+    noBank: '— Aucune banque —',
     noPosition: 'Aucun poste défini',
     editPosition: 'Modifier le poste / titre',
     you: 'vous',
@@ -150,7 +152,9 @@ export default function AdminUsers() {
     const banks = new Map();
     users.forEach(u => {
       if (u.role === 'owner') { eyUsers.push(u); return; }
-      const key = u.bank_name || '— No bank —';
+      // Group no-bank users under a stable empty key; the label is translated at
+      // render time (keeping the key language-independent so grouping is stable).
+      const key = u.bank_name || '';
       if (!banks.has(key)) banks.set(key, []);
       banks.get(key).push(u);
     });
@@ -414,7 +418,7 @@ export default function AdminUsers() {
       {!loading && groups.banks.map(([bankName, list]) => (
         <div key={bankName} className="rounded-xl border border-gray-200 overflow-hidden mb-4">
           <div className="bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-600 flex justify-between">
-            <span>{bankName}</span>
+            <span>{bankName || c.noBank}</span>
             <span className="text-gray-400 normal-case">{c.members(list.length)}</span>
           </div>
           {renderTree(list)}

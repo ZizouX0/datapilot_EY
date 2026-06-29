@@ -1,6 +1,6 @@
 import useAppStore, { MATURITY_LEVELS } from '../../store/useAppStore';
 import useSettingsStore from '../../store/useSettingsStore';
-import { buildRoadmap, PHASE_META } from '../../lib/roadmap';
+import { buildRoadmap, PHASE_META, phaseText } from '../../lib/roadmap';
 import RoadmapCard from './RoadmapCard';
 
 const COPY = {
@@ -11,6 +11,7 @@ const COPY = {
     criticalActions: 'Critical actions',
     bctItems: 'BCT items',
     totalActions: 'Total actions',
+    noActions: 'No actions in this phase',
     allMet: (target) => `All assessed areas already meet the target maturity level of ${target}. No remediation actions required.`,
   },
   fr: {
@@ -20,6 +21,7 @@ const COPY = {
     criticalActions: 'Actions critiques',
     bctItems: 'Éléments BCT',
     totalActions: 'Actions totales',
+    noActions: 'Aucune action dans cette phase',
     allMet: (target) => `Tous les domaines évalués atteignent déjà le niveau de maturité cible de ${target}. Aucune action de remédiation requise.`,
   },
 };
@@ -83,13 +85,14 @@ export default function RoadmapSection() {
         <div className="roadmap-phases grid grid-cols-3 divide-x divide-gray-100">
           {PHASE_META.map((phase, phaseIdx) => {
             const items = phases[phaseIdx];
+            const pt = phaseText(lang)[phaseIdx];
             const header = (
               <div className={`px-4 py-3 ${phase.headerClass}`}>
                 <div className="flex items-center justify-between">
-                  <div className="font-bold text-sm">{phase.label} · {phase.sub}</div>
+                  <div className="font-bold text-sm">{pt.label} · {pt.sub}</div>
                   <div className="text-xs font-bold opacity-90 tabular-nums">{items.length}</div>
                 </div>
-                <div className="text-xs opacity-80 mt-0.5">{phase.desc}</div>
+                <div className="text-xs opacity-80 mt-0.5">{pt.desc}</div>
               </div>
             );
             return (
@@ -99,7 +102,7 @@ export default function RoadmapSection() {
                   {header}
                   <div className="px-3 pt-3 pb-2 bg-gray-50/50">
                     {items.length === 0 ? (
-                      <div className="text-xs text-gray-400 italic py-2 text-center">No actions in this phase</div>
+                      <div className="text-xs text-gray-400 italic py-2 text-center">{c.noActions}</div>
                     ) : (
                       <RoadmapCard item={items[0]} />
                     )}

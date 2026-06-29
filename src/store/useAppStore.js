@@ -45,7 +45,10 @@ const useAppStore = create(
   },
 
   getDimScore(dim) {
-    const subDims = DIMENSIONS[dim].subDims;
+    // Guard a dimension that no longer exists in content (e.g. a persisted
+    // localStorage answer map referencing a dim an admin later renamed/removed).
+    const subDims = DIMENSIONS[dim]?.subDims;
+    if (!subDims) return null;
     const scores = subDims
       .map(sd => get().getSubDimScore(sd))
       .filter(s => s !== null);

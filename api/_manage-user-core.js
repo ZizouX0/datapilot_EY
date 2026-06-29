@@ -52,10 +52,13 @@ export async function manageUserCore({ token, action, targetId, title }) {
     .from('profiles').select('role, bank_name').eq('id', targetId).single();
   if (targetErr || !target) throw fail(404, 'That user no longer exists.');
 
-  // You may never act on an account that outranks you (owner > superadmin >
-  // admin > analyst).
-  if (rank(target.role) > rank(callerRole)) {
-    throw fail(403, 'You cannot manage an account above your level.');
+  // You may never act on an account at or above your own level — only on
+  // strictly-lower ranks (matching set-role / set-department). Acting on your
+  // own account is still allowed (e.g. nothing here mutates it harmfully; the
+  // disable path separately blocks self below). This stops an admin from
+  // renaming a peer admin, or a super-admin a peer super-admin.
+  if (targetId !== callerId && rank(target.role) >= rank(callerRole)) {
+    throw fail(403, 'You cannot manage an account at or above your level.');
   }
   // Non-EY callers are confined to their own bank.
   if (callerRole !== 'owner' && (!caller?.bank_name || caller.bank_name !== target.bank_name)) {

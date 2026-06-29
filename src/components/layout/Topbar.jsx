@@ -9,10 +9,12 @@ import LanguageToggle from '../ui/LanguageToggle';
 export default function Topbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  // Reset/Skip act on the SOLO assessment (useAppStore). On the group page the
-  // analyst is filling the shared server draft, so those buttons would silently
-  // affect unrelated solo state — hide them there.
-  const onGroup = location.pathname === '/group';
+  // Reset/Skip act on the SOLO assessment (useAppStore), so they only belong on
+  // the solo assessment page. Anywhere else (results, gap, compliance, account,
+  // guide, the group draft) they'd silently mutate unrelated solo state — e.g.
+  // Reset on /results empties the answers and bounces the analyst out via
+  // RequireComplete. Show them on /assessment only.
+  const onAssessment = location.pathname === '/assessment';
   const toggleAutoFill = useAppStore(s => s.toggleAutoFill);
   const autoFilled = useAppStore(s => s.autoFilled);
   const resetAnswers = useAppStore(s => s.resetAnswers);
@@ -47,7 +49,7 @@ export default function Topbar() {
         <LanguageToggle variant="dark" />
 
         {/* Assessment-only chrome — hidden from admins, who don't run assessments. */}
-        {!isAdmin && !onGroup && (
+        {!isAdmin && onAssessment && (
           <>
             {/* Reset — clears every answer so the assessment is "all not done"
                 again and the analyst can fill it from scratch. */}
@@ -86,7 +88,7 @@ export default function Topbar() {
         {user && (
           <Link
             to="/guide"
-            title="How DataPilot works and what your role does"
+            title={t('top.guideTitle')}
             className="flex items-center gap-1 bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded text-xs font-medium"
           >
             <span aria-hidden>📘</span><span className="hidden sm:inline">{t('top.guide')}</span>

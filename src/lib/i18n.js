@@ -15,6 +15,7 @@ const STRINGS = {
   'top.account':    { en: 'Account',  fr: 'Compte' },
   'top.signOut':    { en: 'Sign out', fr: 'Déconnexion' },
   'top.guide':      { en: 'Guide',    fr: 'Guide' },
+  'top.guideTitle': { en: 'How DataPilot works and what your role does', fr: 'Comment DataPilot fonctionne et le rôle qui vous incombe' },
   'top.skip':       { en: '⚡ Skip evaluation',   fr: '⚡ Ignorer l’évaluation' },
   'top.skipOn':     { en: '✓ Evaluation skipped', fr: '✓ Évaluation ignorée' },
   'top.skipTitleOn':  { en: 'Auto-fill is ON — click to remove it and restore your answers', fr: 'Le remplissage auto est ACTIVÉ — cliquez pour le retirer et restaurer vos réponses' },

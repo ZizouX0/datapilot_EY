@@ -27,6 +27,7 @@ export default function NavBar() {
   useAssessmentStore(s => s.assignments); // re-render when assignments load
   const loadActive = useAssessmentStore(s => s.loadActive);
   const myAssignedDims = useAssessmentStore(s => s.myAssignedDims);
+  useAuthStore(s => s.departmentId); // re-derive the group link when profile resolves
   useEffect(() => {
     if (!isAdmin && !groupAssessment) loadActive();
   }, [isAdmin, groupAssessment, loadActive]);
@@ -35,10 +36,16 @@ export default function NavBar() {
   // assessment the analyst's department owned (to review the read-only result).
   const groupDims = (!isAdmin && groupAssessment) ? myAssignedDims() : [];
   const hasGroup = groupDims.length > 0;
-  const groupDone = hasGroup && INDICATORS.filter(i => groupDims.includes(i.dim)).every(i => {
-    const a = groupAnswers[i.id];
-    return a && (a.skipped || (a.score !== null && a.score !== undefined));
-  });
+  // A finalized assessment is read-only and "done" by definition (the analyst
+  // can't complete anything more); otherwise it's done when every assigned
+  // indicator is answered or skipped.
+  const groupDone = hasGroup && (
+    groupAssessment.status !== 'draft' ||
+    INDICATORS.filter(i => groupDims.includes(i.dim)).every(i => {
+      const a = groupAnswers[i.id];
+      return a && (a.skipped || (a.score !== null && a.score !== undefined));
+    })
+  );
 
   // Admins and super-admins don't run assessments — they only get the admin
   // back-office, so they see just the Admin tab. Analysts get the assessment

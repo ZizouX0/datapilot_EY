@@ -30,7 +30,10 @@ const useAssessmentStore = create((set, get) => ({
       .select('*')
       .order('created_at', { ascending: false })
       .limit(1);
-    if (error) { set({ loading: false, error: error.message }); return; }
+    // On error, also clear any previously-loaded rows so a failed reload (e.g.
+    // mid-session-refresh after a user switch) never leaves another context's
+    // assessment/answers on screen.
+    if (error) { set({ loading: false, error: error.message, assessment: null, assignments: [], answers: {} }); return; }
     const assessment = rows?.[0] || null;
     if (!assessment) {
       set({ assessment: null, assignments: [], answers: {}, loading: false });
