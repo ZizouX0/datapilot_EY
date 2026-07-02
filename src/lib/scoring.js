@@ -69,7 +69,9 @@ export function maturityLevel(score) {
 
 export function bctRate(answers) {
   const bct = INDICATORS.filter(i => i.bct);
-  if (!bct.length) return 0;
+  // No BCT-flagged indicators → vacuously compliant (mirrors
+  // useAppStore.getBCTCompliance; 0 would read as maximal non-compliance).
+  if (!bct.length) return 100;
   const compliant = bct.filter(i => {
     const s = effectiveScore(answers[i.id]);
     return s !== null && s >= 3;

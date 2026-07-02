@@ -13,6 +13,30 @@ const COPY = {
   fr: { currentScore: 'Score actuel', targetLevel: 'Niveau cible' },
 };
 
+// Axis tick that wraps long dimension names onto two lines. Without this, the
+// left/right vertex labels ("Skills & Culture (proxy)", admin-renamed dims)
+// overflow the chart margins and get clipped on screen.
+function WrappedTick({ payload, x, y, textAnchor }) {
+  const label = String(payload?.value ?? '');
+  let lines = [label];
+  if (label.length > 14) {
+    const words = label.split(' ');
+    let first = '';
+    while (words.length && (first + ' ' + words[0]).trim().length <= Math.ceil(label.length / 2)) {
+      first = (first + ' ' + words.shift()).trim();
+    }
+    if (!first) first = words.shift() || '';
+    lines = [first, words.join(' ')].filter(Boolean);
+  }
+  return (
+    <text x={x} y={y} textAnchor={textAnchor} fill="#555" fontSize={11} fontFamily="DM Sans, sans-serif">
+      {lines.map((line, i) => (
+        <tspan key={i} x={x} dy={i === 0 ? 0 : 12}>{line}</tspan>
+      ))}
+    </text>
+  );
+}
+
 // Shared chart children so the screen and print variants stay in sync.
 function chartChildren(c) {
   return [
@@ -20,7 +44,7 @@ function chartChildren(c) {
     <PolarAngleAxis
       key="axis"
       dataKey="name"
-      tick={{ fontSize: 11, fill: '#555', fontFamily: 'DM Sans, sans-serif' }}
+      tick={<WrappedTick />}
     />,
     <Radar
       key="current"

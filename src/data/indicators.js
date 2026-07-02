@@ -836,6 +836,19 @@ export const DEFAULT_CONTENT = {
   indicators: DEFAULT_INDICATORS,
 };
 
+// Restore the live bindings to the pristine bundled defaults, in place. Needed
+// whenever a content load FALLS BACK to defaults after a remote copy was already
+// hydrated (sign-out, bank switch, fetch failure): without this the previous
+// bank's custom questionnaire would silently persist in the module bindings.
+export function restoreDefaultContent() {
+  INDICATORS.length = 0;
+  structuredClone(DEFAULT_INDICATORS).forEach(i => INDICATORS.push(i));
+  Object.keys(SUBDIM_NAMES).forEach(k => delete SUBDIM_NAMES[k]);
+  Object.assign(SUBDIM_NAMES, structuredClone(DEFAULT_SUBDIM_NAMES));
+  Object.keys(DIMENSIONS).forEach(k => delete DIMENSIONS[k]);
+  Object.assign(DIMENSIONS, structuredClone(DEFAULT_DIMENSIONS));
+}
+
 // Replace the live content in place from Supabase rows. Each dimension's
 // ordered sub-dimension list and the sub-dimension name map are derived from
 // the indicator rows, so only the two tables need to be persisted.
@@ -872,4 +885,12 @@ export function hydrateContent(dimRows, indRows) {
       subDims,
     };
   });
+
+  // Admin-entered weights are RELATIVE (the editor says they "need not add up
+  // to 100%"), and the scoring engine renormalizes — but the report surfaces
+  // render `weight × 100%` directly, and the effort/matrix heuristics compare
+  // against absolute fractions like 0.20. Normalize here so every consumer sees
+  // fractions that sum to 1, whatever scale the admin typed (25 vs 0.25).
+  const total = Object.values(DIMENSIONS).reduce((s, d) => s + d.weight, 0);
+  if (total > 0) Object.values(DIMENSIONS).forEach(d => { d.weight = d.weight / total; });
 }

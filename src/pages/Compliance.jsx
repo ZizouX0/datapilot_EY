@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import useAppStore from '../store/useAppStore';
 import useSettingsStore from '../store/useSettingsStore';
+import useContentStore from '../store/useContentStore';
 import ScoreBadge from '../components/ui/ScoreBadge';
 import DimensionPill from '../components/ui/DimensionPill';
 import ReportCover from '../components/ReportCover';
@@ -97,9 +98,16 @@ function exposureLabel(c, exposure) {
   return exposure;
 }
 
-function getArticleRef(id) {
-  const bcbs = ['D1.3-03'];
-  if (bcbs.includes(id)) return 'BCBS 239 P2';
+// Derive the regulatory reference from the indicator's own hint (which states
+// its basis) instead of a hardcoded id list that goes stale as admins edit
+// content: BCBS-based indicators show 'BCBS 239 P<n>', hints leading with a BCT
+// article show that reference, everything else the circulaire default.
+function getArticleRef(ind) {
+  const hint = ind?.hint || '';
+  const bcbs = hint.match(/^\s*BCBS\s*239(?:\s*Principle\s*(\d+))?/i);
+  if (bcbs) return bcbs[1] ? `BCBS 239 P${bcbs[1]}` : 'BCBS 239';
+  const bct = hint.match(/^\s*(BCT[^—–-]+)/);
+  if (bct) return bct[1].trim();
   return 'BCT Art. 2025-08';
 }
 
@@ -111,6 +119,7 @@ export default function Compliance() {
   const answers = useAppStore(s => s.answers);
   const profile = useAppStore(s => s.profile);
   const lang = useSettingsStore(s => s.language);
+  useContentStore(s => s.version); // re-render when the questionnaire is re-hydrated
   const c = COPY[lang] || COPY.en;
 
   const handlePrint = useReactToPrint({
@@ -222,7 +231,7 @@ export default function Compliance() {
                   <span className="px-2 py-0.5 rounded bg-red-100 text-red-700 text-[10px] font-semibold">
                     {c.statusNonCompliant(eff)}
                   </span>
-                  <span className="font-mono text-[10px] text-ey-purple">{getArticleRef(ind.id)}</span>
+                  <span className="font-mono text-[10px] text-ey-purple">{getArticleRef(ind)}</span>
                 </div>
                 <div className="text-xs font-medium text-gray-800 leading-snug">{ind.q}</div>
                 {fix && (
@@ -239,7 +248,7 @@ export default function Compliance() {
               <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <span className="font-mono text-[10px] text-gray-500">{ind.id}</span>
                 <span className="px-2 py-0.5 rounded bg-gray-200 text-gray-600 text-[10px] font-semibold">{c.pending}</span>
-                <span className="font-mono text-[10px] text-ey-purple">{getArticleRef(ind.id)}</span>
+                <span className="font-mono text-[10px] text-ey-purple">{getArticleRef(ind)}</span>
               </div>
               <div className="text-xs font-medium text-gray-800 leading-snug">{ind.q}</div>
               <div className="text-[11px] text-gray-500 mt-1 italic">
@@ -272,7 +281,7 @@ export default function Compliance() {
           const ans = answers[ind.id] || {};
           const compliant = eff !== null && eff >= 3;
           const pending = eff === null;
-          const articleRef = getArticleRef(ind.id);
+          const articleRef = getArticleRef(ind);
           return (
             <div
               key={ind.id}

@@ -46,9 +46,13 @@ export const phaseText = (lang) => PHASE_I18N[lang] || PHASE_I18N.en;
 export const priorityText = (key, lang) => (PRIORITY_I18N[lang] || PRIORITY_I18N.en)[key] || key;
 export const effortText = (level, lang) => (EFFORT_I18N[lang] || EFFORT_I18N.en)[level] || level;
 
-// Pull the leading "BCT Art. X.Y" reference out of an indicator hint, if present.
+// Pull the leading regulatory reference out of an indicator hint, if present.
+// Handles both "BCT Art. X.Y — …" and "BCBS 239 Principle n — …" hints so a
+// BCBS-based BCT indicator isn't mislabelled as a bare 'BCT' item.
 export function extractBctRef(hint) {
   if (!hint) return null;
+  const bcbs = hint.match(/^\s*BCBS\s*239(?:\s*Principle\s*(\d+))?/i);
+  if (bcbs) return bcbs[1] ? `BCBS 239 P${bcbs[1]}` : 'BCBS 239';
   const m = hint.match(/^\s*(BCT[^—–-]+)/);
   return m ? m[1].trim() : 'BCT';
 }

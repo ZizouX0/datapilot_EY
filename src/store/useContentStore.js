@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import useAuthStore from './useAuthStore';
-import { DEFAULT_CONTENT, hydrateContent, DIMENSIONS, INDICATORS } from '../data/indicators';
+import { DEFAULT_CONTENT, hydrateContent, restoreDefaultContent, DIMENSIONS, INDICATORS } from '../data/indicators';
 
 // Which questionnaire copy applies to the signed-in user. '' is the EY master
 // template (edited by owners); every other value is a bank's own copy.
@@ -75,8 +75,16 @@ const useContentStore = create((set, get) => ({
   // owners). If a bank has no copy yet, fall back to the master template, then
   // to the bundled defaults, so the assessment always works. Always resolves.
   async loadContent() {
+    // Every "fall back to defaults" path must also RESTORE the defaults into the
+    // live module bindings: hydrateContent() mutates them in place, so after a
+    // sign-out / bank switch / failed fetch the previous bank's questionnaire
+    // would otherwise silently persist for the next user.
+    const fallbackToDefaults = (patch) => {
+      if (get().source === 'remote') restoreDefaultContent();
+      set(s => ({ loading: false, source: 'default', version: s.version + 1, ...patch }));
+    };
     if (!isSupabaseConfigured) {
-      set({ loading: false, source: 'default', bank: '', seeded: false });
+      fallbackToDefaults({ bank: '', seeded: false });
       return;
     }
     const bank = editBankFromAuth();
@@ -96,13 +104,13 @@ const useContentStore = create((set, get) => ({
         dims = master.dims; inds = master.inds;
       }
       if (!dims?.length || !inds?.length) {
-        set({ loading: false, source: 'default', bank, seeded, error: primary.error });
+        fallbackToDefaults({ bank, seeded, error: primary.error });
         return;
       }
       hydrateContent(dims, inds);
       set(s => ({ loading: false, source: 'remote', bank, seeded, error: null, version: s.version + 1 }));
     } catch (err) {
-      set({ loading: false, source: 'default', bank, seeded: false, error: err.message });
+      fallbackToDefaults({ bank, seeded: false, error: err.message });
     }
   },
 

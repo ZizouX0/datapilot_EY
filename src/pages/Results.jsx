@@ -3,6 +3,7 @@ import { useReactToPrint } from 'react-to-print';
 import useAppStore, { MATURITY_LEVELS } from '../store/useAppStore';
 import useSubmissionsStore from '../store/useSubmissionsStore';
 import useSettingsStore from '../store/useSettingsStore';
+import useContentStore from '../store/useContentStore';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { DIMENSIONS, INDICATORS } from '../data/indicators';
 import RadarChart from '../charts/RadarChart';
@@ -157,6 +158,7 @@ export default function Results() {
   const [submitMsg, setSubmitMsg] = useState(null); // { ok, text }
 
   const lang = useSettingsStore(s => s.language);
+  useContentStore(s => s.version); // re-render when the questionnaire is re-hydrated
   const c = COPY[lang] || COPY.en;
 
   async function handleSubmit() {

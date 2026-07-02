@@ -4,6 +4,7 @@ import useAppStore from '../../store/useAppStore';
 import useAuthStore from '../../store/useAuthStore';
 import useAssessmentStore from '../../store/useAssessmentStore';
 import useSettingsStore from '../../store/useSettingsStore';
+import useContentStore from '../../store/useContentStore';
 import { INDICATORS } from '../../data/indicators';
 
 const TABS = [
@@ -17,6 +18,7 @@ export default function NavBar() {
   const isAssessmentComplete = useAppStore(s => s.isAssessmentComplete());
   const isAdmin = useAuthStore(s => s.isAdmin());
   const t = useSettingsStore(s => s.t);
+  useContentStore(s => s.version); // re-render when the questionnaire is re-hydrated
   const [tooltip, setTooltip] = useState(null);
 
   // Group (Model B): an analyst whose department owns a dimension on the bank's

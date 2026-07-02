@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import useAppStore, { MATURITY_LEVELS } from '../store/useAppStore';
 import useSettingsStore from '../store/useSettingsStore';
+import useContentStore from '../store/useContentStore';
 import { supabase } from '../lib/supabase';
 import { DIMENSIONS, SUBDIM_NAMES } from '../data/indicators';
 import { RECOMMENDATIONS, getBand } from '../data/recommendations';
@@ -265,6 +266,7 @@ export default function GapAnalysis() {
   const printRef = useRef();
   const lang = useSettingsStore(s => s.language);
   const c = COPY[lang] || COPY.en;
+  useContentStore(s => s.version); // re-render when the questionnaire is re-hydrated
   const getDimScore = useAppStore(s => s.getDimScore);
   const getSubDimScore = useAppStore(s => s.getSubDimScore);
   const getEffectiveScore = useAppStore(s => s.getEffectiveScore);

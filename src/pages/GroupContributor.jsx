@@ -18,6 +18,9 @@ const COPY = {
     emptyWithAssessment: 'There’s no open group assessment dimension assigned to your department right now.',
     emptyNoAssessment: 'Your bank has no active group assessment yet.',
     emptyTail: 'Your coordinator assigns dimensions to departments.',
+    loadFailedTitle: 'Couldn’t load the group assessment',
+    loadFailedBody: 'The server couldn’t be reached. Your assignment may still exist — check your connection and try again.',
+    retry: 'Try again',
     back: '← Back',
     eyebrow: 'Group assessment',
     finalized: 'Finalized',
@@ -32,6 +35,9 @@ const COPY = {
     emptyWithAssessment: 'Aucune dimension d’évaluation groupée n’est affectée à votre département pour le moment.',
     emptyNoAssessment: 'Votre banque n’a pas encore d’évaluation groupée active.',
     emptyTail: 'Votre coordinateur affecte les dimensions aux départements.',
+    loadFailedTitle: 'Impossible de charger l’évaluation groupée',
+    loadFailedBody: 'Le serveur est injoignable. Votre affectation existe peut-être toujours — vérifiez votre connexion et réessayez.',
+    retry: 'Réessayer',
     back: '← Retour',
     eyebrow: 'Évaluation groupée',
     finalized: 'Finalisée',
@@ -45,6 +51,7 @@ const COPY = {
 export default function GroupContributor() {
   const navigate = useNavigate();
   const { assessment, answers, loading, loadActive, saveAnswer, myAssignedDims } = useAssessmentStore();
+  const loadError = useAssessmentStore(s => s.error);
   useAssessmentStore(s => s.assignments); // re-render when assignments load
   const refreshProfile = useAuthStore(s => s.refreshProfile);
   useAuthStore(s => s.departmentId); // re-derive assigned dims when profile resolves
@@ -57,6 +64,20 @@ export default function GroupContributor() {
   useEffect(() => { refreshProfile(); loadActive(); }, [refreshProfile, loadActive]);
 
   if (loading) return <p className="text-gray-400 py-32 text-center animate-pulse">{c.loading}</p>;
+
+  // A failed load is NOT the same as "nothing assigned": show the failure and a
+  // retry instead of the misleading empty state (which tells the analyst their
+  // bank has no group assessment when in fact the request just didn't go through).
+  if (loadError && !assessment) {
+    return (
+      <div className="max-w-xl mx-auto mt-10 rounded-xl border border-red-200 bg-red-50 p-8 text-center">
+        <div className="text-3xl mb-2">⚠️</div>
+        <h1 className="text-lg font-semibold text-red-800">{c.loadFailedTitle}</h1>
+        <p className="text-sm text-red-600 mt-1">{c.loadFailedBody}</p>
+        <button onClick={() => loadActive()} className="mt-4 text-sm font-semibold text-red-700 border border-red-300 rounded-lg px-4 py-2 hover:bg-red-100">{c.retry}</button>
+      </div>
+    );
+  }
 
   const myDims = assessment ? myAssignedDims() : [];
   const dims = Object.keys(DIMENSIONS).filter(d => myDims.includes(d));

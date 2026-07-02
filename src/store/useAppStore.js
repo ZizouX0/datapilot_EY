@@ -104,7 +104,10 @@ const useAppStore = create(
       else nonCompliant++;
     });
     const total = bctInds.length;
-    const rate = total > 0 ? Math.round((compliant / total) * 100) : 0;
+    // No BCT indicators (a bank admin can unflag them all) → vacuously compliant.
+    // Deriving exposure from rate=0 here used to show a contradictory
+    // "High exposure" next to "All 0 BCT indicators compliant".
+    const rate = total > 0 ? Math.round((compliant / total) * 100) : 100;
     const exposure = rate >= 80 ? 'Low' : rate >= 50 ? 'Medium' : 'High';
     return { compliant, nonCompliant, pending, total, rate, exposure };
   },

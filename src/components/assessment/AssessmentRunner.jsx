@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import useSettingsStore from '../../store/useSettingsStore';
+import useContentStore from '../../store/useContentStore';
 import { INDICATORS, DIMENSIONS, SUBDIM_NAMES } from '../../data/indicators';
 import BCTBadge from '../ui/BCTBadge';
 import ProxyBadge from '../ui/ProxyBadge';
@@ -26,8 +27,8 @@ const COPY = {
     viewResults: 'View Results →',
     finishToView: 'Answer every indicator to view results',
     proxy: 'Proxy',
-    d5Title: 'D5 uses proxy-based indicators only.',
-    d5Body: 'Scores reflect observable organizational signals, not direct self-assessment. Results are indicative and weighted at 15% of the global score.',
+    d5Title: (dim) => `${dim} uses proxy-based indicators only.`,
+    d5Body: (pct) => `Scores reflect observable organizational signals, not direct self-assessment. Results are indicative and weighted at ${pct}% of the global score.`,
     skipped: 'Skipped',
     evidenceCap: '⚠ Without documented evidence, this score will be capped at 2/5.',
     scoringGuide: 'Scoring guide for this indicator',
@@ -59,8 +60,8 @@ const COPY = {
     viewResults: 'Voir les résultats →',
     finishToView: 'Répondez à chaque indicateur pour voir les résultats',
     proxy: 'Proxy',
-    d5Title: 'D5 utilise uniquement des indicateurs indirects (proxy).',
-    d5Body: 'Les scores reflètent des signaux organisationnels observables, pas une auto-évaluation directe. Les résultats sont indicatifs et pondérés à 15 % du score global.',
+    d5Title: (dim) => `${dim} utilise uniquement des indicateurs indirects (proxy).`,
+    d5Body: (pct) => `Les scores reflètent des signaux organisationnels observables, pas une auto-évaluation directe. Les résultats sont indicatifs et pondérés à ${pct} % du score global.`,
     skipped: 'Ignoré',
     evidenceCap: '⚠ Sans preuve documentée, ce score sera plafonné à 2/5.',
     scoringGuide: 'Grille de notation de cet indicateur',
@@ -114,6 +115,10 @@ export default function AssessmentRunner({
   header = null,
 }) {
   const c = COPY[useSettingsStore(s => s.language)] || COPY.en;
+  // Re-render when the live questionnaire content is re-hydrated mid-session
+  // (admin edit, bank switch, fallback) — INDICATORS/DIMENSIONS are mutable
+  // module bindings, so without this subscription a content swap shows nothing.
+  useContentStore(s => s.version);
   const [openRubrics, setOpenRubrics] = useState({});
   const [skipErrors, setSkipErrors] = useState({});
   const [evidenceDraft, setEvidenceDraft] = useState({});
@@ -260,11 +265,14 @@ export default function AssessmentRunner({
               </div>
             </div>
           )}
-          {activeDimension === 'D5' && (
+          {/* Proxy explainer — driven by the content's proxy flag and real weight,
+              not the literal code 'D5', so admin edits (weight change, new proxy
+              dimension) keep the banner truthful. */}
+          {DIMENSIONS[activeDimension]?.proxy && (
             <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 flex items-start gap-3">
               <span className="text-gray-400 text-base flex-shrink-0 mt-0.5">ℹ</span>
               <p className="text-xs text-gray-600 leading-relaxed">
-                <span className="font-semibold text-gray-700">{c.d5Title}</span>{' '}{c.d5Body}
+                <span className="font-semibold text-gray-700">{c.d5Title(activeDimension)}</span>{' '}{c.d5Body(Math.round((DIMENSIONS[activeDimension].weight || 0) * 100))}
               </p>
             </div>
           )}
@@ -282,7 +290,7 @@ export default function AssessmentRunner({
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="bg-ey-charcoal text-ey-yellow text-xs font-mono px-2 py-0.5 rounded">{ind.id}</span>
                   {ind.bct && <BCTBadge />}
-                  {ind.dim === 'D5' && <ProxyBadge />}
+                  {DIMENSIONS[ind.dim]?.proxy && <ProxyBadge />}
                   {skipped && <span className="text-xs text-gray-400 italic">{c.skipped}</span>}
                 </div>
                 <p className="text-sm font-medium text-gray-800 leading-relaxed mt-3">{ind.q}</p>
