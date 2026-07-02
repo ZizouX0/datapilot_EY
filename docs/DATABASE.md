@@ -90,6 +90,7 @@ The schema grew through hand‑numbered phase files. Applied **in order**, they 
 | `phase6.sql` | **Security fix:** `indicator_dim()`, the `set_answer_dim` trigger, answer‑write RLS on the true dimension, one‑open‑draft unique index. |
 | `phase7.sql` | `handle_new_user` made idempotent (`on conflict do nothing`); forged‑`bank_name` guard on submissions; avatar `WITH CHECK`; `answered_by` forced. |
 | `phase8.sql` | `CHECK` constraints (score range, target level, non‑negative weight). |
+| `phase9.sql` | **Draft-status lock:** `assessment_is_draft()` + answer-write RLS now requires the assessment be a draft, so a finalized assessment is read-only at the DB layer (no post-finalize answer tampering). |
 
 > **Important:** apply the phases **individually, in order**. `supabase/setup_all_and_seed.sql` is a convenience one‑shot that consolidates only through phase 3 and can re‑narrow the role CHECK or ship an older trigger — it is **not** the canonical install path. The `seed_*.sql` files contain **default test credentials and are for local development only**; never run them against production. See [SETUP.md](SETUP.md).
 

@@ -39,8 +39,9 @@ export async function setRoleCore({ token, targetId, role }) {
 
   // 2) Load the caller's role/bank and the target's current role/bank.
   const { data: caller, error: callerErr } = await admin
-    .from('profiles').select('role, bank_name').eq('id', callerId).single();
+    .from('profiles').select('role, bank_name, disabled').eq('id', callerId).single();
   if (callerErr) throw fail(403, 'Could not verify your permissions.');
+  if (caller?.disabled) throw fail(403, 'Your account has been disabled.');
   const callerRole = caller?.role;
   if (rank(callerRole) < ROLE_RANK.admin) {
     throw fail(403, 'Administrator access required.');

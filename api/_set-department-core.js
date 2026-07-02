@@ -35,8 +35,9 @@ export async function setDepartmentCore({ token, targetId, departmentId }) {
 
   // 2) Caller must be a super-admin or owner.
   const { data: caller, error: callerErr } = await admin
-    .from('profiles').select('role, bank_name').eq('id', callerId).single();
+    .from('profiles').select('role, bank_name, disabled').eq('id', callerId).single();
   if (callerErr) throw fail(403, 'Could not verify your permissions.');
+  if (caller?.disabled) throw fail(403, 'Your account has been disabled.');
   // Model B: any coordinator (admin or above) may assign departments, scoped to
   // their own bank and to people strictly below their own rank (i.e. analysts
   // for an admin). EY owner may do anything.

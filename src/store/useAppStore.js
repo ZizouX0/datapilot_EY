@@ -23,6 +23,11 @@ const useAppStore = create(
   // of the user's real answers so toggling it off restores their work.
   autoFilled: false,
   _preFillStash: null,
+  // The auth user id this persisted assessment belongs to. Guards against a
+  // shared browser leaking one user's answers to the next: when a different user
+  // signs in (or a session is swapped without an explicit sign-out), claimForUser
+  // wipes the previous owner's data instead of showing it to the newcomer.
+  _ownerUserId: null,
 
   // ── Computed / Selectors ───────────────────────────────────────────
 
@@ -340,7 +345,20 @@ const useAppStore = create(
       activeSubDim: '1.1',
       autoFilled: false,
       _preFillStash: null,
+      _ownerUserId: null,
     });
+  },
+
+  // Bind the persisted assessment to the currently signed-in user. If it was
+  // last owned by a DIFFERENT user, wipe it first so their answers/identity can
+  // never surface for the new user (the shared-browser leak). First use (owner
+  // null) just claims ownership without wiping, so a user's own work survives a
+  // refresh — that is the whole point of persistence.
+  claimForUser(userId) {
+    if (!userId) return;
+    const owner = get()._ownerUserId;
+    if (owner && owner !== userId) get().resetAll();
+    set({ _ownerUserId: userId });
   },
     }),
     {
@@ -358,6 +376,7 @@ const useAppStore = create(
         targetLevel: state.targetLevel,
         activeDimension: state.activeDimension,
         activeSubDim: state.activeSubDim,
+        _ownerUserId: state._ownerUserId,
       }),
     }
   )

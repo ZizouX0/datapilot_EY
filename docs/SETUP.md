@@ -65,6 +65,7 @@ phase5.sql
 phase6.sql
 phase7.sql
 phase8.sql
+phase9.sql
 ```
 
 What each phase adds is summarised in [DATABASE.md → Migration history](DATABASE.md#migration-history).

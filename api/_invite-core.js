@@ -40,8 +40,11 @@ export async function inviteUserCore({ token, email, redirectTo, title, role, ba
   //    bank so the invitee inherits it (per-inviter tree: super-admin → admin →
   //    analyst all share one bank).
   const { data: profile, error: profErr } = await admin
-    .from('profiles').select('role, bank_name, department_id').eq('id', userData.user.id).single();
+    .from('profiles').select('role, bank_name, department_id, disabled').eq('id', userData.user.id).single();
   if (profErr) throw fail(403, 'Could not verify your permissions.');
+  // A disabled account keeps a valid JWT until it expires; re-check here so an
+  // off-boarded admin can't keep acting through this endpoint in that window.
+  if (profile?.disabled) throw fail(403, 'Your account has been disabled.');
   const callerRole = profile?.role;
   if (rank(callerRole) < ROLE_RANK.admin) {
     throw fail(403, 'Administrator access required.');

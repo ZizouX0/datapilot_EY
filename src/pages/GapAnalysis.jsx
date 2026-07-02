@@ -48,6 +48,7 @@ const COPY = {
     pHigh: 'High',
     pModerate: 'Moderate',
     pLow: 'Low',
+    pNotAssessed: 'Not assessed',
     // Card chrome
     items: (n) => `item${n > 1 ? 's' : ''}`,
     effortSuffix: 'effort',
@@ -98,6 +99,7 @@ const COPY = {
     pHigh: 'Élevée',
     pModerate: 'Modérée',
     pLow: 'Faible',
+    pNotAssessed: 'Non évaluée',
     // Card chrome
     items: (n) => `élément${n > 1 ? 's' : ''}`,
     effortSuffix: 'd’effort',
@@ -112,10 +114,16 @@ const COPY = {
   },
 };
 
+// Priority thresholds MUST match roadmap.js priorityFor (2.0/2.6/3.4) so the
+// same sub-dimension can't be labelled one priority in this table and another
+// on its roadmap card in the same report. A not-yet-assessed sub-dimension is
+// shown as "Not assessed" rather than "Critical" — it has no gap to remediate
+// and is correctly excluded from the roadmap.
 function getPriorityChip(score, c) {
-  if (score === null || score < 1.5) return { label: c.pCritical, bg: '#FDECEA', color: '#B71C1C' };
-  if (score < 2.5) return { label: c.pHigh, bg: '#FFF3E0', color: '#E65100' };
-  if (score < 3.5) return { label: c.pModerate, bg: '#FFFDE7', color: '#827717' };
+  if (score === null) return { label: c.pNotAssessed, bg: '#F3F4F6', color: '#6B7280' };
+  if (score < 2.0) return { label: c.pCritical, bg: '#FDECEA', color: '#B71C1C' };
+  if (score < 2.6) return { label: c.pHigh, bg: '#FFF3E0', color: '#E65100' };
+  if (score < 3.4) return { label: c.pModerate, bg: '#FFFDE7', color: '#827717' };
   return { label: c.pLow, bg: '#E8F5E9', color: '#1B5E20' };
 }
 

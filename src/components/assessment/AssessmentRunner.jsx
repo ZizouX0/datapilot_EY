@@ -24,6 +24,7 @@ const COPY = {
     groupComplete: 'Your part is complete.',
     groupCompleteSub: 'Your answers are saved. Your coordinator finalizes the assessment.',
     viewResults: 'View Results →',
+    finishToView: 'Answer every indicator to view results',
     proxy: 'Proxy',
     d5Title: 'D5 uses proxy-based indicators only.',
     d5Body: 'Scores reflect observable organizational signals, not direct self-assessment. Results are indicative and weighted at 15% of the global score.',
@@ -56,6 +57,7 @@ const COPY = {
     groupComplete: 'Votre partie est terminée.',
     groupCompleteSub: 'Vos réponses sont enregistrées. Votre coordinateur finalise l’évaluation.',
     viewResults: 'Voir les résultats →',
+    finishToView: 'Répondez à chaque indicateur pour voir les résultats',
     proxy: 'Proxy',
     d5Title: 'D5 utilise uniquement des indicateurs indirects (proxy).',
     d5Body: 'Les scores reflètent des signaux organisationnels observables, pas une auto-évaluation directe. Les résultats sont indicatifs et pondérés à 15 % du score global.',
@@ -469,7 +471,14 @@ export default function AssessmentRunner({
         <span className="text-sm text-gray-500">{c.answeredOf(answeredCount(), totalIndicators)}</span>
         {isLast() ? (
           onViewResults ? (
-            <button onClick={onViewResults} className="px-5 py-2 bg-ey-yellow text-ey-charcoal font-semibold rounded-lg text-sm hover:bg-yellow-400">{c.viewResults}</button>
+            // Only offer "View Results" once the assessment is actually complete;
+            // otherwise the target route's RequireComplete guard bounces straight
+            // back here and the button looks dead. Show what's needed instead.
+            complete ? (
+              <button onClick={onViewResults} className="px-5 py-2 bg-ey-yellow text-ey-charcoal font-semibold rounded-lg text-sm hover:bg-yellow-400">{c.viewResults}</button>
+            ) : (
+              <span className="text-xs text-gray-400">{c.finishToView}</span>
+            )
           ) : (
             <span className="text-xs text-gray-400">✓ {c.savedNote}</span>
           )

@@ -5,7 +5,15 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EY DataPilot — Data Maturity Steering Tool</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Load webfonts non-render-blocking: the app paints immediately with a
+         system-font fallback and swaps in DM Sans/Mono when (or if) they arrive.
+         Previously a plain stylesheet link left the whole page blank for as long
+         as fonts.googleapis.com took to respond — up to ~13s on filtered/slow
+         bank networks. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap"></noscript>
   </head>
   <body>
     <div id="root"></div>

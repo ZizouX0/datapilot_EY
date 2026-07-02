@@ -22,6 +22,32 @@ function reloadContentForBank() {
   import('./useContentStore').then(m => m.default.getState().loadContent()).catch(() => {});
 }
 
+// Clear the in-memory stores that may hold the previous user's / bank's data.
+// (The persisted solo store is handled separately by useAppStore.claimForUser,
+// which must NOT wipe a user's own work on a plain refresh.)
+function resetInMemoryStores() {
+  import('./useAssessmentStore').then(m => m.default.setState({ assessment: null, assignments: [], answers: {}, error: null })).catch(() => {});
+  import('./useUsersStore').then(m => m.default.setState({ users: [] })).catch(() => {});
+  import('./useDepartmentsStore').then(m => m.default.setState({ departments: [] })).catch(() => {});
+  import('./useSubmissionsStore').then(m => m.default.setState({ submissions: [] })).catch(() => {});
+}
+
+// Called whenever an auth identity resolves (initial load, sign-in, token
+// refresh, expiry). Binds the persisted solo assessment to this user (wiping a
+// different user's leftover data) and, when the signed-in identity actually
+// changes, clears the in-memory stores too — so a session swap on a shared
+// browser without an explicit sign-out can't leak one user's data to the next.
+function syncIdentity(getAuth, setAuth, newUserId) {
+  const prev = getAuth()._lastUserId;
+  if (newUserId !== prev) {
+    if (prev) resetInMemoryStores();
+    setAuth({ _lastUserId: newUserId ?? null });
+  }
+  if (newUserId) {
+    import('./useAppStore').then(m => m.default.getState().claimForUser(newUserId)).catch(() => {});
+  }
+}
+
 const useAuthStore = create((set, get) => ({
   // ── State ──────────────────────────────────────────────────────────
   session: null,
@@ -36,6 +62,7 @@ const useAuthStore = create((set, get) => ({
   loading: true,     // true until the initial session check resolves
   error: null,
   _initialized: false,
+  _lastUserId: null, // last resolved auth user id, to detect identity changes
 
   // ── Selectors ──────────────────────────────────────────────────────
   isAuthenticated: () => Boolean(get().session),
@@ -107,6 +134,7 @@ const useAuthStore = create((set, get) => ({
     // Reflect every auth change (initial load, sign-in, sign-out, token refresh)
     // into the store and keep the role in sync with the current user.
     const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      syncIdentity(get, set, session?.user?.id ?? null);
       set({ session, user: session?.user ?? null });
       await get().fetchRole(session?.user?.id);
       set({ loading: false });
@@ -116,6 +144,7 @@ const useAuthStore = create((set, get) => ({
     // fires, but this avoids any gap if it doesn't on a given platform).
     supabase.auth.getSession().then(async ({ data }) => {
       if (data.session && !get().session) {
+        syncIdentity(get, set, data.session.user.id);
         set({ session: data.session, user: data.session.user });
         await get().fetchRole(data.session.user.id);
       }
@@ -153,6 +182,9 @@ const useAuthStore = create((set, get) => ({
     }
     // onAuthStateChange will populate session/role; do it eagerly too so the
     // caller can navigate immediately without a flash of the login screen.
+    // syncIdentity first, so a different user signing in wipes the prior user's
+    // persisted answers before this session's data loads.
+    syncIdentity(get, set, data.user.id);
     set({ session: data.session, user: data.user });
     await get().fetchRole(data.user.id);
     return { error: null };
@@ -160,16 +192,12 @@ const useAuthStore = create((set, get) => ({
 
   async signOut() {
     if (isSupabaseConfigured) await supabase.auth.signOut();
-    set({ session: null, user: null, role: null, fullName: null, title: null, avatarUrl: null, bankName: null, phone: null, departmentId: null, error: null });
+    set({ session: null, user: null, role: null, fullName: null, title: null, avatarUrl: null, bankName: null, phone: null, departmentId: null, error: null, _lastUserId: null });
     // Clear every store that holds the previous user's data, so the next person
     // on a shared browser never sees it — not the solo answers, and not the
-    // group draft / admin lists (which may carry another bank's PII). Dynamic
-    // imports avoid static cycles.
+    // group draft / admin lists (which may carry another bank's PII).
     import('./useAppStore').then(m => m.default.getState().resetAll()).catch(() => {});
-    import('./useAssessmentStore').then(m => m.default.setState({ assessment: null, assignments: [], answers: {}, error: null })).catch(() => {});
-    import('./useUsersStore').then(m => m.default.setState({ users: [] })).catch(() => {});
-    import('./useDepartmentsStore').then(m => m.default.setState({ departments: [] })).catch(() => {});
-    import('./useSubmissionsStore').then(m => m.default.setState({ submissions: [] })).catch(() => {});
+    resetInMemoryStores();
   },
 }));
 
