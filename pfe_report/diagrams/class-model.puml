@@ -16,7 +16,6 @@ skinparam packageFontSize 14
 skinparam packageFontStyle bold
 skinparam shadowing false
 
-title Domain model of the DataPilot platform
 
 package "Tenancy and roles" {
   class Profile {

@@ -106,7 +106,7 @@ for yc in (6.45, 4.75, 3.05, 1.35):
     ax.plot([BOX_X + BOX_W + 0.04, SC_X - 0.04], [yc, yc],
             color=EY_DARK, lw=1.1, ls=(0, (3, 3)), zorder=1)
 
-ax.set_title("DataPilot role hierarchy: ranks, scopes, and the invite chain",
+ax.set_title("",
              fontsize=15, fontweight="bold", color=EY_DARK, pad=12)
 
 fig.tight_layout()

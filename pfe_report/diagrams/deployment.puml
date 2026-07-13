@@ -15,7 +15,6 @@ skinparam noteBackgroundColor #FFFBD6
 skinparam noteBorderColor #2E2E38
 skinparam noteFontSize 12
 
-title Deployment view of the DataPilot platform
 
 node "User Device" as device {
   node "Web Browser" as browser {

@@ -8,6 +8,8 @@ This chapter presents in detail the four iterations through which the artifacts 
 
 \subsection{Iteration 1: Designing the Maturity Framework}
 
+The first iteration designs the data maturity assessment framework, the reference structure against which every later iteration is measured. Following the regulative cycle, it proceeds through the five activities below, from problem investigation to solution evaluation.
+
 \subsubsection{Problem Investigation}
 
 The diagnostic established that the sector lacks a structured way to describe what data maturity means in a banking context. The first iteration therefore addresses the problem of defining a comprehensive yet applicable structure of dimensions, sub-dimensions, and indicators that covers the breadth of data management while remaining aligned with the regulatory expectations.
@@ -83,6 +85,8 @@ D5 Skills and Culture & 15\% & 2 & 8 & CMMI, Gartner \\
 The framework was evaluated for coverage and applicability. It covers the five dimensions of data management without overlap, maps completely onto the regulatory requirements, and remains applicable in the sense that each indicator can be assessed from evidence available within a bank. The fifth dimension was retained as a proxy only dimension, since no direct self assessment instrument was available, a limitation recorded for the evaluation phase. The eight proxy indicators of D5 are distributed across two sub-dimensions: sub-dimension 5.1 (Data Skills) covers training program existence and budget, the headcount ratio of data professionals as a percentage of total staff, the number of data-related certifications obtained in the previous twelve months, and the number of data-specific hires in the previous twelve months; sub-dimension 5.2 (Culture and Adoption) covers the existence of a data literacy program, the presence and maturity of change management practices, the degree of business engagement with data initiatives, and the presence of communities of practice. These eight indicators can all be verified against objective and auditable evidence, which preserves the auditability property of the framework for this dimension. Having fixed what data maturity means for a Tunisian bank, the next iteration turns this structure into a measurement instrument.
 
 \subsection{Iteration 2: The Scoring Methodology}
+
+The second iteration turns the framework into a measurement instrument by designing an auditable scoring methodology. It follows the same five activities of the regulative cycle.
 
 \subsubsection{Problem Investigation}
 
@@ -189,6 +193,8 @@ The scoring methodology was evaluated on a worked example: a Global Maturity Ind
 
 \subsection{Iteration 3: The DataPilot Tool}
 
+The third iteration operationalizes the framework and its scoring methodology in an interactive tool, DataPilot, usable by a single assessor. It proceeds once more through the five activities of the regulative cycle.
+
 \subsubsection{Problem Investigation}
 
 For the framework and its scoring methodology to be usable by bank management, they must be embedded in an accessible tool that automates the computation and presents the results clearly. The third iteration addresses the problem of operationalizing the framework as an interactive application; at this stage of the project, the tool targets a single assessor operating it locally.
@@ -293,6 +299,8 @@ The tool was evaluated through functional testing on simulated and anonymized ba
 Beyond the rule boundaries, a representative complete session of all forty seven indicators reproduced the illustrative profile detailed in the results of Chapter 5, a Global Maturity Index of 2.19 out of 5, displayed as 44\% and as Level 2, Emerging, and recomputing the weighted sum by hand from the per-dimension scores confirmed that the displayed index matches the methodology of Iteration 2 exactly. The captured demonstration session shown in Figures~\ref{fig:screen-results} through~\ref{fig:screen-compliance} is a second complete session, also within the emerging band, whose displayed index and compliance summary were retraced in the same way, and closing and reopening the browser restored the same session from the local storage, confirming persistence. Because this validation is scenario based rather than automated, it confirms the exercised paths but cannot rule out untested edge cases; the absence of an automated test suite is recorded as a limitation and taken up in the future work. Within that boundary, the evaluation confirmed that the tool reproduces the scoring methodology faithfully and presents the results in an actionable form, which addresses research question RQ3; the consolidated results the instrument produces are presented in Chapter 5. The evaluation also delimited the artifact: one assessor, one browser, one bank, with the assessment record held only in that browser. Turning the validated instrument into a platform that a whole bank can operate under EY administration is the problem the fourth and final iteration addresses.
 
 \subsection{Iteration 4: The Multi-Tenant Platform and Role Model}
+
+The fourth iteration scales the single-user tool into a multi-tenant platform with a role model, so that a whole institution can contribute to one assessment under EY oversight. It follows the five activities of the regulative cycle a final time.
 
 \subsubsection{Problem Investigation}
 

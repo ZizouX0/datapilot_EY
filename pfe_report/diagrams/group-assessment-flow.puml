@@ -14,7 +14,6 @@ skinparam noteFontSize 12
 skinparam swimlaneTitleFontSize 14
 skinparam swimlaneBorderColor #2E2E38
 
-title Group assessment flow: from department mapping to finalization
 
 |#F0EEF8|Coordinator (Admin or Super Admin)|
 start
