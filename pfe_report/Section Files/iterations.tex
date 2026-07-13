@@ -4,53 +4,7 @@
 
 \section{Iterations}
 
-This chapter presents the iterations through which the artifacts of the project were produced. Following the Design Science Research regulative cycle, each iteration is structured into five activities: problem investigation, solution design, design validation, solution implementation, and solution evaluation. Four iterations are presented. The first designs the data maturity assessment framework, the second constructs the scoring methodology, the third develops the DataPilot tool that operationalizes them, and the fourth scales the tool into a multi-tenant platform through which EY administers the instrument across banks.
-
-The four iterations follow a single progression that can be named in four words: Define, Measure, Steer, Scale. Iteration 1 defines what data maturity means for a Tunisian bank by fixing the dimensions, sub-dimensions, and indicators against which every institution is assessed; Iteration 2 defines how that maturity is measured by turning the forty seven indicator scores into a single auditable index; Iteration 3 turns the measurement into a steering instrument by embedding it in an interactive tool; and Iteration 4 scales the instrument from one assessor to the institution and to the sector, turning the single-user tool into a role-based, tenant-isolated platform in which one bank means many contributors and EY oversees many banks. Each iteration consumes the artifact of its predecessor as its input, and the reader may hold this progression as a reference point throughout the narratives that follow. Table~\ref{tab:iterations-overview} summarizes the four iterations, the artifact each delivers, the rules or components that carry it, and the outcome of its evaluation.
-
-\begin{table}[H]
-\centering
-\caption{Overview of the four DSR iterations}
-\label{tab:iterations-overview}
-{\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{|p{1.8cm}|p{3.0cm}|p{5.4cm}|p{4.2cm}|}
-\hline
-\textbf{Iteration} & \textbf{Artifact delivered} & \textbf{Key rules or components} & \textbf{Key outcome} \\
-\hline
-1 Define & Maturity assessment framework & Five dimensions, twelve sub-dimensions, forty seven indicators with five level rubrics; weights 25/20/20/20/15; thirteen BCT indicators flagged & Coverage and regulatory alignment confirmed; D5 retained as proxy only \\
-\hline
-2 Measure & Scoring methodology & Weighted renormalized aggregation to the GMI; evidence cap; skip ceilings of two, two, one, one, one; non-skippable regulatory indicators & Worked example of 2.19 out of 5, 44\%, Level 2 Emerging; evidence cap verified \\
-\hline
-3 Steer & DataPilot tool & Client-side single-page application with six screens and a completion gate & Functional testing on simulated and anonymized data confirmed fidelity to the methodology \\
-\hline
-4 Scale & Multi-tenant platform & Four roles (EY Admin (owner), Super Admin, Admin, Analyst) with invite-only onboarding; bank-scoped tenant isolation by row-level security; departments and group assessment; per-bank questionnaire copies from the EY master template & Functional scenarios on the seeded demo bank confirmed role gates, tenant isolation, and finalize locking \\
-\hline
-\end{tabular}
-}
-\end{table}
-
-\subsection{Overview of DataPilot}
-
-DataPilot is today a multi-tenant platform in which four roles collaborate. The EY Admin (owner) administers the EY master template of the questionnaire and reviews submissions across banks; each bank's Super Admin and Admin manage the bank's users, departments, and group assessments, with the Admin additionally tailoring the bank's copy of the questionnaire; and Analysts run the assessment workflow itself, either individually as a solo assessment or collectively through a group assessment in which each department answers its assigned dimensions. The assessment core remains what Iterations 1 to 3 built: a guided questionnaire that collects the indicator scores with their rubrics and evidence, an automated scoring engine, and Results, Gap Analysis, and Compliance views dedicated to the maturity dashboard, the prioritized gaps, and the regulatory posture. A completion gate guards the Results, Gap Analysis, and Compliance views: any attempt to reach them before every dimension of the questionnaire is complete redirects the user back to the questionnaire. The identity of the respondent now comes from the invited account rather than from a typed profile form. The four iterations below progressively build the conceptual framework, the scoring engine, the single-user tool, and the platform.
-
-A single DataPilot session takes a bank from zero to a complete, BCT-auditable maturity assessment through five sequential steps: (1) Institution Setup, where the bank and the respondent are identified from the analyst's account and the assessment is configured; (2) Indicator Evaluation, where each of the forty seven indicators is scored using the per-level rubric and supported with documentary evidence; (3) Automated Scoring, where the scoring engine applies the weighted aggregation formula and all business rules; (4) Results Dashboard, where the Global Maturity Index (GMI) on a scale of one to five, the corresponding percentage, and the Gartner label are presented with the radar visualization; and (5) Gap Analysis and Compliance, where priority gaps, the improvement roadmap, and the BCT compliance view are displayed. The final output of a session consists of the Global Maturity Index score, the Gartner executive label, a BCT compliance score, a prioritized action roadmap, and an exportable evidence package. This journey describes the solo assessment path and is traced step by step in Figure~\ref{fig:user-journey}.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{images/user-journey.pdf}
-\caption{End to end user journey through DataPilot, from the Welcome screen to the printable export}
-\label{fig:user-journey}
-\end{figure}
-
-The full set of interactions supported by the platform, across the four roles EY Admin (owner), Super Admin, Admin, and Analyst, is captured in the use case diagram of Figure~\ref{fig:usecase}.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.75\textwidth]{images/usecase.pdf}
-\caption{Use case diagram of DataPilot}
-\label{fig:usecase}
-\end{figure}
+This chapter presents in detail the four iterations through which the artifacts of the project were produced. As established in the previous chapter, each iteration follows the Design Science Research regulative cycle and is developed through its five activities, from problem investigation to solution evaluation. The chapter proceeds iteration by iteration, from the maturity framework of Iteration~1 to the multi-tenant platform of Iteration~4, and closes with the detailed use case specifications of the delivered platform.
 
 \subsection{Iteration 1: Designing the Maturity Framework}
 
@@ -94,7 +48,7 @@ Regulatory alignment was validated by locating each of the thirteen BCT indicato
 
 \subsubsection{Solution Implementation}
 
-The framework was implemented as a structured catalogue of the forty seven indicators, each attached to its sub-dimension and dimension, and each accompanied by a plain-language question, a guidance hint, and a five level scoring rubric defining precisely what each score level means for that indicator. The full scoring rubrics for all indicators, organized by dimension and sub-dimension, are presented in Appendix A. The five dimensions, their weights, their number of sub-dimensions and indicators, and their primary sources are summarized in Table~\ref{tab:dimensions}.
+The framework was implemented as a structured catalogue of the forty seven indicators\footnote{The full per-indicator scoring rubrics, giving the five levels of every one of the forty seven indicators organized by dimension and sub-dimension, are listed in Appendix~A.}, each attached to its sub-dimension and dimension, and each accompanied by a plain-language question, a guidance hint, and a five level scoring rubric defining precisely what each score level means for that indicator. The full scoring rubrics for all indicators, organized by dimension and sub-dimension, are presented in Appendix A. The five dimensions, their weights, their number of sub-dimensions and indicators, and their primary sources are summarized in Table~\ref{tab:dimensions}.
 
 The hierarchical structure of the complete framework is visualized in Figure~\ref{fig:framework-tree}.
 
@@ -132,11 +86,20 @@ The framework was evaluated for coverage and applicability. It covers the five d
 
 \subsubsection{Problem Investigation}
 
-A structure of indicators is not sufficient on its own: the framework must produce a single, comparable, and auditable maturity score. The second iteration addresses the problem of aggregating forty seven indicator scores into a defensible global score, while preventing score inflation and handling indicators that do not apply to a given institution.
+A structure of indicators, however complete, is not sufficient on its own. To be useful to bank management and defensible before a supervisor, the framework must condense the forty seven indicator scores into a single figure that is comparable across institutions and over time, and that is auditable, in the sense that every number can be retraced to the evidence behind it. The second iteration therefore addresses the problem of aggregating the indicator scores into a defensible Global Maturity Index. Three difficulties make this non-trivial. First, the aggregation must combine indicators, sub-dimensions, and dimensions of unequal importance into one score without losing the meaning of the parts. Second, the score must resist over-optimistic self-assessment, since the diagnostic survey showed that institutions tend to rate themselves more advanced than their evidence supports, so an aggregation that trusts unsupported claims would produce an index that an inspection would quickly dismantle. Third, the method must handle indicators that do not apply to a given institution without letting a respondent either evade the regulatory core or hollow out the index by skipping inconvenient items. A satisfactory solution must therefore be weighted, evidence-bound, robust to skipping, and traceable from the individual answer up to the global score.
 
 \subsubsection{Solution Design}
 
 A weighted aggregation model was designed. Each indicator is scored from one to five. A sub-dimension score is the average of the effective scores of its indicators, a dimension score is the average of its sub-dimension scores, and the global score, which is termed the Global Maturity Index (GMI), is the weighted sum of the dimension scores. To keep the index defensible when a dimension is left unanswered, the dimension weights are renormalized over the total weight of the answered dimensions only, so that the retained weights always sum to one hundred percent. The design also introduced four business rules. The first is the evidence requirement: every score must be supported by a verifiable artifact such as an approved document, a system log, an active dashboard, or a measured figure. The second is the anti-gaming cap, which operationalizes a key distinction between strategy and formalization: possessing a data strategy is not sufficient, it must be documented, approved, dated, and accessible; any indicator score above two out of five that is not supported by such evidence is capped at two. This rule directly addresses the perception versus reality gap observed in the survey, where institutions tend to rate themselves more advanced than their evidence supports. The third business rule is the skip logic mechanism: no more than twenty percent of the indicators of a dimension may be skipped, this limit being computed as the count of indicators multiplied by twenty percent and rounded down, which yields a ceiling of two skips for Governance, two for Data Quality, and one for each of Architecture and Access, Analytics and Tools, and Skills and Culture; skipped indicators are excluded from the denominator rather than scored as zero. The fourth rule is the non-skippable status of regulatory indicators: the thirteen indicators aligned with the BCT Circulaire N\textdegree{}2025-08 and BCBS 239 cannot be skipped under any circumstances.
+
+At a conceptual level, this design turns each indicator answer into the global score through a chain of averages and one weighted, renormalized sum. The chain, from an individual indicator score up to the global maturity level, is illustrated in Figure~\ref{fig:scoring-flow}: the effective score of each indicator feeds the average of its sub-dimension, the sub-dimension scores feed the average of their dimension, and the dimension scores feed the weighted Global Maturity Index, with the evidence cap and the skip rules acting on the individual answers and the renormalization acting on the final sum.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/scoring-flow.pdf}
+\caption{Score aggregation from indicators to the global maturity level}
+\label{fig:scoring-flow}
+\end{figure}
 
 \subsubsection{Design Validation}
 
@@ -151,15 +114,6 @@ A rigorous scoring methodology is necessary because qualitative assessments with
 \begin{equation}
 \text{GMI} = 0.25\,D_1 + 0.20\,D_2 + 0.20\,D_3 + 0.20\,D_4 + 0.15\,D_5
 \end{equation}
-
-The full aggregation chain from individual indicator scores to the global maturity level is illustrated in Figure~\ref{fig:scoring-flow}.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{images/scoring-flow.pdf}
-\caption{Score aggregation from indicators to the global maturity level}
-\label{fig:scoring-flow}
-\end{figure}
 
 The path that a raw indicator response follows through the scoring engine can be read as a data flow with four transformations. A raw response, consisting of a score from one to five together with an optional evidence text and a skipped flag, first passes through the effective score computation, which applies the evidence cap and excludes skipped or unanswered indicators. The surviving effective scores are then averaged within each sub-dimension, the sub-dimension scores are averaged within each dimension, and the dimension scores are combined by the renormalized weighted sum that yields the Global Maturity Index, from which the percentage and the maturity level are finally derived. This data flow is shown in Figure~\ref{fig:data-flow}, which makes explicit where each business rule intervenes: the evidence cap and the skip and non-skippable rules act at the level of the individual response, while renormalization acts at the final aggregation step.
 
@@ -238,16 +192,16 @@ For the framework and its scoring methodology to be usable by bank management, t
 DataPilot was designed around six screens, Welcome, Profile, Questionnaire, Results, Gap Analysis, and Compliance, and structured as a layered front end. The screens are implemented as page components in the \texttt{src/pages} directory, supported by shared layout components such as the navigation bar and the progress bar, and by reusable interface elements such as the score and maturity badges, grouped in \texttt{src/components}; the charts are isolated in \texttt{src/charts}. At this stage of the project the content of the framework was stored as a structured data module rather than an external database, a choice that Iteration 4 later revisits by moving the content into per-bank data seeded from the EY master template: \texttt{src/data/indicators.js} declares the five dimensions with their weights, the twelve sub-dimensions, and the forty seven indicators, each carrying its identifier, its dimension and sub-dimension, a regulatory flag marking the thirteen indicators derived from the BCT requirements, the question, a guidance hint, and a five level scoring rubric, while \texttt{src/data/recommendations.js} stores the improvement actions proposed for each dimension at three maturity bands. The application state is held in a single Zustand store, \texttt{src/store/useAppStore.js}, which records the institution profile, the answers as a map from each indicator identifier to a score, an evidence text, and a skipped flag, and the target maturity level; the same store exposes the scoring selectors of Iteration 2 and persists the assessment to the browser local storage under the key \texttt{datapilot-assessment} so that work in progress survives page reloads. The regulatory compliance mapping is carried by the regulatory flag of each indicator, from which the selector \texttt{getBCTCompliance} derives the number of compliant, non compliant, and pending regulatory indicators, an overall compliance rate, and a resulting exposure level. The questionnaire collects the indicator scores with their rubrics and hints, the scoring engine applies the aggregation logic and business rules automatically, the Results dashboard presents the maturity profile, the Gap Analysis screen prioritizes improvement actions, and the Compliance screen maps the indicators to the regulatory requirements.
 \end{sloppypar}
 
-The component architecture, showing the modules, their responsibilities, and their dependencies, is shown in Figure~\ref{fig:component}.
+The end-to-end journey that a single assessor follows through these six screens, from the Welcome screen to the printable export, is shown in Figure~\ref{fig:user-journey}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{images/component.pdf}
-\caption{Component architecture of DataPilot}
-\label{fig:component}
+\includegraphics[width=\textwidth]{images/user-journey.pdf}
+\caption{End to end user journey through DataPilot, from the Welcome screen to the printable export}
+\label{fig:user-journey}
 \end{figure}
 
-The same design could be read as a set of horizontal layers. At the top sat a presentation layer, formed by the six page components in \texttt{src/pages} together with the shared layout components, the navigation bar and the progress bar in \texttt{src/components/layout}, and the reusable interface elements such as the score, maturity, and regulatory badges in \texttt{src/components/ui}. Below it sat a visualization layer, the radar chart and the dimension bars isolated in \texttt{src/charts}, which the presentation layer consumed but did not implement directly. Beneath these sat a state and logic layer, the single Zustand store in \texttt{src/store/useAppStore.js}, which held the assessment state and exposed every scoring selector and business rule of Iteration 2, and which the presentation and visualization layers read from. At the base sat a data and persistence layer, the static content modules \texttt{src/data/indicators.js} and \texttt{src/data/recommendations.js}, and the browser local storage that persisted the assessment under the key \texttt{datapilot-assessment}. This layering kept the scoring logic in one place, isolated the framework content as declarative data, and let the presentation layer remain a thin projection of the store. Iteration 4 extends this stack with a backend layer, and the resulting layered structure is shown in Figure~\ref{fig:architecture-layers}.
+The design of DataPilot follows a layered architecture, which can be read as a set of horizontal layers. At the top sat a presentation layer, formed by the six page components in \texttt{src/pages} together with the shared layout components, the navigation bar and the progress bar in \texttt{src/components/layout}, and the reusable interface elements such as the score, maturity, and regulatory badges in \texttt{src/components/ui}. Below it sat a visualization layer, the radar chart and the dimension bars isolated in \texttt{src/charts}, which the presentation layer consumed but did not implement directly. Beneath these sat a state and logic layer, the single Zustand store in \texttt{src/store/useAppStore.js}, which held the assessment state and exposed every scoring selector and business rule of Iteration 2, and which the presentation and visualization layers read from. At the base sat a data and persistence layer, the static content modules \texttt{src/data/indicators.js} and \texttt{src/data/recommendations.js}, and the browser local storage that persisted the assessment under the key \texttt{datapilot-assessment}. This layering kept the scoring logic in one place, isolated the framework content as declarative data, and let the presentation layer remain a thin projection of the store. Iteration 4 extends this stack with a backend layer, and the resulting layered structure is shown in Figure~\ref{fig:architecture-layers}.
 
 The data that the store manipulates had, at this stage, a small and stable domain model. An assessment was described by a profile, holding the bank name, the date, the respondent name, and the role, and by a target maturity level. The framework content was described by dimensions, each carrying a name, a weight, a color, and its list of sub-dimensions; by sub-dimensions, each carrying a name; and by indicators, each carrying an identifier, its dimension and sub-dimension, a regulatory flag, a question, a hint, and a five level rubric. The respondent contribution was described by answers, one per indicator, each holding a score, an evidence text, and a skipped flag. Because the framework content was declared as static data rather than stored in a database, the model was realized as JavaScript modules and a Zustand state object rather than as persistent database tables. Iteration 4 extends this domain model with the platform entities, and the resulting model is shown in Figure~\ref{fig:class-model}.
 
@@ -266,15 +220,6 @@ The user flow through the six screens, including the completion gate that preven
 \includegraphics[width=0.7\textwidth]{images/activity.pdf}
 \caption{User flow and completion gate of DataPilot}
 \label{fig:activity}
-\end{figure}
-
-An assessment session can also be described as a state machine, which makes the completion gate explicit as a condition on a transition rather than a screen. A session begins in an unconfigured state and moves to a configured state once the profile has been saved with the required bank name and respondent name. From the configured state it enters an in-progress evaluation state, in which indicators are scored, evidenced, or skipped; the session remains in this state until every dimension is complete, at which point the completion gate opens and the session reaches a complete state from which the results, gap analysis, and compliance views become reachable. Because the assessment is persisted to local storage, the session can be suspended and resumed at any point without losing its state, and a reset returns it to the unconfigured state. This lifecycle is shown in Figure~\ref{fig:assessment-lifecycle}.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{images/assessment-lifecycle.pdf}
-\caption{State machine of a DataPilot assessment session}
-\label{fig:assessment-lifecycle}
 \end{figure}
 
 \subsubsection{Solution Implementation}
@@ -531,6 +476,15 @@ Beyond the local demonstration environment, the platform is deployed on a produc
 The limitations of this evaluation are recorded honestly. It is scenario-based on seeded demonstration data, not a production pilot with real banks, and there is still no automated test suite. The tenant key is a free-text bank name, so a typo at Super Admin invitation would create a separate tenant. Master template edits do not propagate to existing bank copies, which are frozen clones whose re-synchronization is manual. Reviewing an old submission against a since-edited questionnaire can show mismatched labels, which is precisely why submissions store computed snapshots, so that the recorded numbers remain intact. And solo in-progress answers still live in the analyst's browser until submission. These limitations are recorded for the future work.
 
 \subsection{Use Case Specifications}
+
+The full set of interactions supported by the platform, across its four roles and the two Iteration~3 actors, is captured in the use case diagram of Figure~\ref{fig:usecase}, which the specifications below detail one use case at a time.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{images/usecase.pdf}
+\caption{Use case diagram of DataPilot}
+\label{fig:usecase}
+\end{figure}
 
 The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} are specified in detail below. Each use case is grounded in the actual behavior of the tool, including the completion gate, the evidence cap, the skip limit, and the non-skippable status of the regulatory indicators. Use cases UC-01 to UC-11 (Tables~\ref{tab:uc01} to~\ref{tab:uc11}) specify the assessment workflow as it was built in Iteration 3, and they remain valid for the solo assessment path of the platform, with the difference that the profile fields of UC-01 are now supplied by the analyst's invited account and shown read-only on the Welcome screen. Two actors participate in them: the Assessor, typically a data or compliance officer who enters the responses, and Management, who consults the resulting dashboards. The Assessor performs the data entry use cases, while both actors consult the results, the roadmap, and the compliance view. The questionnaire itself is not a forced linear wizard: it can be traversed freely through the dimension tabs and the sub-dimension pills, each showing its completion status, and the completion gate is the only ordering constraint in the tool. Three further use cases cover the lifecycle of the session itself: the guarded reset, the undoing of a skip, and the resumption of a persisted session (UC-09 to UC-11). Use cases UC-12 to UC-16 (Tables~\ref{tab:uc12} to~\ref{tab:uc16}) then cover the platform interactions introduced by Iteration 4, where the actor set grows from the Assessor and Management to the four platform roles: EY Admin (owner), Super Admin, Admin, and Analyst.
 
