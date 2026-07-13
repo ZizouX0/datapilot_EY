@@ -1,0 +1,23 @@
+@startuml sequence-scoring-capture
+skinparam backgroundColor white
+skinparam defaultFontSize 13
+skinparam dpi 150
+skinparam sequenceParticipantBackgroundColor #F0EEF8
+skinparam sequenceParticipantBorderColor #3D108A
+skinparam sequenceActorBorderColor #3D108A
+skinparam sequenceArrowColor #2E2E38
+skinparam sequenceArrowFontSize 12
+skinparam noteBorderColor #27ACAA
+skinparam noteBackgroundColor #E8F8F8
+skinparam noteFontSize 12
+
+actor "Analyst" as U
+participant "Questionnaire\nscreen" as Q
+participant "Scoring engine\n(application store)" as S
+
+U -> Q: select a score (1 to 5)
+Q -> S: record the score for the indicator
+U -> Q: enter the evidence text
+Q -> S: record the evidence for the indicator
+note right of S: the in-progress answers are persisted\nto the browser local storage
+@enduml

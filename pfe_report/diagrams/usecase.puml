@@ -1,21 +1,20 @@
 @startuml usecase
-left to right direction
+top to bottom direction
 skinparam backgroundColor white
 skinparam defaultFontSize 13
-skinparam actorBackgroundColor #3D108A
-skinparam actorFontColor #2E2E38
+skinparam dpi 150
+skinparam actorBackgroundColor #F0EEF8
+skinparam actorBorderColor #3D108A
 skinparam actorFontSize 13
 skinparam usecaseBackgroundColor #F0EEF8
 skinparam usecase {
   BorderColor #3D108A
-  FontSize 13
+  FontSize 12
 }
 skinparam rectangleBorderColor #2E2E38
 skinparam rectangleFontStyle bold
 skinparam rectangleFontSize 14
 skinparam packageStyle rectangle
-skinparam noteBackgroundColor #FFFDE0
-skinparam noteBorderColor #2E2E38
 skinparam arrowColor #2E2E38
 
 actor "EY Admin\n(owner)" as owner
@@ -23,8 +22,13 @@ actor "Super Admin" as sadmin
 actor "Admin" as admin
 actor "Analyst" as analyst
 
-rectangle "DataPilot platform" {
+' Relationship between the actors: the top-down invite chain,
+' each role invites exactly one rank below itself.
+owner --> sadmin : invites
+sadmin --> admin : invites
+admin --> analyst : invites
 
+rectangle "DataPilot platform" {
   rectangle "Administration" {
     usecase "Invite a user\n(one rank down)" as UCinvite
     usecase "Manage roles\nand accounts" as UCroles
@@ -35,79 +39,33 @@ rectangle "DataPilot platform" {
     usecase "Finalize and submit\ngroup assessment" as UCfinal
     usecase "Review\nsubmissions" as UCreview
   }
-
   rectangle "Assessment" {
     usecase "Run solo\nassessment" as UCsolo
     usecase "Submit solo result\nfor review" as UCsubmit
     usecase "Contribute assigned\ndimensions" as UCcontrib
-    usecase "View results, gap analysis\nand compliance" as UCviews
-    usecase "Manage own account\n(password, language, avatar)" as UCacct
+    usecase "View results, gap\nanalysis, compliance" as UCviews
+    usecase "Manage own account" as UCacct
   }
 }
 
-' Hidden layout chain keeps related use cases adjacent.
-UCinvite -[hidden]right-> UCroles
-UCroles -[hidden]right-> UCdept
-UCdept -[hidden]right-> UCmaster
-UCmaster -[hidden]right-> UCbank
-UCbank -[hidden]right-> UCmap
-UCmap -[hidden]right-> UCfinal
-UCfinal -[hidden]right-> UCreview
-UCsolo -[hidden]right-> UCsubmit
-UCsubmit -[hidden]right-> UCcontrib
-UCcontrib -[hidden]right-> UCviews
-UCviews -[hidden]right-> UCacct
-
-owner --> UCinvite
-owner --> UCroles
 owner --> UCmaster
+owner --> UCroles
 owner --> UCreview
 
-sadmin --> UCinvite
 sadmin --> UCroles
-sadmin --> UCdept
 sadmin --> UCmap
 sadmin --> UCfinal
-sadmin --> UCreview
 
-admin --> UCinvite
 admin --> UCdept
 admin --> UCbank
 admin --> UCmap
 admin --> UCfinal
-admin --> UCreview
 
 analyst --> UCsolo
 analyst --> UCcontrib
 analyst --> UCviews
 analyst --> UCacct
 
-UCsubmit .[norank].> UCsolo : <<extend>>
-
-note as N1
-  The invited role is fixed to exactly
-  one rank below the inviter: the EY Admin
-  invites a bank's Super Admin (naming the
-  bank, the tenant key), the Super Admin
-  invites Admins, the Admin invites Analysts.
-end note
-UCinvite .. N1
-
-note as N2
-  The Admin edits the bank copy only;
-  the EY Admin maintains the master
-  template that seeds new banks.
-  A Super Admin reads the content
-  but cannot edit it.
-end note
-UCbank .. N2
-
-note as N3
-  Analysts score only the dimensions
-  assigned to their department; the
-  coordinator finalizes the shared
-  draft into one immutable submission.
-end note
-UCcontrib .. N3
-
+UCinvite -[hidden]down-> UCroles
+UCsubmit .> UCsolo : <<extend>>
 @enduml

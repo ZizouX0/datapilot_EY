@@ -22,3 +22,7 @@ main.synctex.gz
 *.run.xml
 *.synctex.gz
 .baseline/
+
+# PlantUML intermediates
+diagrams/*.svg
+diagrams/*.png

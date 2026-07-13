@@ -167,13 +167,20 @@ The possible states of a single indicator under these rules are modelled in Figu
 \label{fig:state}
 \end{figure}
 
-The sequence of events triggered by a single indicator update through the scoring engine is illustrated in Figure~\ref{fig:sequence}.
+The interaction between the analyst and the scoring engine, for the solo assessment scenario, is best read in two parts. The first part, in Figure~\ref{fig:sequence-capture}, is the capture of a single answer: the analyst enters a score and its evidence on the questionnaire screen, and the engine records them and persists the work in progress. The second part, in Figure~\ref{fig:sequence-aggregate}, is the aggregation performed when the analyst opens the Results screen: the engine computes the effective scores, averages them up the hierarchy, and returns the Global Maturity Index and its derived values for display.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{images/sequence-scoring.pdf}
-\caption{Sequence of an indicator update through the scoring engine}
-\label{fig:sequence}
+\includegraphics[width=0.85\textwidth]{images/sequence-scoring-capture.pdf}
+\caption{Sequence diagram of capturing an indicator answer in a solo assessment}
+\label{fig:sequence-capture}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{images/sequence-scoring-aggregate.pdf}
+\caption{Sequence diagram of aggregating the scores on the Results screen in a solo assessment}
+\label{fig:sequence-aggregate}
 \end{figure}
 
 \subsubsection{Solution Evaluation}
@@ -217,7 +224,7 @@ The user flow through the six screens, including the completion gate that preven
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.7\textwidth]{images/activity.pdf}
+\includegraphics[width=0.98\textwidth]{images/activity.pdf}
 \caption{User flow and completion gate of DataPilot}
 \label{fig:activity}
 \end{figure}
@@ -481,7 +488,7 @@ The full set of interactions supported by the platform, across its four roles an
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.75\textwidth]{images/usecase.pdf}
+\includegraphics[width=\textwidth]{images/usecase.pdf}
 \caption{Use case diagram of DataPilot}
 \label{fig:usecase}
 \end{figure}

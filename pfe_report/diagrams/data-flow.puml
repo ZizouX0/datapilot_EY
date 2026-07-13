@@ -1,84 +1,35 @@
 @startuml data-flow
-' Data flow through the DataPilot scoring engine, from indicator
-' responses to the Global Maturity Index. Grounded in useAppStore.js.
-' No em-dashes or en-dashes anywhere.
-
 skinparam backgroundColor white
 skinparam defaultFontSize 13
-skinparam shadowing false
-skinparam ArrowColor #2E2E38
-skinparam ArrowFontSize 11
-skinparam ArrowFontColor #2E2E38
+skinparam dpi 160
+skinparam activityBackgroundColor #F0EEF8
+skinparam activityBorderColor #3D108A
+skinparam activityDiamondBackgroundColor #E8F8F8
+skinparam activityDiamondBorderColor #27ACAA
+skinparam activityArrowColor #2E2E38
+skinparam activityFontSize 13
 
-skinparam rectangle {
-  BorderColor #3D108A
-  BackgroundColor #F0EEF8
-  FontColor #2E2E38
-  FontSize 13
-  roundCorner 14
-}
-skinparam note {
-  BorderColor #27ACAA
-  BackgroundColor #E8F8F8
-  FontColor #2E2E38
-  FontSize 11
-}
-
-title Data Flow Through the DataPilot Scoring Engine
-
-rectangle "Indicator raw score\n(scale 1 to 5, or skipped)" as RAW #F0EEF8
-rectangle "getEffectiveScore()" as EFF #EDE7F6
-rectangle "getSubDimScore()\naverage per sub-dimension" as SUB #E3F2FD
-rectangle "getDimScore()\naverage of sub-dimension scores" as DIM #F0EEF8
-rectangle "getGlobalScore()  GMI\nweighted 25/20/20/20/15,\nrenormalized over answered weights" as GMI #E8F8F8
-rectangle "getPercentage()\nround(score x 20)" as PCT #E8F5E9
-rectangle "getMaturityLevel()\nLevel 1 to Level 5" as LVL #E8F5E9
-rectangle "Results screen\nGMI, maturity badge,\nradar chart, dimension bars" as RES #F0EEF8
-
-RAW --> EFF
-note right of EFF
-  If skipped or unanswered the
-  score is null and excluded.
-  Evidence cap: if raw score >= 3
-  with no evidence, effective
-  score is set to 2.
-end note
-
-EFF --> SUB
-note right of SUB
-  Mean of the effective scores of
-  its indicators, null values excluded.
-end note
-
-SUB --> DIM
-note right of DIM
-  Mean of its sub-dimension scores,
-  null values excluded.
-end note
-
-DIM --> GMI
-note right of GMI
-  GMI = sum over answered dimensions of
-  DimScore x (Weight / sum of answered weights).
-  Rounded to two decimals.
-  Worked example: GMI = 2.19 of 5.
-end note
-
-GMI --> PCT
-GMI --> LVL
-note right of LVL
-  Bands: 1.00 to 1.79 Initial,
-  1.80 to 2.59 Emerging,
-  2.60 to 3.39 Defined,
-  3.40 to 4.19 Managed,
-  4.20 to 5.00 Optimized.
-  2.19 falls in Level 2 Emerging.
-end note
-note right of PCT
-  round(2.19 x 20) = 44 percent.
-end note
-
-PCT --> RES
-LVL --> RES
-
+start
+:Read a raw indicator response
+(score 1 to 5, evidence text, skipped flag);
+if (Skipped or unanswered?) then (yes)
+  :Exclude the indicator
+  (effective score is null);
+else (no)
+  if (Score >= 3 and no evidence?) then (yes)
+    :Cap the effective score at 2;
+  else (no)
+    :Keep the entered score;
+  endif
+endif
+:Average the effective scores within each sub-dimension
+(null values excluded);
+:Average the sub-dimension scores within each dimension
+(null values excluded);
+:Combine the dimension scores by the weighted sum,
+renormalized over the answered dimension weights,
+to obtain the Global Maturity Index;
+:Convert the index into a percentage
+and a maturity level;
+stop
 @enduml

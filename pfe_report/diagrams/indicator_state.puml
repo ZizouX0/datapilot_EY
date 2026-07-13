@@ -1,6 +1,7 @@
 @startuml state
 skinparam backgroundColor white
 skinparam defaultFontSize 13
+skinparam dpi 150
 skinparam stateBackgroundColor #F0EEF8
 skinparam stateBorderColor #3D108A
 skinparam stateArrowColor #2E2E38
@@ -11,28 +12,28 @@ skinparam noteFontSize 12
 
 [*] --> Unanswered : indicator loaded
 
-Unanswered --> Answered : setAnswer(score 1 to 5)
-Answered --> Answered : setAnswer(new score)
+Unanswered --> Answered : score entered (1 to 5)
+Answered --> Answered : score changed
 
-Answered --> EvidenceCapped : getEffectiveScore()\n[score >= 3, no evidence]
-EvidenceCapped --> Answered : setEvidence(text)
+Answered --> EvidenceCapped : score >= 3 and no evidence
+EvidenceCapped --> Answered : evidence provided
 
-Unanswered --> Skipped : skipIndicator()\n[not BCT; skips < 20% limit]
-Answered --> Skipped : skipIndicator()\n[not BCT; skips < 20% limit]
-Skipped --> Unanswered : unskipIndicator()
+Unanswered --> Skipped : skipped\n[not regulatory; under 20% cap]
+Answered --> Skipped : skipped\n[not regulatory; under 20% cap]
+Skipped --> Unanswered : skip undone
 
 note right of EvidenceCapped
   Effective score forced
-  to 2 in aggregation.
+  to 2 in the aggregation.
   Provide evidence to
   restore the true score.
 end note
 
 note right of Skipped
-  score set to null,
-  excluded from denominators.
-  BCT indicators cannot
-  be skipped.
+  Score set to null and
+  excluded from the denominators.
+  Regulatory indicators
+  cannot be skipped.
 end note
 
 @enduml
