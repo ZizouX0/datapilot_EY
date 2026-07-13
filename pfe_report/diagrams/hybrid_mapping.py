@@ -129,13 +129,13 @@ ax.add_patch(Circle((NAME_X + 2.9, leg_y), 0.14, facecolor='white',
 ax.text(NAME_X + 3.2, leg_y, 'Supporting contribution', ha='left', va='center',
         fontsize=11, color=CHARCOAL)
 
-ax.set_title('Mapping of the Five Benchmark Frameworks onto the Five Dimensions '
+ax.set_title(''
              'of the Hybrid Framework',
              fontsize=16, fontweight='bold', pad=14, color=CHARCOAL)
 
 plt.tight_layout(pad=0.4)
-plt.savefig('/tmp/pfe_report/images/hybrid-mapping.pdf',
+plt.savefig('../images/hybrid-mapping.pdf',
             bbox_inches='tight', dpi=150, facecolor='white')
-plt.savefig('/tmp/pfe_report/images/hybrid-mapping.png',
+plt.savefig('../images/hybrid-mapping.png',
             bbox_inches='tight', dpi=150, facecolor='white')
 print("F4 saved: hybrid-mapping.pdf/.png")

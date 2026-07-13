@@ -45,8 +45,8 @@ for i, lvl in enumerate(LEVELS):
     ax.add_patch(rect)
 
     ax.text(x_left + step_w/2, y_bottom + step_h - 0.42,
-            f"L{lvl['level']}", ha='center', va='center',
-            fontsize=24, color='white', fontweight='bold', zorder=4)
+            f"Level {lvl['level']}", ha='center', va='center',
+            fontsize=16, color='white', fontweight='bold', zorder=4)
 
     ax.text(x_left + step_w/2, y_bottom + step_h/2,
             lvl['cmmi'], ha='center', va='center',
@@ -70,12 +70,9 @@ ax.add_patch(direction_arrow)
 ax.text(8.0, 0.45, 'Increasing maturity', ha='center', va='center',
         fontsize=11, color='#888888', style='italic')
 
-ax.text(8.0, 7.7, 'The Five Maturity Levels', ha='center', va='center',
-        fontsize=15, color=CHARCOAL, fontweight='bold')
-
 plt.tight_layout(pad=0.2)
-plt.savefig('/tmp/pfe_report/images/maturity-ladder.pdf',
+plt.savefig('../images/maturity-ladder.pdf',
             bbox_inches='tight', dpi=150, facecolor='white')
-plt.savefig('/tmp/pfe_report/images/maturity-ladder.png',
+plt.savefig('../images/maturity-ladder.png',
             bbox_inches='tight', dpi=150, facecolor='white')
 print("F3 saved: maturity-ladder.pdf/.png")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """The six project phases from framing to deployment (horizontal band).
-Saves directly to /tmp/pfe_report/images/phases-overview.pdf
+Saves directly to ../images/phases-overview.pdf
 Phase date ranges are the exact ranges from PDF_FACTS.md section B (Table 8.1).
 Phases 0 to 3 are marked as the pre-coding conceptual work.
 EY palette. No em-dashes or en-dashes anywhere.
@@ -10,7 +10,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
 
-OUT = "/tmp/pfe_report/images/phases-overview.pdf"
+OUT = "../images/phases-overview.pdf"
 
 # EY palette
 PURPLE = "#3D108A"

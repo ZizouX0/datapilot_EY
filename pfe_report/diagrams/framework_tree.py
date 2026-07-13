@@ -153,8 +153,8 @@ ax.text(subdim_x + 4.2, root_y,
                   edgecolor=CHARCOAL, linewidth=1.0))
 
 plt.subplots_adjust(left=0.01, right=0.99, top=0.99, bottom=0.01)
-plt.savefig('/tmp/pfe_report/images/framework-tree.pdf',
+plt.savefig('../images/framework-tree.pdf',
             bbox_inches='tight', dpi=150, facecolor='white')
-plt.savefig('/tmp/pfe_report/images/framework-tree.png',
+plt.savefig('../images/framework-tree.png',
             bbox_inches='tight', dpi=150, facecolor='white')
 print("F1 saved: framework-tree.pdf/.png")

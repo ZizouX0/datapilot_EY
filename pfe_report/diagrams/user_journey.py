@@ -168,8 +168,8 @@ ax.text(29.6 / 2, RIB_Y + RIB_H / 2,
         multialignment='center', linespacing=1.35)
 
 plt.tight_layout(pad=0.2)
-plt.savefig('/tmp/pfe_report/images/user-journey.pdf',
+plt.savefig('../images/user-journey.pdf',
             bbox_inches='tight', dpi=150, facecolor='white')
-plt.savefig('/tmp/pfe_report/images/user-journey.png',
+plt.savefig('../images/user-journey.png',
             bbox_inches='tight', dpi=150, facecolor='white')
 print('saved user-journey.pdf/.png')

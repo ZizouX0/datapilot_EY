@@ -24,7 +24,7 @@ plt.rcParams.update({'font.size': 14})
 
 fig, axes = plt.subplots(2, 2, figsize=(15, 10))
 fig.patch.set_facecolor('white')
-fig.suptitle('Sector Diagnostic Survey Findings (44 Respondents)',
+fig.suptitle('',
              fontsize=19, fontweight='bold', color=CHARCOAL, y=0.99)
 
 axes = axes.flatten()
@@ -78,8 +78,8 @@ fig.text(0.5, 0.01,
          ha='center', fontsize=14, color=MAROON, style='italic')
 
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-plt.savefig('/tmp/pfe_report/images/survey-findings.pdf',
+plt.savefig('../images/survey-findings.pdf',
             bbox_inches='tight', dpi=150, facecolor='white')
-plt.savefig('/tmp/pfe_report/images/survey-findings.png',
+plt.savefig('../images/survey-findings.png',
             bbox_inches='tight', dpi=150, facecolor='white')
 print("F11 saved: survey-findings.pdf/.png")

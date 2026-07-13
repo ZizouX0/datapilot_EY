@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Donut chart of the five dimension weights in the Global Maturity Index.
-Saves directly to /tmp/pfe_report/images/weight-distribution.pdf
+Saves directly to ../images/weight-distribution.pdf
 Facts (APP_SPEC): D1 Governance 25, D2 Data Quality 20,
 D3 Architecture and Access 20, D4 Analytics and Tools 20, D5 Skills and Culture 15.
 App colors: #3D108A, #188CE5, #27ACAA, #2DB757, #750E5C.
@@ -9,7 +9,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-OUT = "/tmp/pfe_report/images/weight-distribution.pdf"
+OUT = "../images/weight-distribution.pdf"
 
 labels = [
     "Governance",

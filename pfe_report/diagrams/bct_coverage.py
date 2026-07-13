@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Bar chart: coverage of the thirteen BCT regulatory indicators per dimension.
-Saves directly to /tmp/pfe_report/images/bct-coverage.pdf
+Saves directly to ../images/bct-coverage.pdf
 Facts (APP_SPEC): D1=7, D2=3, D3=2, D4=1, D5=0 (total 13).
 App colors: #3D108A, #188CE5, #27ACAA, #2DB757, #750E5C.
 """
@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-OUT = "/tmp/pfe_report/images/bct-coverage.pdf"
+OUT = "../images/bct-coverage.pdf"
 
 dims = [
     "Governance",
@@ -48,7 +48,7 @@ ax.spines["right"].set_visible(False)
 ax.grid(axis="y", linestyle="--", alpha=0.35)
 ax.set_axisbelow(True)
 
-ax.set_title("Total: 13 BCT regulatory indicators", fontsize=15,
+ax.set_title("", fontsize=15,
              fontweight="bold", color="#3D108A", pad=12)
 
 fig.tight_layout()

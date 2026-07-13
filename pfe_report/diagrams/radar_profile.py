@@ -74,12 +74,12 @@ ax.text(0.5, -0.16,
                   edgecolor='#CCCCCC', linewidth=1.0, alpha=0.95))
 
 ax.legend(loc='upper right', bbox_to_anchor=(1.4, 1.2), fontsize=14)
-ax.set_title('Sample Maturity Profile: Level 2 Emerging (Representative)',
+ax.set_title('',
              fontsize=16, fontweight='bold', pad=28, color=CHARCOAL)
 
 plt.tight_layout()
-plt.savefig('/tmp/pfe_report/images/radar-profile.pdf',
+plt.savefig('../images/radar-profile.pdf',
             bbox_inches='tight', dpi=150, facecolor='white')
-plt.savefig('/tmp/pfe_report/images/radar-profile.png',
+plt.savefig('../images/radar-profile.png',
             bbox_inches='tight', dpi=150, facecolor='white')
 print("F12 saved: radar-profile.pdf/.png")

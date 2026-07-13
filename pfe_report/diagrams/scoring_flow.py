@@ -46,12 +46,12 @@ def arrow(ax, x1, y1, x2, y2, color=GRAY):
 # sequentially so every pair of adjacent boxes keeps a clear gap for the arrow.
 nodes = [
     ('Indicator\nraw score',      'scale 1 to 5',                CHARCOAL),
-    ('getEffective\nScore()',     'evidence cap:\nscore >= 3 and\nno evidence\ncapped at 2', MAROON),
-    ('getSubDim\nScore()',        'average of\neffective scores\n(nulls excluded)',  BLUE),
-    ('getDim\nScore()',           'average of\nsub-dim scores\n(nulls excluded)',   PURPLE),
-    ('getGlobal\nScore()  GMI',   'weighted 25/20/20/\n20/15, renormalized\nover answered weights', TEAL),
-    ('getPercentage()',           'round(score x 20)\ne.g. 2.19 -> 44%',            GREEN),
-    ('Maturity\nLevel',           'L1 to L5',                    CHARCOAL),
+    ('Effective\nscore',          'evidence cap:\nscore >= 3 and\nno evidence\ncapped at 2', MAROON),
+    ('Sub-dimension\nscore',      'average of\neffective scores\n(nulls excluded)',  BLUE),
+    ('Dimension\nscore',          'average of\nsub-dim scores\n(nulls excluded)',   PURPLE),
+    ('Global\nMaturity Index',    'weighted 25/20/20/\n20/15, renormalized\nover answered weights', TEAL),
+    ('Percentage',                'round(score x 20)\ne.g. 2.19 -> 44%',            GREEN),
+    ('Maturity\nlevel',           'Level 1 to Level 5',          CHARCOAL),
 ]
 
 cy  = 3.3
@@ -76,13 +76,10 @@ for i in range(len(nodes) - 1):
     arrow(ax, x1, cy, x2, cy, color=GRAY)
 
 # Title
-ax.text((centers[0] + centers[-1]) / 2, 5.15,
-        'Score Aggregation Chain (DataPilot)', ha='center', va='center',
-        fontsize=14, color=CHARCOAL, fontweight='bold')
 
 plt.tight_layout(pad=0.2)
-plt.savefig('/tmp/pfe_report/images/scoring-flow.pdf',
+plt.savefig('../images/scoring-flow.pdf',
             bbox_inches='tight', dpi=150, facecolor='white')
-plt.savefig('/tmp/pfe_report/images/scoring-flow.png',
+plt.savefig('../images/scoring-flow.png',
             bbox_inches='tight', dpi=150, facecolor='white')
 print("F2 saved: scoring-flow.pdf/.png")

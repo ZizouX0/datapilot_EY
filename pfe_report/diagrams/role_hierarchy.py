@@ -4,7 +4,7 @@
 Four tiers top-down (EY Admin owner rank 3, Super Admin rank 2, Admin rank 1,
 Analyst rank 0), scope boxes on the right (all banks / one bank / self),
 one-step-down invite arrows between tiers, and short capability notes.
-Output: /tmp/pfe_report/images/role-hierarchy.pdf
+Output: ../images/role-hierarchy.pdf
 EY palette: #3D108A #188CE5 #27ACAA #2DB757 #750E5C #2E2E38, accent #FFE600.
 No em or en dashes anywhere in the figure text.
 """
@@ -110,5 +110,5 @@ ax.set_title("DataPilot role hierarchy: ranks, scopes, and the invite chain",
              fontsize=15, fontweight="bold", color=EY_DARK, pad=12)
 
 fig.tight_layout()
-fig.savefig("/tmp/pfe_report/images/role-hierarchy.pdf", bbox_inches="tight")
-print("wrote /tmp/pfe_report/images/role-hierarchy.pdf")
+fig.savefig("../images/role-hierarchy.pdf", bbox_inches="tight")
+print("wrote ../images/role-hierarchy.pdf")

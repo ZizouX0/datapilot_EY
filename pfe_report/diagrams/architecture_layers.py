@@ -4,7 +4,7 @@ Layered architecture of the DataPilot platform (v2, Iteration 4).
 Grounded in /home/user/datapilot_EY/src and /home/user/datapilot_EY/api:
   Presentation layer -> State layer (eight Zustand stores) -> Data access layer
   -> Backend layer (serverless API + Supabase under row-level security).
-Saves to /tmp/pfe_report/images/architecture-layers.pdf (and .png).
+Saves to ../images/architecture-layers.pdf (and .png).
 No em-dashes or en-dashes anywhere.
 """
 
@@ -196,8 +196,8 @@ ax.text(7.5, 0.28,
         'profiles, and questionnaire copies persist in Postgres.',
         ha='center', va='center', fontsize=9.6, color=CHARCOAL, style='italic')
 
-plt.savefig('/tmp/pfe_report/images/architecture-layers.pdf',
+plt.savefig('../images/architecture-layers.pdf',
             bbox_inches='tight', dpi=150, facecolor='white')
-plt.savefig('/tmp/pfe_report/images/architecture-layers.png',
+plt.savefig('../images/architecture-layers.png',
             bbox_inches='tight', dpi=150, facecolor='white')
 print('architecture-layers saved: architecture-layers.pdf/.png')

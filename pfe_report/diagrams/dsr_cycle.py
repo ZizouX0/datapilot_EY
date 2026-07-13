@@ -56,7 +56,7 @@ for i in range(n):
     x1, y1 = node_positions[i]
     x2, y2 = node_positions[(i + 1) % n]
     ax.annotate('', xy=(x2, y2), xytext=(x1, y1),
-                arrowprops=dict(arrowstyle='->', color=GRAY, lw=1.8,
+                arrowprops=dict(arrowstyle='-|>', color=act_colors[i], lw=2.6,
                                 connectionstyle='arc3,rad=0.25'))
 
 BOX_W, BOX_H = 2.3, 0.85
@@ -94,12 +94,9 @@ for j, ((it_label, it_desc), ix) in enumerate(zip(ITERS, iter_x_positions)):
             fontsize=10, color='white', style='italic',
             multialignment='center', zorder=4)
 
-ax.set_title('DSR Regulative Cycle Applied Across the Four Iterations',
-             fontsize=14, fontweight='bold', pad=8, color=CHARCOAL)
-
 plt.tight_layout(pad=0.3)
-plt.savefig('/tmp/pfe_report/images/dsr-cycle.pdf',
+plt.savefig('../images/dsr-cycle.pdf',
             bbox_inches='tight', dpi=150, facecolor='white')
-plt.savefig('/tmp/pfe_report/images/dsr-cycle.png',
+plt.savefig('../images/dsr-cycle.png',
             bbox_inches='tight', dpi=150, facecolor='white')
 print("F5 saved: dsr-cycle.pdf/.png")

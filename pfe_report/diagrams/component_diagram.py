@@ -150,8 +150,8 @@ ax.set_title('Component Architecture of DataPilot',
              fontsize=14, fontweight='bold', pad=10, color=CHARCOAL)
 
 plt.tight_layout(pad=0.3)
-plt.savefig('/tmp/pfe_report/images/component.pdf',
+plt.savefig('../images/component.pdf',
             bbox_inches='tight', dpi=150, facecolor='white')
-plt.savefig('/tmp/pfe_report/images/component.png',
+plt.savefig('../images/component.png',
             bbox_inches='tight', dpi=150, facecolor='white')
 print("F7 saved: component.pdf/.png")

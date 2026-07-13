@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Stakeholder interest and influence matrix (2x2).
-Saves directly to /tmp/pfe_report/images/stakeholder-matrix.pdf
+Saves directly to ../images/stakeholder-matrix.pdf
 X axis = interest, Y axis = influence.
 HIGH interest and HIGH influence (Manage closely): Chief Data Officer,
 Governing body/Board, EY Partner, Engagement Manager, Project team.
@@ -12,7 +12,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
-OUT = "/tmp/pfe_report/images/stakeholder-matrix.pdf"
+OUT = "../images/stakeholder-matrix.pdf"
 
 # EY palette
 PURPLE = "#3D108A"

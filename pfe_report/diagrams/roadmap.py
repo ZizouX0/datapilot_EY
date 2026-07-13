@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Three-phase improvement roadmap derived from the gap analysis.
-Saves directly to /tmp/pfe_report/images/roadmap.pdf
+Saves directly to ../images/roadmap.pdf
 Phases map to recommendations.js bands:
   Phase 1 Critical  -> low band  (dimension score < 2.0)
   Phase 2 High      -> mid band  (dimension score < 3.0)
@@ -14,7 +14,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrow
 
-OUT = "/tmp/pfe_report/images/roadmap.pdf"
+OUT = "../images/roadmap.pdf"
 
 phases = [
     {
