@@ -35,6 +35,11 @@
 \usepackage{ragged2e} % For text alignment
 \usepackage{longtable}
 \usepackage{pdflscape} % For landscape (paysage) pages, e.g. the phase table
+\usepackage{tocloft}  % To prefix "Table"/"Figure" in the lists of tables and figures
+\renewcommand{\cfttabpresnum}{Table\ }
+\renewcommand{\cftfigpresnum}{Figure\ }
+\setlength{\cfttabnumwidth}{2.9cm}
+\setlength{\cftfignumwidth}{2.9cm}
 % Font and encoding
 \usepackage[T1]{fontenc}       % For accented characters in output
 
