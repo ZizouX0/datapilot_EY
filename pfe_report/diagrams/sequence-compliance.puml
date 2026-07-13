@@ -1,0 +1,55 @@
+@startuml sequence-compliance
+skinparam backgroundColor white
+skinparam defaultFontSize 13
+skinparam sequenceParticipantBackgroundColor #F0EEF8
+skinparam sequenceParticipantBorderColor #3D108A
+skinparam sequenceParticipantFontSize 13
+skinparam sequenceArrowColor #2E2E38
+skinparam sequenceArrowFontSize 12
+skinparam noteBorderColor #27ACAA
+skinparam noteBackgroundColor #E8F8F8
+skinparam noteFontSize 12
+
+participant "Compliance\n(page)" as C
+participant "useAppStore\n(Zustand)" as S
+
+== Compliance screen mount ==
+
+C -> S: getBCTCompliance()
+activate S
+
+S -> S: getBCTIndicators()
+note right of S: filter INDICATORS where bct === true\nreturns the 13 regulatory indicators
+
+loop for each of the 13 BCT indicators
+  S -> S: getEffectiveScore(ind.id)
+  note right of S
+    null if skipped or unanswered.
+    if raw score >= 3 with no evidence,
+    capped at 2.
+  end note
+
+  alt score is null
+    S -> S: pending++
+  else score >= 3
+    S -> S: compliant++
+  else score < 3
+    S -> S: nonCompliant++
+  end
+end
+
+S -> S: rate = round(compliant / 13 x 100)
+
+S -> S: exposure classification
+note right of S
+  rate >= 80 gives Low.
+  rate >= 50 gives Medium.
+  otherwise High.
+end note
+
+S --> C: {compliant, nonCompliant, pending,\ntotal:13, rate, exposure}
+deactivate S
+
+C -> C: render indicator table,\ncompliance rate and\nregulatory exposure badge
+
+@enduml

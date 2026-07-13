@@ -1,0 +1,75 @@
+@startuml sequence-onboarding
+' Sequence of the top-down invitation and onboarding chain (DataPilot v2).
+' EY palette #3D108A #188CE5 #27ACAA #2DB757 #750E5C #2E2E38, accent #FFE600.
+' No em or en dashes anywhere in the rendered text.
+
+skinparam defaultFontSize 14
+skinparam defaultFontName Helvetica
+skinparam shadowing false
+skinparam backgroundColor white
+
+skinparam sequence {
+  ParticipantBackgroundColor #3D108A
+  ParticipantFontColor white
+  ParticipantBorderColor #2E2E38
+  ParticipantFontSize 14
+  ActorBackgroundColor #FFE600
+  ActorBorderColor #2E2E38
+  ActorFontColor #2E2E38
+  ActorFontSize 14
+  ArrowColor #2E2E38
+  ArrowFontColor #2E2E38
+  ArrowFontSize 13
+  LifeLineBorderColor #2E2E38
+  LifeLineBackgroundColor #E8E8EE
+  GroupBorderColor #3D108A
+  GroupFontColor #3D108A
+  GroupHeaderFontColor white
+  GroupBackgroundColor #3D108A
+  DividerBackgroundColor #188CE5
+  DividerFontColor white
+}
+skinparam note {
+  BackgroundColor #FFFBD1
+  BorderColor #2E2E38
+  FontColor #2E2E38
+  FontSize 13
+}
+
+actor "EY Admin (owner)" as EY
+participant "Serverless API" as API #188CE5
+participant "Supabase Auth" as AUTH #27ACAA
+participant "Postgres (profiles)" as DB #2DB757
+actor "Invited Super Admin" as INV
+
+EY -> API : POST /api/invite with session token\n(email, function, bank name)
+activate API
+API -> DB : re-reads the caller's profile\n(role, bank, disabled flag)
+DB --> API : caller = owner, rank 3, enabled
+note right of API
+  Server-side rank check: the invited role is
+  fixed to invitableRole(caller), strictly one
+  step down (owner to superadmin); any other
+  requested role or a disabled caller is refused.
+end note
+API -> AUTH : inviteUserByEmail(email,\nmetadata: function, bank, department)
+AUTH -> DB : trigger handle_new_user\ncreates the profile row
+AUTH --> INV : invitation email with a link\nto /set-password
+API -> DB : patch profile: role superadmin,\nbank name, department, invited_by lineage
+DB --> API : profile complete
+API --> EY : invitation confirmed
+deactivate API
+
+...
+
+INV -> AUTH : follows the email link\n(session established from the link)
+INV -> AUTH : chooses a password, nothing else\n(identity was set by the inviter)
+INV -> DB : signs in and reads own profile\n(role, bank scope under RLS)
+DB --> INV : per role landing redirect\n(admin tiers to /admin, analysts to Welcome)
+
+note over EY, INV
+  The chain repeats one rank down: the Super Admin invites Admins and the
+  Admin invites Analysts; every invitee inherits the inviter's bank, and only
+  the EY Admin (owner) ever names a bank, which creates the tenant.
+end note
+@enduml

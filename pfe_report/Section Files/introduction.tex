@@ -1,0 +1,109 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Introduction                  %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+
+\subsection{Host Company}
+
+\subsubsection{Company Introduction}
+
+Ernst \& Young, known as EY, is one of the four largest professional services firms in the world, alongside Deloitte, PwC, and KPMG, a group commonly referred to as the Big Four. The firm operates as a global network of member firms and organizes its work across four main service lines: Assurance, Tax, Strategy and Transactions, and Consulting. Through this network, EY supports organizations in addressing complex challenges related to strategy, risk, technology, and transformation, and it positions data and technology as central levers of the value it delivers to clients. EY Tunisia is the local member firm of this network and delivers advisory, assurance, and tax services to leading organizations in the country, with a strong and long standing presence in the financial sector, where banks, insurers, and regulators represent a significant share of its client base.
+
+This project was conducted within the Data \& Analytics practice of EY Advisory Tunisia. The practice sits inside the Consulting service line and is dedicated to helping clients treat data as a strategic asset rather than a by-product of their operations. Its engagements span the full data value chain, from the definition of data governance operating models and the design of data quality controls, through the modernization of data architecture and integration, to the deployment of analytics, business intelligence, and artificial intelligence solutions. In the banking context specifically, the practice combines regulatory expertise with data engineering capability, which is precisely the intersection at which the present project is situated. The internship therefore offered direct access to the methodological assets of the EY network, to practitioners experienced with the Tunisian financial sector, and to the regulatory concerns that shape data programs in that sector.
+
+\subsubsection{Goals and Objectives of the Company}
+
+The Data \& Analytics practice of EY Advisory Tunisia supports banks and financial institutions in their digital transformation, regulatory compliance, and data management initiatives. Its objective is to combine the local knowledge of the Tunisian financial sector with the global methodologies of the EY network, in order to help institutions improve the way they govern, control, and exploit their data. A recurring difficulty in these engagements is that clients frequently ask a question the practice cannot yet answer in a standardized way: where do we actually stand on data maturity, and how do we compare with our peers and with what the regulator now expects. Answering that question consistently requires a shared measurement instrument, one that is grounded in the banking context, aligned with the Tunisian regulatory environment, and repeatable across institutions and over time. It was within this context that the present project, an internship of six months, was carried out, with the objective of designing a data maturity assessment framework for the Tunisian banking sector and of developing an interactive tool that operationalizes it, so that the practice can move from qualitative judgment toward an evidence based and auditable diagnosis.
+
+\subsection{Project Context}
+
+The Tunisian banking sector is undergoing a fundamental transformation driven by two convergent forces: the acceleration of digital finance and a tightening regulatory landscape. On the demand side, the spread of mobile banking, instant payments, and data driven services raises customer expectations and makes the reliability of underlying data a competitive concern rather than a purely technical one. On the supply side, banks accumulate data across core banking systems, credit and risk platforms, and channel applications that were rarely designed to interoperate, which leaves the data fragmented and difficult to trust end to end.
+
+On the regulatory front, the Banque Centrale de Tunisie (BCT) issued Circulaire N\textdegree{}2025-08 \cite{bct2025}, published on 16 May 2025, which mandates structured data governance across all licensed banking institutions, addressing the accountability for data, the formalization of data policies, the classification and retention of information, and the availability of documentary evidence for supervision. In parallel, the international standard known as BCBS 239 \cite{bcbs239} imposes rigorous requirements on risk data aggregation and reporting, in particular on the accuracy, completeness, timeliness, and traceability of the data that feeds risk reports. Together, these two frameworks signal an unambiguous institutional expectation: banks must be able to produce reliable, traceable, and auditable data on demand, and they must be able to demonstrate the governance arrangements that make such data trustworthy.
+
+Despite this regulatory pressure, the capacity of Tunisian banks to comply varies considerably. A diagnostic survey conducted as part of this project with 44 banking professionals revealed that only 30\% of institutions have a formally approved data strategy, that 56.8\% of respondents routinely verify data before use, implying widespread distrust of existing data quality, and that 54\% experience slow or siloed access to critical information. These figures are not isolated symptoms; read together, they describe a sector in which the foundational conditions for regulatory compliance, namely a governed strategy, controlled quality, and timely access, are the exception rather than the rule. They point to a structural maturity deficit that is neither measured nor managed in any standardized way across the sector, which is exactly the deficit this project sets out to make visible and steerable.
+
+\subsection{Problem Statement}
+
+While international data maturity frameworks exist, none is simultaneously specific to the banking sector, aligned with the Tunisian regulatory environment, and operationalized through a usable assessment instrument. General purpose models describe what good data management looks like, but they neither encode the specific obligations of the BCT Circulaire N\textdegree{}2025-08 and BCBS 239, nor produce a defensible, evidence backed score that a bank could present to its board or to a supervisor. As a result, Tunisian banks have no standardized means of answering a deceptively simple question: how mature is our data capability, and where must we improve to comply and to compete?
+
+During the framing of the project, this overall problem was decomposed into four operational problems that any credible response would have to resolve. The first is the absence of a structured reference framework with which to objectively evaluate the data maturity of Tunisian banks. The second is the lack of visibility on the levers of digital transformation and on the business gains associated with them, which leaves investment decisions without a factual basis. The third is the difficulty institutions face in positioning themselves against data maturity standards and against regulatory requirements, since no common yardstick exists. The fourth is the absence of an interactive decision-support tool that measures current maturity, identifies the areas for improvement, and simulates the business benefits of a data transformation. These four problems delimit precisely what the project must deliver, and they are addressed by the two-part solution presented below.
+
+This absence manifests in concrete gaps observed during the diagnostic phase, gaps that map directly onto the framework's five dimensions of Governance, Data Quality, Architecture and Access, Analytics and Tools, and Skills and Culture. First, Governance is rarely formalized, with most institutions lacking a board approved data strategy, clearly assigned data ownership, and an active governance committee, which leaves accountability for data diffuse. Second, Data Quality is managed reactively, through manual verification rather than automated controls, so that quality problems are detected late, by users, instead of being prevented and tracked at the source. Third, Architecture and Access remains only partially centralized, producing slow and fragmented access to critical information and a persistence of data silos that undermines any single, reliable version of the truth. Fourth, adoption of Analytics and Tools is limited, with a substantial share of strategic decisions still driven by intuition rather than by data, and with regulatory reporting that remains manual and therefore error prone. Finally, Skills and Culture is difficult to observe directly and is inferred through proxy signals such as recent data hires, training initiatives, and the involvement of business units in data decisions. The core problem this project addresses is the lack of a rigorous, sector specific, and regulation aligned method to measure, interpret, and steer the data maturity of Tunisian banking institutions, a method that turns these scattered symptoms into a structured and comparable diagnosis.
+
+\subsection{Purpose of the Study}
+
+The purpose of this study is to design, build, and validate a means of assessing and improving data maturity in the Tunisian banking sector. The study is both analytical, in that it diagnoses the current state of the sector and analyzes existing frameworks, and constructive, in that it produces a proposed solution composed of two connected parts. The first part is a structured maturity reference framework, a hybrid model adapted to the banking context, which supplies the missing yardstick against which an institution can be objectively evaluated. The second part is an interactive steering and restitution tool that operationalizes that framework for use by bank management: it measures the current maturity position, identifies the gaps that separate the institution from a chosen target level, prioritizes the structuring work packages that would close those gaps, and thereby supports decision-making on the data transformation; in its final iteration this tool is delivered as a multi-tenant platform through which EY administers the instrument and each bank conducts its own assessments. The two parts are designed together, so that every concept defined in the framework is directly measurable and actionable in the tool. The intended value of these artifacts is twofold. For a bank, they convert an ill defined concern about data readiness into a measured position, a set of prioritized gaps, and a defensible compliance status against the regulatory indicators. For EY and, more broadly, for any advisor working with the sector, they provide a repeatable instrument that yields comparable results across institutions and across successive assessments, so that progress can be tracked rather than merely asserted.
+
+\subsection{Research Objectives}
+
+The purpose of the study is pursued through five research objectives, which together trace the path from diagnosis to a validated, usable artifact:
+
+\begin{enumerate}[label=(\arabic*)]
+    \item Diagnose the current state of data maturity and the regulatory compliance gaps within the sector, using a diagnostic survey of banking professionals to establish an empirical baseline across the five dimensions.
+    \item Analyze existing international data maturity frameworks to identify reusable components and limitations, and to justify which elements can be adapted to the banking and regulatory context of Tunisia.
+    \item Design a hybrid maturity framework adapted to the banking context and to the BCT Circulaire N\textdegree{}2025-08 and BCBS 239 requirements, structured across five weighted dimensions, twelve sub-dimensions, and forty seven indicators, of which thirteen are non-skippable regulatory indicators.
+    \item Construct an evidence based scoring methodology that produces an auditable and comparable maturity score on a one to five scale, incorporating an evidence cap, a bounded skip logic, and a weighted, renormalized aggregation into a Global Maturity Index (GMI).
+    \item Develop and validate an interactive tool, DataPilot, that operationalizes the framework for banking institutions and delivers automated scoring, visual dashboards, gap analysis, a regulatory compliance view, and an improvement roadmap, delivered as a multi-tenant platform through which EY administers the instrument and each bank conducts its own solo and group assessments.
+\end{enumerate}
+
+\subsection{Research Questions}
+
+The study is structured around three research questions, each refined into sub-questions that map onto the objectives and onto the later sections of the report:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{RQ1.} What is the current state of data maturity in Tunisian banks, and what are the main gaps relative to international standards and regulatory requirements?
+    \begin{itemize}[leftmargin=*]
+        \item \textbf{RQ1a.} How do the five dimensions of Governance, Data Quality, Architecture and Access, Analytics and Tools, and Skills and Culture perform in the diagnostic baseline, and where are the most critical gaps concentrated?
+        \item \textbf{RQ1b.} How compliant is the sector with the non-skippable regulatory indicators derived from the BCT Circulaire N\textdegree{}2025-08 and BCBS 239, and what regulatory exposure does the resulting compliance rate imply?
+    \end{itemize}
+    \item \textbf{RQ2.} How can a data maturity assessment framework be designed to fit the Tunisian banking sector, drawing on the frameworks benchmark and the survey findings?
+    \begin{itemize}[leftmargin=*]
+        \item \textbf{RQ2a.} Which existing data maturity frameworks (DAMA-DMBOK, DCAM, CMMI-DMM, TDWI, and Gartner) are most relevant to the Tunisian banking context, and what are their respective strengths and limitations?
+        \item \textbf{RQ2b.} What dimensions, maturity levels, and scoring methodology should structure a framework adapted to Tunisian banks, based on the benchmark findings and the survey results?
+    \end{itemize}
+    \item \textbf{RQ3.} To what extent can an interactive data maturity steering tool support strategic decision-making and accelerate digital transformation?
+    \begin{itemize}[leftmargin=*]
+        \item \textbf{RQ3a.} How can the scoring methodology be operationalized so that the resulting maturity score is auditable, resistant to over-optimistic self-assessment, and comparable across institutions?
+        \item \textbf{RQ3b.} How can the tool translate a maturity diagnosis into actionable guidance, through a prioritized gap analysis and a phased improvement roadmap that management can act on?
+    \end{itemize}
+\end{itemize}
+
+\subsection{Approach and Boundaries of the Study}
+
+\subsubsection{Scope}
+
+The study covers the design of a data maturity framework and the development of an interactive assessment tool for the Tunisian banking sector. It spans the full path from sector diagnosis and benchmark analysis through framework design, scoring methodology, and tool implementation, and it is anchored to the BCT Circulaire N\textdegree{}2025-08 and BCBS 239 requirements. Concretely, the scope comprises five deliverables:
+
+\begin{itemize}[leftmargin=*]
+    \item a diagnostic survey of 44 banking professionals, establishing the empirical baseline of the sector across the five dimensions of the framework;
+    \item a benchmark of fifteen international data maturity frameworks, from which five (DAMA-DMBOK, DCAM, CMMI-DMM, TDWI, and Gartner) were retained as sources for the hybrid design;
+    \item a hybrid maturity framework structured across five weighted dimensions, twelve sub-dimensions, and forty seven indicators, of which thirteen are non-skippable regulatory indicators;
+    \item an evidence based scoring methodology combining an evidence cap, a bounded skip logic, and a weighted, renormalized aggregation into a Global Maturity Index on a one to five scale;
+    \item DataPilot, an interactive tool that delivers the guided questionnaire, automated scoring with visual dashboards, a prioritized gap analysis, an improvement roadmap, a regulatory compliance view, and a printable export of the assessment, delivered as a multi-tenant platform with four roles (EY Admin (owner), Super Admin, Admin, Analyst), per-bank questionnaire copies from the EY master template, and department-based group assessments.
+\end{itemize}
+
+\subsubsection{Limitations}
+
+The diagnostic survey is based on 44 respondents, which provides indicative rather than statistically exhaustive coverage of the sector. The fifth dimension, addressing skills and culture, is assessed through proxy indicators only, since no direct self assessment instrument was available during the project. Evaluation of the tool was conducted on simulated and anonymized banking data; the delivered platform is deployed on a production instance, but no field pilot with a real bank had produced a finalized assessment at the time of writing.
+
+\subsubsection{Delimitations}
+
+The project focuses on the banking sector and does not extend to insurance or other financial services. It addresses the assessment and steering of data maturity and does not undertake the implementation of the technical remediation projects that an assessment may recommend.
+
+\subsubsection{Assumptions}
+
+It is assumed that respondents answered the diagnostic survey in good faith, that the regulatory texts in force during the project remain the relevant compliance reference, and that the five international frameworks analyzed represent the established state of practice in data maturity assessment.
+
+\subsection{Contributions}
+
+All three artifacts presented in this report, the benchmark and hybrid framework, the scoring methodology with its rubrics, and the DataPilot tool, were designed, written, and implemented by the author during the six month internship, under the guidance of the academic and institution supervisors. This project delivers three contributions. The first is conceptual: a hybrid data maturity framework tailored to the banking sector, structured across five dimensions and forty seven evidence based indicators distributed over twelve sub-dimensions, of which thirteen are non-skippable regulatory indicators explicitly aligned with the BCT Circulaire N\textdegree{}2025-08 and BCBS 239 requirements. The second is methodological: a rigorous evidence based scoring methodology with defined anti-gaming rules, a skip logic mechanism, and a structured weighting system that produces an auditable global maturity score on a one to five scale. The third is practical: DataPilot, an interactive assessment tool that operationalizes the framework, providing bank management with automated scoring, visual dashboards, gap analysis, a regulatory compliance view, and an improvement roadmap across the six screens of the assessment workflow, and that is delivered as a multi-tenant platform with four roles (EY Admin (owner), Super Admin, Admin, Analyst), invite-only onboarding, bank-scoped tenant isolation, department-based group assessments, and per-bank questionnaire copies of the EY master template.
+
+\subsection{Structure}
+
+The remainder of this report is organized as follows. Section 2 presents the background and the existing related studies, covering the banking and regulatory environment, the concept of data maturity, and an analysis of the five existing international frameworks, ending with the identified research gap that motivates the design. Section 3 describes the methodology adopted, combining Design Science Research with Agile principles, together with the diagnostic survey design and the research materials and tools. Section 4, the core of the report, presents the four iterations through which the artifacts were designed, validated, implemented, and evaluated, namely the framework, the scoring engine, the DataPilot tool, and the multi-tenant platform, and it details the dimensions, the scoring rules, the software architecture, and the use case specifications. Section 5 presents the results and findings, including the diagnostic maturity profile and a worked example of the Global Maturity Index, and answers the research questions. Section 6 discusses the findings, their theoretical and practical implications, and the threats to validity together with their mitigations. Section 7 concludes the report and outlines future work.
+
+\subsection{Conclusion}
+
+This section introduced the host company, the context and problem that motivate the study, its purpose, objectives, and research questions, the boundaries of the work, and its contributions. The next section reviews the background and the existing related studies that ground the design of the framework.
