@@ -26,3 +26,6 @@ main.synctex.gz
 # PlantUML intermediates
 diagrams/*.svg
 diagrams/*.png
+
+# Figure PDFs must be tracked (root .gitignore ignores *.pdf)
+!images/*.pdf
