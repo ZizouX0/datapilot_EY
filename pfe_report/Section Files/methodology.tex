@@ -4,29 +4,17 @@
 
 \section{Methodology}
 
-This section presents the methodological approach adopted for the project. It introduces Design Science Research as the overarching research methodology and Agile principles as the approach used for the development of the tool, and justifies their combination. It then presents the project management dimension of the work: the six-phase project methodology and its deliverables, the stakeholder analysis conducted at the start of the engagement, and the planning and work breakdown, whose overall scheduling is presented as a Gantt chart in Figure~\ref{fig:gantt}. Finally, it describes the research materials and the technologies and tools used.
+This chapter presents the methodological approach adopted for the project and explains how it was applied in practice. It first introduces Design Science Research (DSR) as the overarching research methodology, describing how the method works, why it fits this project, and how it was applied through four iterations. It then presents the Agile development approach used to build the tool and shows how the two are combined. The chapter next describes the project management dimension of the work, the six project phases and their planning, visualized as a Gantt chart in Figure~\ref{fig:gantt}, and the way the phases map onto the iterations. It closes with the stakeholder analysis, the research materials, the research ethics, and the technologies and tools used.
 
-\subsection{Design Science Research Methodology}
+\subsection{Design Science Research}
 
-Design Science Research (DSR) is a methodology widely adopted in information systems research when the objective is to create and evaluate an artifact that solves a practical problem, rather than only to analyze or theorize about it \cite{hevner2004}. Artifacts produced through DSR may take the form of constructs, models, frameworks, methods, or instantiations such as software tools. Unlike traditional research approaches that focus solely on analysis, DSR emphasizes the construction and evaluation of innovative solutions to real organizational challenges, and it treats the artifact itself as the primary vehicle through which knowledge is produced and validated.
-
-The project produces two closely coupled artifacts. The first is a model, the hybrid data maturity assessment framework, comprising five dimensions, twelve sub-dimensions, forty seven indicators, and an associated scoring method. The second is an instantiation, the DataPilot tool, which operationalizes the framework as an interactive single-page web application. The framework is the conceptual contribution, and the tool is the concrete embodiment that makes the framework usable, repeatable, and auditable in a real banking setting. Treating both as designed artifacts allows each to be evaluated on its own terms, the framework for validity and completeness of coverage, and the tool for correctness, usability, and fidelity to the framework.
-
-The project is also framed by the three design science cycles that connect a design project to its environment and to its knowledge base \cite{hevner2004}. The relevance cycle grounds the project in the environment of the Tunisian banking sector, drawing its requirements from the regulatory drivers, principally BCT Circulaire N\textdegree{}2025-08 and the BCBS 239 principles, and from the diagnostic survey of banking professionals. The design cycle is the inner loop in which the framework and the tool are iteratively built and evaluated, and it corresponds to the four project iterations described in Section 4. The rigor cycle connects the project to the existing knowledge base, in particular the five established maturity frameworks analyzed in Section 2, so that the hybrid model retains what is proven in the state of practice while adding what the sector and its regulation specifically require. The relevance cycle ensures the artifacts solve a real problem, the rigor cycle ensures they are grounded in established knowledge, and the design cycle repeatedly reconciles the two.
-
-\subsubsection{Motivation for Adopting DSR}
-
-This project is well suited to DSR because it is both analytical and constructive. Its central objective is to produce two concrete artifacts: a data maturity assessment framework tailored to the Tunisian banking sector, and an interactive tool that operationalizes that framework. The problem being addressed, the absence of a sector specific and regulation aligned means of assessing data maturity, is a real organizational challenge faced by banking institutions. Generic maturity models exist, but none of them encodes the specific obligations that a Tunisian bank must satisfy, such as the formal mapping to BCT Circulaire N\textdegree{}2025-08 requirements or the data traceability expected under BCBS 239 for risk reporting. A methodology centered purely on description or theory building would not close this gap, because the gap is the absence of a usable instrument, not the absence of an explanation.
-
-DSR is therefore justified because the project designs a maturity assessment framework, develops a digital evaluation tool, responds to a concrete organizational problem, and proceeds through iterative cycles of design and evaluation in which each artifact is tested against evidence before the next refinement. The methodology also fits the dual academic and industrial nature of a capstone conducted within a professional services environment, since it demands both a rigorous, defensible design rationale and a working deliverable that a practitioner can use.
+Design Science Research (DSR) is a methodology widely adopted in information systems research when the objective is to create and evaluate an artifact that solves a practical problem, rather than only to analyze or theorize about it \cite{hevner2004}. Artifacts produced through DSR may take the form of constructs, models, frameworks, methods, or instantiations such as software tools. DSR is therefore best suited to projects that must \emph{build} something to answer their research question, projects that are both analytical and constructive, that address a concrete organizational need, and that improve their solution through repeated cycles of design and evaluation rather than through a single act of analysis. A project whose contribution is a working, evaluated artifact, as opposed to a purely descriptive study, is exactly the kind of project for which DSR was conceived.
 
 \subsubsection{The DSR Regulative Cycle}
 
-The work is organized through the DSR regulative cycle, which structures each iteration into five activities. The first, problem investigation, characterizes the problem the iteration addresses, its stakeholders, and the criteria a satisfactory solution must meet. The second, solution design, defines the artifact or component that is expected to address the problem, together with its underlying design decisions. The third, design validation, checks the design against the requirements and against the knowledge base before significant effort is committed to building it. The fourth, solution implementation, builds the artifact, whether a documented framework component or a piece of the tool. The fifth, solution evaluation, assesses the result against evidence and against the criteria set during problem investigation, and its findings feed the problem investigation of the following iteration. The iterations of the project, presented in Section 4, each follow this cycle.
+DSR structures each iteration through the regulative cycle, which organizes the work into five activities. The first, problem investigation, characterizes the problem the iteration addresses, its stakeholders, and the criteria a satisfactory solution must meet. The second, solution design, defines the artifact or component that is expected to address the problem, together with its underlying design decisions. The third, design validation, checks the design against the requirements and against the knowledge base before significant effort is committed to building it. The fourth, solution implementation, builds the artifact, whether a documented framework component or a piece of the tool. The fifth, solution evaluation, assesses the result against evidence and against the criteria set during problem investigation, and its findings feed the problem investigation of the following iteration.
 
-This five activity structure gives the project a repeatable and auditable rhythm. Because evaluation feeds directly back into the next problem investigation, the framework and the tool are not designed once and frozen, but are progressively corrected as field evidence and regulatory requirements are confronted. For example, a validation finding on the framework, such as the risk that a respondent overstates maturity without proof, is carried forward as a problem to be solved in the following iteration, where it becomes the evidence cap rule implemented in the scoring engine.
-
-Figure~\ref{fig:dsr-cycle} illustrates the DSR regulative cycle and its application across the four iterations of the project.
+This five activity structure gives the project a repeatable and auditable rhythm. Because evaluation feeds directly back into the next problem investigation, the framework and the tool are not designed once and frozen, but are progressively corrected as field evidence and regulatory requirements are confronted. For example, a validation finding on the framework, such as the risk that a respondent overstates maturity without proof, is carried forward as a problem to be solved in the following iteration, where it becomes the evidence cap rule implemented in the scoring engine. Figure~\ref{fig:dsr-cycle} illustrates the regulative cycle and its application across the four iterations of the project.
 
 \begin{figure}[H]
 \centering
@@ -35,55 +23,17 @@ Figure~\ref{fig:dsr-cycle} illustrates the DSR regulative cycle and its applicat
 \label{fig:dsr-cycle}
 \end{figure}
 
-\subsection{Agile Development Approach}
+\subsubsection{Motivation for Adopting DSR}
 
-The development of DataPilot requires iterative design, continuous testing, and progressive refinement, which makes an Agile approach appropriate. Scrum, one of the most widely used Agile frameworks, organizes development work through short cycles that allow the product to be improved continuously \cite{schwaber2020}. Its use is justified because the tool must be developed progressively, the scoring model and questionnaire are expected to require adjustment during development, and iterative testing improves both the usability and the accuracy of the results. Within the project, Agile principles structure the development of the tool through repeated cycles of planning, development, testing, and refinement, which complement the DSR cycle at the level of the software artifact.
+This project is well suited to DSR because it is both analytical and constructive. Its central objective is to produce two concrete artifacts, and the problem it addresses, the absence of a sector specific and regulation aligned means of assessing data maturity, is a real organizational challenge faced by banking institutions. Generic maturity models exist, but none of them encodes the specific obligations that a Tunisian bank must satisfy, such as the formal mapping to BCT Circulaire N\textdegree{}2025-08 requirements or the data traceability expected under BCBS 239 for risk reporting. A methodology centered purely on description or theory building would not close this gap, because the gap is the absence of a usable instrument, not the absence of an explanation.
 
-\subsubsection{Combining DSR and Agile}
+The project produces two closely coupled artifacts, which is precisely what DSR is designed to deliver. The first is a model, the hybrid data maturity assessment framework, comprising five dimensions, twelve sub-dimensions, forty seven indicators, and an associated scoring method. The second is an instantiation, the DataPilot tool, which operationalizes the framework as an interactive single-page web application. The framework is the conceptual contribution, and the tool is the concrete embodiment that makes the framework usable, repeatable, and auditable in a real banking setting. Treating both as designed artifacts allows each to be evaluated on its own terms, the framework for validity and completeness of coverage, and the tool for correctness, usability, and fidelity to the framework.
 
-Design Science Research and Agile operate at two different levels and are combined deliberately rather than merged. DSR governs the research level, providing the rationale for the artifacts, the validation against requirements, and the evaluation against evidence, so that each design decision can be justified and traced. Agile governs the construction level, providing the short, feedback driven cadence through which the scoring engine and the six screens are built and refined. The two are compatible because the DSR design cycle is itself iterative, and each turn of that cycle can be realized as one or more Agile increments that deliver a working, testable slice of the tool.
+The choice is further justified by the three design science cycles that connect a design project to its environment and to its knowledge base \cite{hevner2004}. The relevance cycle grounds the project in the environment of the Tunisian banking sector, drawing its requirements from the regulatory drivers, principally BCT Circulaire N\textdegree{}2025-08 and the BCBS 239 principles, and from the diagnostic survey of banking professionals. The design cycle is the inner loop in which the framework and the tool are iteratively built and evaluated. The rigor cycle connects the project to the existing knowledge base, in particular the five established maturity frameworks analyzed in the previous chapter, so that the hybrid model retains what is proven in the state of practice while adding what the sector and its regulation specifically require. The relevance cycle ensures the artifacts solve a real problem, the rigor cycle ensures they are grounded in established knowledge, and the design cycle repeatedly reconciles the two. The methodology also fits the dual academic and industrial nature of a capstone conducted within a professional services environment, since it demands both a rigorous, defensible design rationale and a working deliverable that a practitioner can use.
 
-Concretely, the four project iterations map onto the DSR design cycle, and the development inside each iteration is organized in the Agile manner. The first iteration designs the framework, the second designs and implements the scoring engine, the third designs and implements the DataPilot tool with its six screens, and the fourth extends that tool into the multi-tenant platform with its role model, its backend, and its group assessment workflow. Within an iteration, the five DSR activities set the goals and the acceptance criteria, while the Agile cadence of planning, development, testing, and refinement produces and stabilizes the increment. The DSR solution evaluation activity and the Agile testing and refinement steps reinforce each other, since a defect or usability problem surfaced during development is both a testing outcome and evidence that feeds the next problem investigation. This division of labor keeps the research disciplined and the engineering responsive without forcing either concern to imitate the other.
+\subsubsection{Iterative and Incremental Development}
 
-\subsection{Six-Phase Project Methodology}
-
-Beyond the research and development methodologies, the project itself was conducted as a structured consulting engagement, following a four-step iterative logic: benchmark, hybrid design, evidence-based scoring, and tool development. This logic was translated into a work breakdown of six phases, a framing phase numbered 0 followed by five delivery phases numbered 1 to 5. Phases 0 to 3 constitute the pre-coding intellectual work of the project, in which the problem is framed, the existing situation analyzed, the needs identified, and the hybrid framework designed, while phases 4 and 5 cover the build and the deployment of the DataPilot tool. Figure~\ref{fig:phases-overview} gives an overview of the six phases, and Table~\ref{tab:project-phases} details the focus and the key deliverables of each phase.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{images/phases-overview.pdf}
-\caption{The six project phases from framing to deployment}
-\label{fig:phases-overview}
-\end{figure}
-
-\begin{table}[H]
-\centering
-\caption{The six-phase project methodology and its key deliverables}
-\label{tab:project-phases}
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{|c|p{2.6cm}|p{5.4cm}|p{5.2cm}|}
-\hline
-\textbf{Phase} & \textbf{Name} & \textbf{Focus} & \textbf{Key deliverables} \\
-\hline
-0 & Framing (Cadrage) & Onboarding, scoping, documentary research, methodology definition, project plan, kickoff & Methodology document, project plan, kickoff presentation \\
-\hline
-1 & Analysis of the existing situation & Operational review, conceptual review, limits and risks, stakeholder mapping & Stakeholder map, operational and conceptual diagnostics, risks and limits report \\
-\hline
-2 & Needs identification & Framework study, business and data needs, functional and analytical requirements, target vision & Framework comparison synthesis, requirements specification, needs analysis report, target vision \\
-\hline
-3 & Framework design & Dimensions and maturity levels, scores and indicators, scoring methodology, market benchmark & Hybrid maturity framework, full scoring methodology, benchmark matrix \\
-\hline
-4 & Tool development & Environment setup, questionnaire, dashboards, automatic maturity calculation, functional tests & DataPilot interactive tool, functional documentation \\
-\hline
-5 & Deployment & Final deployment and validation, results and gap analysis, scenario and business-gain simulation, closure & Evaluation results, executive presentation, final report \\
-\hline
-\end{tabular}
-\end{table}
-
-The six phases and the four DSR iterations described above are two views of the same work. The first iteration, the design of the hybrid framework, is carried out through the pre-coding phases: phase 1 supplies the diagnosis of the existing situation, phase 2 the requirements and the target vision, and phase 3 the framework itself with its dimensions and maturity levels. The second iteration, the design of the scoring methodology and its engine, begins in phase 3, where the scores, indicators, and scoring methodology are constructed, and is implemented at the start of phase 4. The third iteration, the DataPilot tool with its six screens, corresponds to the build and deployment phases 4 and 5, in which the framework and the scoring engine are embodied in the interactive application, tested, and validated. The fourth iteration, the extension into the multi-tenant platform, also falls within phases 4 and 5, building on the deployed tool to add the role hierarchy, the Supabase backend, and the group assessment workflow. The phase structure thus provides the project management timeline, while the DSR iterations provide the research logic that runs through it.
-
-That research logic can be compressed into a single view. Table~\ref{tab:dsr-iterations} summarizes the regulative cycle as it was applied in each of the four iterations, phrasing each problem investigation as the design question the iteration set out to answer, and stating for each the solution that was designed and validated, the artifact that was implemented, and the outcome of its evaluation. The table is intended as a reference point for Section 4, where each cell is developed into a full DSR activity subsection.
+DSR was applied to this project through four iterations, each a complete turn of the regulative cycle that designed, validated, implemented, and evaluated one artifact before the next began. The four iterations follow a single progression that can be named in four words, Define, Measure, Steer, and Scale. Iteration~1 \emph{defines} what data maturity means for a Tunisian bank by fixing the dimensions, sub-dimensions, and indicators against which every institution is assessed. Iteration~2 \emph{measures} that maturity by turning the forty seven indicator scores into a single auditable index. Iteration~3 \emph{steers} by embedding the measurement in an interactive tool. Iteration~4 \emph{scales} the instrument from a single assessor into a role based, tenant isolated platform. Each iteration consumes the validated artifact of its predecessor as its input, so the framework of the first becomes the object measured by the second, the scoring engine of the second becomes the core embedded in the third, and the tool of the third becomes the foundation that the fourth scales into a platform. Table~\ref{tab:dsr-iterations} summarizes the four iterations, stating for each the design question, the solution designed and validated, the artifact implemented, and the outcome of its evaluation. This table is the reference point for the next chapter, where each cell is developed into a full DSR activity subsection.
 
 \begin{table}[H]
 \centering
@@ -106,7 +56,7 @@ That research logic can be compressed into a single view. Table~\ref{tab:dsr-ite
 \end{tabular}
 \end{table}
 
-Read row by row, the table shows the cumulative logic of the project: each iteration takes the validated output of its predecessor as its input, so the framework of the first iteration becomes the object measured by the second, and the scoring engine of the second becomes the core embedded in the third, and the tool of the third becomes the foundation that the fourth scales into a platform. Table~\ref{tab:rq-iterations} completes this view by mapping the three research questions of Section 1 onto the diagnostic survey and the four iterations, making explicit which part of the work answers which question.
+No research question is answered by a single iteration alone. Table~\ref{tab:rq-iterations} makes this explicit by mapping the three research questions of the introduction onto the diagnostic survey and the four iterations. The survey is shown as a distinct column because it belongs to the field diagnostic of Phase~1 and is not itself a DSR iteration; it supplies the evidence against which the designed artifacts are calibrated, whereas the iterations produce those artifacts.
 
 \begin{table}[H]
 \centering
@@ -127,33 +77,126 @@ RQ3 & Extent to which an interactive steering tool supports decision-making and 
 \end{tabular}
 \end{table}
 
-The mapping is deliberately honest about where each answer comes from. RQ1 is answered chiefly by the diagnostic survey, with the first iteration supplying the reading grid of dimensions and indicators through which the field evidence is interpreted. RQ2 is answered by the first two iterations, which together produce the framework and the scoring methodology that make it operational, with the survey supplying the field evidence against which the design is calibrated. RQ3 is answered by the second, third, and fourth iterations, since the auditability of the score is a property of the scoring engine, its usability a property of the tool that embeds it, and its deployability across a bank and across engagements a property of the multi-tenant platform. No research question depends on a single iteration alone, which reflects the cumulative construction summarized in Table~\ref{tab:dsr-iterations}.
+The mapping is deliberately honest about where each answer comes from. RQ1 is answered chiefly by the diagnostic survey, with the first iteration supplying the reading grid of dimensions and indicators through which the field evidence is interpreted. RQ2 is answered by the first two iterations, which together produce the framework and the scoring methodology that make it operational, with the survey supplying the field evidence against which the design is calibrated. RQ3 is answered by the second, third, and fourth iterations, since the auditability of the score is a property of the scoring engine, its usability a property of the tool that embeds it, and its deployability across a bank a property of the multi-tenant platform.
 
-Across the six phases, eleven deliverables were planned, labeled L1 to L11:
+\subsection{Agile Development Approach}
 
-\begin{itemize}
-\item L1: stakeholder mapping;
-\item L2: existing-situation analysis report;
-\item L3: requirements specification;
-\item L4: target solution description;
-\item L5: data maturity framework;
-\item L6: methodological documentation;
-\item L7: interactive steering tool;
-\item L8: functional documentation;
-\item L9: evaluation results;
-\item L10: executive presentation;
-\item L11: final report.
-\end{itemize}
+While DSR governs the research level of the project, the construction of the tool required a development approach of its own. The tool could not be specified once and built in a single pass: the scoring model and the questionnaire were expected to change as the framework was validated, and the user interface needed continuous testing and refinement. The development therefore followed an iterative and incremental approach in the spirit of Agile, in which the tool was grown as a series of working increments rather than delivered as one monolithic release.
 
-Deliverables L1 to L6 belong to the pre-coding phases 0 to 3, whereas L7 to L11 are produced during the development and deployment phases 4 and 5.
+Concretely, and stated honestly, the development did not follow a formal Scrum process with fixed-length sprints, ceremonies, and prescribed roles. It followed the lighter, iterative and incremental discipline that Agile promotes: each iteration of the tool was built as a working increment, exercised against the scoring methodology and against simulated assessment data, and refined before the next increment began, with weekly review meetings steering the direction of the work and surfacing defects and usability problems early. This cadence kept the tool continuously runnable, so that every design decision could be tried in a working build rather than argued on paper, and it allowed the questionnaire, the scoring engine, and the dashboards to stabilize progressively as evidence accumulated.
 
-\subsection{Stakeholder Analysis}
+\subsection{Combining DSR and Agile}
 
-Because the framework and the tool are intended to be used inside banking institutions within an advisory engagement, a stakeholder analysis was conducted during phase 1 to identify who is affected by a data maturity assessment, what each actor expects from it, and how each actor should be engaged. Two groups of stakeholders were distinguished: the internal stakeholders of the assessed Tunisian banks, and the stakeholders of the EY mission that delivers the assessment. Table~\ref{tab:stakeholders-bank} presents the internal bank stakeholders and Table~\ref{tab:stakeholders-ey} presents the EY mission stakeholders.
+Design Science Research and the Agile development approach operate at two different levels and are combined deliberately rather than merged. DSR governs the research level, providing the rationale for the artifacts, the validation against requirements, and the evaluation against evidence, so that each design decision can be justified and traced. Agile governs the construction level, providing the short, feedback driven cadence through which the scoring engine and the six screens are built and refined. The two are compatible because the DSR design cycle is itself iterative, and each turn of that cycle can be realized as one or more development increments that deliver a working, testable slice of the tool.
+
+Concretely, the four project iterations map onto the DSR design cycle, and the development inside each iteration is organized incrementally. Within an iteration, the five DSR activities set the goals and the acceptance criteria, while the iterative development cadence of planning, building, testing, and refinement produces and stabilizes the increment. The DSR solution evaluation activity and the development testing and refinement steps reinforce each other, since a defect or usability problem surfaced during development is both a testing outcome and evidence that feeds the next problem investigation. This division of labor keeps the research disciplined and the engineering responsive without forcing either concern to imitate the other.
+
+\subsection{Project Phases and Planning}
+
+Beyond the research and development methodologies, the project itself was conducted as a structured consulting engagement over a 24-week plan at EY Tunisia. The work was organized into six phases, a framing phase numbered~0 followed by five delivery phases numbered~1 to~5. Phases~0 to~3 constitute the pre-coding intellectual work of the project, in which the problem is framed, the existing situation analyzed, the needs identified, and the hybrid framework designed, while phases~4 and~5 cover the build and the deployment of the DataPilot tool. The project started on 2~February 2026 with the framing phase, the kickoff presentation was delivered on 12~February 2026, development of the tool began on 11~May 2026, and the project closed with the deployment phase ending on 31~July 2026. In addition to the six phases, a transversal workstream covered report writing, risk management, and project steering with weekly meetings throughout the engagement. Figure~\ref{fig:phases-overview} gives an overview of the six phases, and Table~\ref{tab:project-phases} details, for each phase, its period, its focus and key tasks, and its key deliverables.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{images/phases-overview.pdf}
+\caption{The six project phases from framing to deployment}
+\label{fig:phases-overview}
+\end{figure}
+
+\begin{landscape}
+\begin{table}[H]
+\centering
+\caption{The six project phases: period, focus, and key deliverables}
+\label{tab:project-phases}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|p{2.6cm}|p{3.0cm}|p{10.2cm}|p{6.4cm}|}
+\hline
+\textbf{Phase} & \textbf{Period} & \textbf{Focus and key tasks} & \textbf{Key deliverables} \\
+\hline
+Phase 0: Framing & 2 to 13 February 2026 & Team integration; project scoping; benchmark and documentary research; methodology definition; project plan; kickoff preparation and presentation & Methodology document, project plan, kickoff presentation (L6) \\
+\hline
+Phase 1: Analysis of the existing situation & 16 February to 6 March 2026 & Stakeholder cartography; operational review; conceptual review; identification of limits and risks & Stakeholder map (L1); existing-situation analysis report (L2) \\
+\hline
+Phase 2: Needs identification & 9 to 27 March 2026 & Study of existing maturity frameworks; business and data needs analysis; functional and analytical requirements; target vision definition & Requirements specification (L3); target solution description (L4) \\
+\hline
+Phase 3: Framework design & 30 March to 8 May 2026 & Dimensions and maturity levels; scores and indicators; scoring methodology construction; benchmark against market best practice & Data maturity framework (L5); methodological documentation (L6) \\
+\hline
+Phase 4: Development & 11 May to 3 July 2026 & Development environment setup; questionnaire implementation; dashboard design; automatic maturity calculation; functional and non-regression tests; scenario and business-gain simulation & Interactive steering tool (L7); functional documentation (L8) \\
+\hline
+Phase 5: Deployment & 6 to 31 July 2026 & Final deployment and validation; results and maturity-gap analysis; final restitution and project closure & Evaluation results (L9); executive presentation (L10); final report (L11) \\
+\hline
+Transversal & 16 February to 31 July 2026 & Report writing; risk management; project steering and weekly meetings & Continuous steering; final report (L11) \\
+\hline
+\end{tabular}
+\end{table}
+\end{landscape}
+
+The overall schedule that results from these phases is visualized as a Gantt chart in Figure~\ref{fig:gantt}. Of the planned tasks, the scenario and business-gain simulation was realized in the delivered tool as target-level setting and gap-to-target visualization, with the quantitative what-if simulation of business gains identified as future work, as stated in the results and the conclusion.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/gantt-planning.png}
+\caption{Project planning (Gantt chart)}
+\label{fig:gantt}
+\end{figure}
+
+Across the six phases, eleven deliverables were planned and labeled L1 to L11: L1, stakeholder mapping; L2, existing-situation analysis report; L3, requirements specification; L4, target solution description; L5, data maturity framework; L6, methodological documentation; L7, interactive steering tool; L8, functional documentation; L9, evaluation results; L10, executive presentation; and L11, final report. Deliverables L1 to L6 belong to the pre-coding phases~0 to~3, whereas L7 to L11 are produced during the development and deployment phases~4 and~5.
+
+The six phases and the four DSR iterations are two complementary views of the same work: the phases give the project management timeline of \emph{when} each block of work was done, while the iterations give the research and engineering logic of \emph{what} was designed and evaluated. Table~\ref{tab:phase-iteration-map} makes the correspondence explicit, mapping each phase to the iteration or iterations it carries and to the deliverables it produces. The pre-coding phases carry Iteration~1 and begin Iteration~2, while the build and deployment phases carry Iterations~2 to~4.
 
 \begin{table}[H]
 \centering
-\caption{Internal stakeholders of the Tunisian banks}
+\caption{Mapping of the project phases to the DSR iterations and deliverables}
+\label{tab:phase-iteration-map}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|p{4.2cm}|p{4.6cm}|p{5.4cm}|}
+\hline
+\textbf{Phase} & \textbf{DSR iteration(s)} & \textbf{Deliverables} \\
+\hline
+Phase 0: Framing & Project setup (pre-iteration) & L6 \\
+\hline
+Phase 1: Existing situation & Iteration 1 (Define) & L1, L2 \\
+\hline
+Phase 2: Needs identification & Iteration 1 (Define) & L3, L4 \\
+\hline
+Phase 3: Framework design & Iteration 1 (Define); begins Iteration 2 (Measure) & L5, L6 \\
+\hline
+Phase 4: Development & Iterations 2 (Measure), 3 (Steer), 4 (Scale) & L7, L8 \\
+\hline
+Phase 5: Deployment & Iterations 3 (Steer), 4 (Scale) & L9, L10, L11 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Stakeholder Analysis}
+
+Because the framework and the tool are intended to be used inside banking institutions within an advisory engagement, a stakeholder analysis was conducted during Phase~1 to identify who is affected by a data maturity assessment, what each actor expects from it, and how each actor should be engaged. It is useful to separate two groups whose involvement in this project is of a different nature. The first group is made of the stakeholders who were \emph{actually involved} in producing the work, the EY mission team within which the project was carried out, listed in Table~\ref{tab:stakeholders-ey}: the EY Partner, the Engagement Manager, the project team of consultants that includes the author of this report, and the sector experts consulted for banking and regulatory relevance. The academic and institution supervisors steer the work alongside this team. The second group, in Table~\ref{tab:stakeholders-bank}, is made of the internal stakeholders of a client bank, the roles for whom the instrument is designed and who would be engaged when the assessment is run inside an institution; in the present project, conducted at EY and evaluated on simulated data, these are prospective users rather than participants.
+
+\begin{table}[H]
+\centering
+\caption{Stakeholders of the EY mission (the project's own stakeholders)}
+\label{tab:stakeholders-ey}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|p{3.0cm}|p{4.6cm}|p{6.9cm}|}
+\hline
+\textbf{Stakeholder} & \textbf{Role} & \textbf{Interest} \\
+\hline
+EY Partner & Global responsibility for the mission & Commercial performance and reputation \\
+\hline
+Engagement Manager & Operational steering of the mission & Respect of deadlines, quality, deliverables \\
+\hline
+Project team (consultants) & Interviews, scoring, analysis, and development of the artifacts & Sound methodological execution and a working deliverable \\
+\hline
+Sector experts & Banking and regulatory expertise input & Guarantee regulatory relevance \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Internal stakeholders of a client bank (the instrument's target users)}
 \label{tab:stakeholders-bank}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -182,28 +225,7 @@ Governing body / Board & Strategic sponsor and budget decision-maker & Obtain a 
 \end{tabular}
 \end{table}
 
-\begin{table}[H]
-\centering
-\caption{Stakeholders of the EY mission}
-\label{tab:stakeholders-ey}
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{|p{3.0cm}|p{4.6cm}|p{6.9cm}|}
-\hline
-\textbf{Stakeholder} & \textbf{Role} & \textbf{Interest} \\
-\hline
-EY Partner & Global responsibility for the mission & Commercial performance and reputation \\
-\hline
-Engagement Manager & Operational steering of the mission & Respect of deadlines, quality, deliverables \\
-\hline
-Project team (consultants) & Interviews, scoring, and analysis & Sound methodological execution \\
-\hline
-Sector experts & Banking expertise input & Guarantee regulatory relevance \\
-\hline
-\end{tabular}
-\end{table}
-
-The stakeholders were then positioned on an interest and influence matrix to plan their engagement. The actors combining high interest and high influence, namely the Chief Data Officer, the governing body or board, the EY Partner, the Engagement Manager, and the project team, are those who must be managed most closely, since they both drive the assessment and act on its results. The remaining actors, the IT Manager, Internal Audit, the sector experts, the Risk Manager, the Compliance Officer, the Data Manager, the Data Owners, and the Data Architect, were positioned according to their respective interest and influence, which determines whether they are to be kept satisfied, kept informed, or simply monitored during the engagement. Figure~\ref{fig:stakeholder-matrix} presents the matrix. The resulting stakeholder cartography constitutes deliverable L1 and was presented in the weekly meeting of 24 February 2026.
+To plan engagement, the stakeholders of both groups were positioned on an interest and influence matrix, shown in Figure~\ref{fig:stakeholder-matrix}. The matrix is a classic stakeholder management tool: it places each actor on two axes, the interest the actor has in the outcome and the influence the actor can exert on it, and the resulting quadrant prescribes an engagement strategy, manage closely, keep satisfied, keep informed, or simply monitor. Its role in this project is to decide where attention and communication effort should be concentrated. The actors combining high interest and high influence, namely the Chief Data Officer, the governing body or board, the EY Partner, the Engagement Manager, and the project team, fall in the \emph{manage closely} quadrant, since they both drive the assessment and act on its results. The remaining actors were positioned according to their respective interest and influence and are to be kept satisfied, kept informed, or monitored. The author of this report sits inside the project team, in the high interest and high influence quadrant: as the consultant who designs the framework, builds the tool, and reports the findings, the author is both a producer of the assessment and directly accountable for its methodological soundness, which places the author among the actors to be managed most closely. The resulting stakeholder cartography constitutes deliverable~L1 and was presented in the weekly meeting of 24~February 2026.
 
 \begin{figure}[H]
 \centering
@@ -212,61 +234,19 @@ The stakeholders were then positioned on an interest and influence matrix to pla
 \label{fig:stakeholder-matrix}
 \end{figure}
 
-\subsection{Planning and Work Breakdown}
-
-The project was conducted at EY Tunisia over a 24-week plan. It started on 2 February 2026 with the framing phase, and the kickoff presentation was delivered on 12 February 2026. The pre-coding phases 0 to 3 run from 2 February to early May 2026 and carry the intellectual work described above, from framing through the design of the hybrid framework and its scoring methodology. Development of the DataPilot tool begins on 11 May 2026, and the project closes with the deployment phase ending on 31 July 2026. In addition to the six phases, a transversal workstream covers report writing, risk management, and project steering with weekly meetings throughout the engagement. Table~\ref{tab:phase-timeline} presents the phase-level timeline with the key tasks of each phase, and the resulting schedule is visualized as a Gantt chart in Figure~\ref{fig:gantt}. Of the planned tasks, the scenario and business-gain simulation was realized in the delivered tool as target-level setting and gap-to-target visualization, with the quantitative what-if simulation of business gains identified as future work, as stated in Sections 5 and 7.
-
-\begin{table}[H]
-\centering
-\caption{Phase-level timeline and work breakdown of the 24-week plan}
-\label{tab:phase-timeline}
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{|p{3.2cm}|p{3.2cm}|p{8.4cm}|}
-\hline
-\textbf{Phase} & \textbf{Period} & \textbf{Key tasks} \\
-\hline
-Phase 0: Framing & 2 February to 13 February 2026 & Team integration; project scoping; benchmark and documentary research; methodology definition; project plan; kickoff preparation and presentation \\
-\hline
-Phase 1: Existing analysis & 16 February to 6 March 2026 & Stakeholder cartography; operational review; conceptual review; identification of limits and risks \\
-\hline
-Phase 2: Needs identification & 9 March to 27 March 2026 & Study of existing maturity frameworks; business and data needs analysis; functional and analytical requirements; target vision definition \\
-\hline
-Phase 3: Framework design & 30 March to 8 May 2026 & Dimensions and maturity levels; scores and indicators; scoring methodology construction; benchmark against market best practice \\
-\hline
-Phase 4: Development & 11 May to 3 July 2026 & Development environment setup; questionnaire implementation; dashboard design; automatic maturity calculation; functional and non-regression tests; scenario and business-gain simulation \\
-\hline
-Phase 5: Deployment & 6 July to 31 July 2026 & Final deployment and validation; results and maturity-gap analysis; final restitution and project closure \\
-\hline
-Transversal & 16 February to 31 July 2026 & Report writing; risk management; project steering and weekly meetings \\
-\hline
-\end{tabular}
-\end{table}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{images/gantt-planning.png}
-\caption{Project planning (Gantt chart)}
-\label{fig:gantt}
-\end{figure}
-
 \subsection{Research Materials}
 
-The design of the framework is grounded in two categories of research materials. The first is a diagnostic survey of 44 banking professionals, which provides the field evidence on the current state of data governance, quality, architecture, analytics, and culture in the sector, and which informs both the diagnosis and the calibration of the framework. The second is a benchmark that screened fifteen international data maturity frameworks and retained five, DAMA-DMBOK, DCAM, CMMI-DMM, TDWI, and Gartner, whose comparative analysis, presented in Section 2, determines the role retained from each in the hybrid model. Together, these materials ensure that the framework is grounded both in the field reality of the sector and in the established state of practice.
+The design of the framework is grounded in two categories of research materials, both gathered during the pre-coding phases. The first is the diagnostic survey of 44 banking professionals, conducted as part of the Phase~1 analysis of the existing situation, which provides the field evidence on the current state of data governance, quality, architecture, analytics, and culture in the sector, and which informs both the diagnosis and the calibration of the framework. The second is a benchmark that screened fifteen international data maturity frameworks and retained five, DAMA-DMBOK, DCAM, CMMI-DMM, TDWI, and Gartner, whose comparative analysis, presented in the previous chapter, determines the role retained from each in the hybrid model.
 
-\subsubsection{Diagnostic Survey Design}
+The diagnostic survey is the principal source of field evidence for the relevance cycle and is best understood as the Phase~1 diagnostic that precedes the design iterations. It was administered to 44 professionals working in the Tunisian banking sector, in roles connected to data such as data management, information technology, risk, compliance, and analytics functions, so that the responses reflect the perspective of practitioners who deal with the sector data challenges directly. The survey serves two purposes at once. It establishes the diagnosis of the current state of the sector across the areas that the framework covers, and it informs the calibration of the framework by revealing which questions discriminate between organizations and where practices are weakest. The instrument is organized around the same five areas that structure the framework, governance, data quality, architecture and access, analytics and tools, and skills and culture, so that a weakness observed in a given area maps cleanly onto the corresponding dimension, sub-dimension, and indicators. The questions were phrased so that answers describe observable practices rather than opinions, which supports the later principle, embodied in the tool, that a claimed level of maturity must be backed by evidence.
 
-The diagnostic survey is the principal source of field evidence for the relevance cycle. It was administered to 44 professionals working in the Tunisian banking sector, in roles connected to data, such as data management, information technology, risk, compliance, and analytics functions, so that the responses reflect the perspective of practitioners who deal with the sector data challenges directly. The survey serves two purposes at once. It establishes the diagnosis of the current state of the sector across the areas that the framework covers, and it informs the calibration of the framework by revealing which questions discriminate between organizations and where practices are weakest.
-
-The instrument is organized around the same five areas that structure the framework: governance, data quality, architecture and access, analytics and tools, and skills and culture. Aligning the survey with the five dimensions ensures that the field evidence maps cleanly onto the framework being designed, so that a weakness observed in a given area in the survey can be traced to the corresponding dimension, sub-dimension, and indicators. The questions were expressed in terms accessible to practitioners and phrased so that answers describe observable practices rather than opinions, which supports the later principle, embodied in the tool, that a claimed level of maturity must be backed by evidence.
-
-Several limitations of the survey are acknowledged and shape how its results are used. The sample of 44 respondents is modest and was gathered by reaching professionals who were accessible during the project, so it is not a strict probability sample of the sector and the findings are indicative rather than statistically representative. Responses are self reported, which introduces the risk that respondents present their organization more favorably than the underlying practices warrant, a risk that the framework mitigates through the evidence cap applied in the scoring engine. The skills and culture dimension is particularly difficult to observe directly, which is why it is assessed through proxy indicators only. For these reasons the survey is treated as a diagnostic and calibration input, not as a validation of the framework, and the numeric results reported in Section 5 are interpreted with these constraints in mind.
+Several limitations of the survey are acknowledged and shape how its results are used. The sample of 44 respondents is modest and was gathered by reaching professionals who were accessible during the project, so it is not a strict probability sample of the sector and the findings are indicative rather than statistically representative. Responses are self reported, which introduces the risk that respondents present their organization more favorably than the underlying practices warrant, a risk that the framework mitigates through the evidence cap applied in the scoring engine. The skills and culture dimension is particularly difficult to observe directly, which is why it is assessed through proxy indicators only. For these reasons the survey is treated as a diagnostic and calibration input, not as a validation of the framework, and the numeric results reported in the results chapter are interpreted with these constraints in mind.
 
 \subsection{Research Ethics and Data Handling}
 
-Because the diagnostic survey involves human participants and the tool records evidence describing internal banking practices, the project applies a set of ethical and data handling principles consistent with the confidentiality expectations of the sector and of the host organization. Participation in the survey was voluntary, and responses were used solely for the purposes of the diagnosis and the calibration of the framework. Results are reported in aggregate across the sector rather than attributed to any named institution or individual, so that no single bank or respondent can be identified from the figures presented in Section 5.
+Because the diagnostic survey involves human participants and the tool records evidence describing internal banking practices, the project applies a set of ethical and data handling principles consistent with the confidentiality expectations of the sector and of the host organization. Participation in the survey was voluntary, and responses were used solely for the purposes of the diagnosis and the calibration of the framework. Results are reported in aggregate across the sector rather than attributed to any named institution or individual, so that no single bank or respondent can be identified from the figures presented in the results chapter.
 
-The design of the tool reinforces this posture, and the mechanism evolved with the tool. In the single-user build of the third iteration, DataPilot ran entirely in the browser and persisted all assessment data only in the local storage of the user browser, so that nothing left the assessing institution's machine. In the delivered platform, in-progress solo answers still remain in the assessor's browser under the key \texttt{datapilot-assessment}, but submitted results, group assessments, user profiles, and per-bank questionnaire copies are stored in the platform's Postgres database, where row-level security confines every row to its own bank, with EY oversight excepted by design. Access to the platform is invite-only with no public sign-up, submissions are immutable once recorded, and the evidence fields are still intended to reference internal documents rather than to reproduce them, which limits the exposure of confidential material within the tool. The confidentiality argument thus rests on tenant isolation enforced in the database rather than on local custody alone, and these measures align the research with the confidentiality obligations of a banking engagement and reduce the risk associated with handling sensitive organizational information.
+The design of the tool reinforces this posture, and the mechanism evolved with the tool. In the single-user build of the third iteration, DataPilot ran entirely in the browser and persisted all assessment data only in the local storage of the user browser, so that nothing left the assessing institution's machine. In the delivered platform, in-progress solo answers still remain in the assessor's browser under the key \texttt{datapilot-assessment}, but submitted results, group assessments, user profiles, and per-bank questionnaire copies are stored in the platform's Postgres database, where row-level security confines every row to its own bank, with EY oversight excepted by design. Access to the platform is invite-only with no public sign-up, submissions are immutable once recorded, and the evidence fields are still intended to reference internal documents rather than to reproduce them, which limits the exposure of confidential material within the tool. The confidentiality argument thus rests on tenant isolation enforced in the database rather than on local custody alone, and these measures align the research with the confidentiality obligations of a banking engagement.
 
 \subsection{Technologies and Tools}
 
@@ -276,7 +256,7 @@ The framework and its documentation were produced with standard office and model
 
 \subsubsection{Technologies}
 
-The DataPilot tool is implemented as a single-page web application. The front end is built with React 19 and the Vite 8 build tool. Navigation between the screens is handled with React Router 7, using route based code splitting so that each screen and its chart dependencies are loaded on demand, which keeps the initial load light and isolates the heavier visualization code to the screens that need it. The application state is managed with Zustand 5, organized as eight stores that hold the session, the questionnaire content, and the assessment state; a solo assessment in progress is persisted to the browser local storage so that it survives page reloads. The user interface is styled with Tailwind CSS 4, the data visualizations are produced with Recharts 3, and the report export is handled with react-to-print 3, which produces a printable version of the dashboards. The fourth iteration extends this front end stack, otherwise unchanged, with a backend: Supabase provides the Postgres database that holds all tenant data under row-level security, the invite based authentication, and the file storage, reached from the browser through the Supabase JavaScript client 2 under the public key, while a small set of serverless functions carries the privileged operations that must not be possible from the browser. The application chrome is fully bilingual, English and French, through a hand-rolled internationalization layer, and the language preference follows the user across devices. Table~\ref{tab:tech-stack} summarizes this stack, associating each component of the application with the technology that implements it and the role it plays in the tool.
+The DataPilot tool is implemented as a single-page web application, and each technology in its stack was chosen for a specific reason rather than by default. The front end is built with React~19\footnote{\url{https://react.dev}}, chosen because its component model matches an application made of many small, reusable interface pieces, the indicator rows, the badges, the charts, and because its large ecosystem reduces the risk of a dependency being abandoned. The application is bundled with the Vite~8 build tool\footnote{\url{https://vitejs.dev}}, chosen for its fast development server and its native support for route based code splitting. Navigation between the screens is handled with React Router~7\footnote{\url{https://reactrouter.com}}, using that code splitting so that each screen and its chart dependencies are loaded on demand, which keeps the initial load light. The application state is managed with Zustand~5\footnote{\url{https://zustand.docs.pmnd.rs}}, chosen over heavier alternatives because it lets the scoring logic be expressed as plain, testable selector functions kept separate from the interface; the state is organized as eight stores, and a solo assessment in progress is persisted to the browser local storage so that it survives page reloads. The user interface is styled with Tailwind CSS~4\footnote{\url{https://tailwindcss.com}}, chosen for consistent, utility based styling without a separate stylesheet to maintain. The data visualizations are produced with Recharts~3\footnote{\url{https://recharts.org}}, a charting library built for React that supplies the radar and bar charts of the dashboards, and the report export is handled with react-to-print~3\footnote{\url{https://github.com/MatthewHerbst/react-to-print}}, chosen because it produces a faithful printable version of the dashboards without a server. The fourth iteration extends this front end stack, otherwise unchanged, with a backend built on Supabase\footnote{\url{https://supabase.com}}, chosen because it provides, in one managed service, the Postgres database that holds all tenant data under row-level security, the invite based authentication, and file storage, which is exactly the thin backend a multi-tenant deployment needs. The database is reached from the browser through the Supabase JavaScript client~2 under the public key, while a small set of serverless functions carries the privileged operations that must not be possible from the browser. The application chrome is fully bilingual, English and French, through a hand-rolled internationalization layer, and the language preference follows the user across devices. Table~\ref{tab:tech-stack} summarizes this stack, associating each component of the application with the technology that implements it and the role it plays in the tool.
 
 \begin{table}[H]
 \centering
@@ -313,8 +293,8 @@ Internationalization & Hand-rolled EN/FR dictionary & Bilingual English and Fren
 \end{tabular}
 \end{table}
 
-These technologies were selected for their suitability to a responsive, interactive, and maintainable assessment application. The client-side single-page architecture was chosen in the third iteration because, at that stage of the project, it kept the assessment data local to the user machine and avoided the need for a back end server or a hosted database; the architecture is retained in the platform because React with a lightweight state store such as Zustand keeps the scoring logic, the aggregation chain, the evidence cap, the skip logic, and the renormalization, expressed as pure selectors that can be reasoned about and tested independently of the user interface. Extracted into a pure function module, the scoring engine is shared unchanged by the solo and the group assessment paths, so both compute their scores identically and remain faithful to the methodology of the second iteration. The fourth iteration then adds a deliberately thin backend, introduced for multi-tenant isolation: the database itself enforces tenant isolation and role scope through row-level security policies, so that every row is confined to its own bank at the data layer, while the small set of serverless endpoints performs only the operations that must not be possible from the browser, namely invitations, role changes, account and department management, self-service profile updates, and the optional roadmap generation, and the role-gated endpoints among them re-check the caller's role against the database on every request. Client-side route guards remain, but as user experience only; enforcement lives in the database policies and the privileged endpoints. This division preserves the separation between the scoring logic and the presentation, which is what allows the same engine to feed the results, the gap analysis, the compliance screens, and the group assessment finalization consistently, and it directly supports the fidelity of the tool to the underlying framework.
+Beyond the individual choices, the stack was selected for the way it keeps the scoring logic separable from the presentation. The client-side single-page architecture was chosen in the third iteration because, at that stage, it kept the assessment data local to the user machine and avoided the need for a back end server; the architecture is retained in the platform because React with a lightweight state store such as Zustand keeps the scoring logic, the aggregation chain, the evidence cap, the skip logic, and the renormalization, expressed as pure selectors that can be reasoned about and tested independently of the user interface. Extracted into a pure function module, the scoring engine is shared unchanged by the solo and the group assessment paths, so both compute their scores identically and remain faithful to the methodology of the second iteration. The fourth iteration then adds a deliberately thin backend, introduced for multi-tenant isolation: the database itself enforces tenant isolation and role scope through row-level security policies, while the small set of serverless endpoints performs only the operations that must not be possible from the browser, and the role-gated endpoints among them re-check the caller's role against the database on every request. This division preserves the separation between the scoring logic and the presentation, which is what allows the same engine to feed the results, the gap analysis, the compliance screens, and the group assessment finalization consistently.
 
 \subsection{Conclusion}
 
-This section presented the combined methodological approach of the project, Design Science Research for the design and validation of the artifacts and Agile principles for the development of the tool, together with the research materials and the technologies used. The next section presents the iterations through which the artifacts were produced.
+This chapter presented the combined methodological approach of the project, Design Science Research for the design and validation of the artifacts and an iterative, Agile inspired approach for the development of the tool, together with the project phases and planning, the stakeholder analysis, the research materials, and the technologies used. The next chapter presents the four iterations through which the artifacts were produced.
