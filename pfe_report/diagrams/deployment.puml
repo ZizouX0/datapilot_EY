@@ -24,7 +24,7 @@ node "User Device" as device {
 }
 
 node "Serverless Host" as host {
-  node "Serverless API functions (api/*)\ninvite, set-role, manage-user,\nset-department, update-self, roadmap" as api
+  node "Serverless API functions (api/*)\ninvite, set-role, manage-user,\nset-department, update-self" as api
   artifact "Static assets\n(HTML, JS, CSS)" as assets
 }
 
@@ -34,14 +34,12 @@ cloud "Supabase" as supa {
   node "Storage\n(avatars bucket)" as storage
 }
 
-cloud "LLM endpoint\n(optional roadmap action text,\nstatic fallback on failure)" as llm
 
 assets -left-> spa : serves the built\nSPA over HTTPS
 spa -down-> ls : autosaves solo\nin-progress answers
 spa -down-> supa : public anon key,\nevery row filtered by\nrow-level security
 spa -right-> api : bearer access token,\nprivileged operations only
 api -down-> supa : service role key;\nre-reads the caller's role\nand rank on every request
-api -down-> llm : authenticated\ncallers only
 
 note bottom of supa
   Tenant isolation policy on every table:
