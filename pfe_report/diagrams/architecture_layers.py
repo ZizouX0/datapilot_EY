@@ -64,9 +64,7 @@ def varrow(x, y_top, y_bot, label):
 
 
 # Title
-ax.text(7.5, 14.25, 'Layered Architecture of the DataPilot Platform',
-        ha='center', va='center', fontsize=17, color=CHARCOAL, fontweight='bold')
-ax.text(7.5, 13.82,
+ax.text(7.5, 14.05,
         'React 19, Vite 8, React Router 7, Zustand 5, Tailwind CSS 4, Recharts 3, '
         'Supabase JS client 2, serverless functions',
         ha='center', va='center', fontsize=10.5, color=GRAY)
