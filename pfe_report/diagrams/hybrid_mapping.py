@@ -129,9 +129,8 @@ ax.add_patch(Circle((NAME_X + 2.9, leg_y), 0.14, facecolor='white',
 ax.text(NAME_X + 3.2, leg_y, 'Supporting contribution', ha='left', va='center',
         fontsize=11, color=CHARCOAL)
 
-ax.set_title(''
-             'of the Hybrid Framework',
-             fontsize=16, fontweight='bold', pad=14, color=CHARCOAL)
+# No baked-in title: the figure caption describes the diagram (avoids the
+# truncated in-figure heading that appeared previously).
 
 plt.tight_layout(pad=0.4)
 plt.savefig('../images/hybrid-mapping.pdf',
