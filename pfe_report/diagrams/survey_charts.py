@@ -50,7 +50,7 @@ def draw_panel(ax, title, title_color, labels, values, colors, xlabel):
 # D1 Governance
 draw_panel(axes[0], 'D1 Governance (25%)', PURPLE,
            ['Formal data strategy\napproved'], [30], [PURPLE],
-           '% of institutions')
+           '% of respondents')
 axes[0].set_ylim(0.6, -0.6)
 
 # D2 Data Quality

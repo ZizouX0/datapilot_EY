@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Three-phase improvement roadmap derived from the gap analysis.
 Saves directly to ../images/roadmap.pdf
-Phases map to recommendations.js bands:
-  Phase 1 Critical  -> low band  (dimension score < 2.0)
-  Phase 2 High      -> mid band  (dimension score < 3.0)
-  Phase 3 Moderate  -> high band (dimension score >= 3.0)
+The gap analysis assigns each sub-dimension a priority (critical/high/moderate/
+low) and groups the sub-dimensions into three time-sequenced phases:
+  Phase 1 (0-3 months): sub-dimensions below 2.0 or with a failing regulatory
+                        indicator (critical and regulatory remediation)
+  Phase 2 (3-6 months): remaining sub-dimensions below the defined level
+  Phase 3 (6-12 months): sub-dimensions at or above the defined level (3.0)
 Example action themes are drawn verbatim in spirit from recommendations.js.
 No em-dashes or en-dashes anywhere.
 """
@@ -19,8 +21,8 @@ OUT = "../images/roadmap.pdf"
 phases = [
     {
         "num": "Phase 1",
-        "priority": "Critical priority",
-        "band": "Low band, dimension score below 2.0",
+        "priority": "0 to 3 months",
+        "band": "Below 2.0 or a failing regulatory item",
         "color": "#750E5C",
         "actions": [
             "Approve a data strategy document at board level",
@@ -30,8 +32,8 @@ phases = [
     },
     {
         "num": "Phase 2",
-        "priority": "High priority",
-        "band": "Mid band, dimension score below 3.0",
+        "priority": "3 to 6 months",
+        "band": "Below the defined level (2.0 to 3.0)",
         "color": "#188CE5",
         "actions": [
             "Automate key data quality controls in critical pipelines",
@@ -41,8 +43,8 @@ phases = [
     },
     {
         "num": "Phase 3",
-        "priority": "Moderate priority",
-        "band": "High band, dimension score at or above 3.0",
+        "priority": "6 to 12 months",
+        "band": "At or above the defined level (3.0)",
         "color": "#2DB757",
         "actions": [
             "Deploy real-time data quality dashboards for management",
