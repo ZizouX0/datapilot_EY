@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
 F12 - Sample radar maturity profile at Level 2 Emerging (representative).
-Representative Level 2 profile (matches the results breakdown table):
-  D1=1.9, D2=2.0, D3=2.5, D4=2.5, D5=2.1
-Global = 0.25*1.9 + 0.20*2.0 + 0.20*2.5 + 0.20*2.5 + 0.15*2.1 = 2.19
+Representative Level 2 profile (matches the results breakdown table and the
+tool screenshots, and is fully reproducible from the stored answer set):
+  D1=1.92, D2=2.08, D3=2.38, D4=2.50, D5=2.13
+Global = 0.25*1.92 + 0.20*2.08 + 0.20*2.38 + 0.20*2.50 + 0.15*2.13 = 2.19
 round(2.19 * 20) = 44%  ->  Level 2 Emerging.
 """
 import matplotlib
@@ -22,7 +23,7 @@ dims = [
     'D4 Analytics\nand Tools (20%)',
     'D5 Skills and\nCulture (15%)',
 ]
-current_scores = [1.9, 2.0, 2.5, 2.5, 2.1]
+current_scores = [1.92, 2.08, 2.38, 2.50, 2.13]
 target_scores  = [3.0, 3.0, 3.0, 3.0, 3.0]
 
 N = len(dims)
@@ -59,10 +60,10 @@ for angle, score in zip(angles[:-1], current_scores):
     offset = 0.42
     if abs((score + offset) - 3.0) < 0.25:
         offset = 0.80
-    ax.text(angle, score + offset, f'{score:.1f}', ha='center', va='center',
+    ax.text(angle, score + offset, f'{score:.2f}', ha='center', va='center',
             fontsize=14, color=BLUE, fontweight='bold')
 
-global_score = 0.25 * 1.9 + 0.20 * 2.0 + 0.20 * 2.5 + 0.20 * 2.5 + 0.15 * 2.1
+global_score = 0.25 * 1.92 + 0.20 * 2.08 + 0.20 * 2.38 + 0.20 * 2.50 + 0.15 * 2.13
 pct = round(global_score * 20)
 # Place the summary badge below the radar (in axes-relative coordinates) so it
 # never overlaps the D1 and D2 spokes at the centre of the plot.
