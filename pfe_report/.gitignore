@@ -29,3 +29,7 @@ diagrams/*.png
 
 # Figure PDFs must be tracked (root .gitignore ignores *.pdf)
 !images/*.pdf
+
+# Presentation build artifacts (generated from images/*.pdf)
+slide_assets/
+*.pptx
