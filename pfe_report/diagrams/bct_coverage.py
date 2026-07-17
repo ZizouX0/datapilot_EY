@@ -36,7 +36,7 @@ for bar, c in zip(bars, counts):
         color="#1a1a1a",
     )
 
-ax.set_ylabel("Number of BCT regulatory indicators", fontsize=16, fontweight="bold")
+ax.set_ylabel("Number of regulatory indicators", fontsize=16, fontweight="bold")
 ax.set_xlabel("Maturity dimension", fontsize=16, fontweight="bold")
 ax.set_ylim(0, 8)
 ax.set_yticks(range(0, 9))
