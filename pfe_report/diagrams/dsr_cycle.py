@@ -55,9 +55,23 @@ act_colors = [PURPLE, BLUE, TEAL, GREEN, MAROON]
 for i in range(n):
     x1, y1 = node_positions[i]
     x2, y2 = node_positions[(i + 1) % n]
+    is_closing = (i == n - 1)  # Solution Evaluation -> Problem Investigation
     ax.annotate('', xy=(x2, y2), xytext=(x1, y1),
-                arrowprops=dict(arrowstyle='-|>', color=act_colors[i], lw=2.6,
-                                connectionstyle='arc3,rad=0.25'))
+                zorder=2,
+                arrowprops=dict(arrowstyle='-|>', color=act_colors[i], lw=3.2,
+                                mutation_scale=34,
+                                shrinkA=58, shrinkB=58,
+                                linestyle='dashed' if is_closing else 'solid',
+                                connectionstyle='arc3,rad=0.24'))
+
+# label the closing feedback arrow (Evaluation -> next Problem Investigation)
+mx = (node_positions[-1][0] + node_positions[0][0]) / 2
+my = (node_positions[-1][1] + node_positions[0][1]) / 2
+ax.text(mx - 0.15, my + 0.15, 'evaluation feeds\nthe next problem',
+        ha='center', va='center', fontsize=8.5, style='italic',
+        color=MAROON, multialignment='center', zorder=5,
+        bbox=dict(boxstyle='round,pad=0.25', facecolor='white',
+                  edgecolor=MAROON, linewidth=0.9, alpha=0.95))
 
 BOX_W, BOX_H = 2.3, 0.85
 for i, (act, (x, y)) in enumerate(zip(ACTIVITIES, node_positions)):
