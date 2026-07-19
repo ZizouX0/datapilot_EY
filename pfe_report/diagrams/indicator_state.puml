@@ -10,7 +10,7 @@ skinparam noteBackgroundColor #E8F8F8
 skinparam noteBorderColor #27ACAA
 skinparam noteFontSize 12
 
-[*] --> Unanswered : indicator loaded
+[*] --> Unanswered : **START** — indicator loaded
 
 Unanswered --> Answered : score entered (1 to 5)
 Answered --> Answered : score changed
