@@ -33,3 +33,5 @@ diagrams/*.png
 # Presentation build artifacts (generated from images/*.pdf)
 slide_assets/
 *.pptx
+*.fdb_latexmk
+*.fls
