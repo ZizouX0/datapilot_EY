@@ -56,6 +56,7 @@ A representative maturity profile at Level 2 Emerging, consistent with the secto
 
 \begin{table}[H]
 \centering
+\caption{Composition of the Global Maturity Index for a representative Level 2 institution} \label{tab:profile-breakdown}
 \begin{tabular}{|p{4.6cm}|c|c|c|}
 \hline
 \textbf{Dimension} & \textbf{Score (/5)}$^{\mathrm{a}}$ & \textbf{Weight} & \textbf{Weighted contribution} \\
@@ -74,8 +75,7 @@ D5 Skills and Culture$^{\mathrm{b}}$ & 2.13 & 15\% & 0.320 \\
 $^{\mathrm{a}}$ Dimension scores are effective scores, that is, scores computed after the application of the evidence cap, so an unsupported high answer has already been reduced before entering this table.
 $^{\mathrm{b}}$ Skills and Culture is assessed through proxy indicators only, and none of the thirteen regulatory indicators belongs to this dimension.
 $^{\mathrm{c}}$ All five dimensions are answered in this example, so the renormalization leaves the nominal weights unchanged and they sum to 100\%. The dimension scores are the tool's two-decimal display values; the engine aggregates the unrounded dimension means at full precision, which yields the reported index of 2.19, so the rounded per-dimension contributions above reconcile to 2.19 up to display rounding. This example is fully reproducible from a stored answer set and is the same session captured in the DataPilot screenshots of Chapter~4.}
-\caption{Composition of the Global Maturity Index for a representative Level 2 institution}
-\label{tab:profile-breakdown}
+
 \end{table}
 
 The composition in Table~\ref{tab:profile-breakdown} makes the aggregation explicit. Each dimension score is multiplied by its weight, and because all five dimensions are answered in this example, the weights already sum to 100\% and no renormalization is required. The weighted contributions, 0.480, 0.416, 0.476, 0.500, and 0.320, add to 2.19, which the percentage conversion turns into round(2.19 times 20) equal to 44\%. The value 2.19 falls inside the 1.80 to 2.59 band (the maturity bands are defined in Appendix~E, with the underlying level rubrics in Appendix~A), so the institution is placed at Level 2, Emerging. Were one dimension left unanswered, its weight would be removed from the denominator and the remaining weights rescaled to sum to 100\%, so that the index always reflects only the dimensions that were actually assessed. This renormalization is what allows a partial assessment to remain meaningful without silently treating a missing dimension as a score of zero. The reported maturity level is, moreover, not sensitive to the exact weighting: if the five dimension weights are each shifted by up to five percentage points around their nominal values of 25/20/20/20/15 and renormalized to sum to one hundred percent, the Global Maturity Index of this representative profile varies only between approximately 2.14 and 2.24, and under equal weights it is 2.20, every one of which falls well inside the Level 2 Emerging band. The weighting therefore fixes the emphasis of the index and the relative ordering of the dimensions, while the reported level is robust to the precise choice of weights.

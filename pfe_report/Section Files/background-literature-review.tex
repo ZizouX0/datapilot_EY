@@ -50,6 +50,8 @@ Two features of the screening outcome are worth noting because they shape the hy
 {\footnotesize
 \setlength{\tabcolsep}{4pt}
 \begin{longtable}{|p{2.6cm}|c|c|c|c|c|c|p{5.8cm}|}
+\caption{Framework screening matrix (15 candidates, 5 criteria)}\label{tab:framework-screening}\\
+
 \hline
 \textbf{Framework} & \textbf{IC} & \textbf{BR} & \textbf{SL} & \textbf{CP} & \textbf{BF} & \textbf{/15} & \textbf{Decision rationale} \\
 \hline
@@ -65,7 +67,6 @@ Two features of the screening outcome are worth noting because they shape the hy
 \hline
 \multicolumn{8}{|p{13cm}|}{\footnotesize \textbf{Criteria:} IC = International Credibility; BR = Banking Relevance; SL = Scoring Logic; CP = Complementarity; BF = BCT/BCBS Fit. Scale: 1 = Weak, 2 = Moderate, 3 = Strong.} \\
 \hline
-\caption{Framework screening matrix (15 candidates, 5 criteria)} \label{tab:framework-screening} \\
 \endlastfoot
 %% Selected frameworks
 \multicolumn{8}{|l|}{\textbf{Selected frameworks (5)}} \\
@@ -152,6 +153,7 @@ Before combining the selected frameworks, the benchmark as a whole was submitted
 
 \begin{table}[H]
 \centering
+\caption{SWOT analysis of the framework benchmark} \label{tab:benchmark-swot}
 
 {\footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -169,8 +171,7 @@ Risk of a model that is too complex; difficulty of adoption by the banks; lack o
 \hline
 \end{tabular}
 }
-\caption{SWOT analysis of the framework benchmark}
-\label{tab:benchmark-swot}
+
 \end{table}
 
 The conclusion of this analysis is that designing a bespoke framework is justified. The model must integrate the structural rigor of DAMA and CMMI, account for the banking relevance of DCAM, preserve the strategic clarity of Gartner, and guarantee a simplified evaluation that is easy to integrate into a tool. This conclusion directly motivates the hybrid design analyzed in the next subsection.
@@ -190,6 +191,7 @@ In the figure, the five columns correspond to the assessment's five dimensions: 
 
 \begin{table}[H]
 \centering
+\caption{Role, contribution, and exclusion for each selected framework} \label{tab:framework-roles}
 
 {\footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -209,8 +211,7 @@ Gartner D\&A & Executive communication & The maturity labels (Unaware to Transfo
 \hline
 \end{tabular}
 }
-\caption{Role, contribution, and exclusion for each selected framework}
-\label{tab:framework-roles}
+
 \end{table}
 
 \subsection{Identified Research Gaps}
@@ -221,6 +222,7 @@ Table~\ref{tab:framework-positioning} compresses these three gaps into a single 
 
 \begin{table}[H]
 \centering
+\caption{Positioning of the selected frameworks against the capability requirements of this work} \label{tab:framework-positioning}
 
 {\footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -242,8 +244,7 @@ Gartner D\&A & Partial & No & Partial & No & No (proprietary) \\
 \hline
 \end{tabular}
 }
-\caption{Positioning of the selected frameworks against the capability requirements of this work}
-\label{tab:framework-positioning}
+
 \end{table}
 
 Read column by column, the table makes the pattern behind the three gaps visible at a glance. The coverage column is fully satisfied only by DAMA-DMBOK, whose eleven knowledge areas span the discipline; the regulatory column only by DCAM, the one framework built for financial institutions; and the scoring column by CMMI-DMM and TDWI, whose evaluation mechanics are strong but attached to a generic or analytics-only scope. The two rightmost columns are the decisive ones: the evidence requirement is at best partially present, through the evidence-based level definitions of DCAM and CMMI-DMM, but no framework enforces it as a rule that blocks an unsupported score, and no framework at all is delivered as an open instrument that a bank can operate itself. No row other than the last carries a Yes in every column, which is the tabular restatement of the conclusion that the five frameworks are complementary rather than individually sufficient.

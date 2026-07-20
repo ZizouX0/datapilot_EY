@@ -63,6 +63,7 @@ The hierarchical structure of the complete framework is visualized in Figure~\re
 
 \begin{table}[H]
 \centering
+\caption{The five dimensions of the framework} \label{tab:dimensions}
 \begin{tabular}{|p{4.6cm}|c|c|c|p{2.6cm}|}
 \hline
 \textbf{Dimension} & \textbf{Weight} & \textbf{Sub-dim.} & \textbf{Indic.} & \textbf{Primary sources} \\
@@ -76,8 +77,7 @@ D5 Skills and Culture & 15\% & 2 & 8 & CMMI, Gartner \\
 \textbf{Total} & \textbf{100\%} & \textbf{12} & \textbf{47} & \\
 \hline
 \end{tabular}
-\caption{The five dimensions of the framework}
-\label{tab:dimensions}
+
 \end{table}
 
 \subsubsection{Solution Evaluation}
@@ -132,6 +132,7 @@ The Global Maturity Index, a continuous value on the one to five scale, is mappe
 
 \begin{table}[H]
 \centering
+\caption{Maturity levels and their executive labels} \label{tab:maturity-levels}
 \begin{tabular}{|c|l|l|}
 \hline
 \textbf{Level} & \textbf{CMMI Name} & \textbf{Gartner Label} \\
@@ -143,8 +144,7 @@ The Global Maturity Index, a continuous value on the one to five scale, is mappe
 5 & Optimized (systemic innovation) & Transformative \\
 \hline
 \end{tabular}
-\caption{Maturity levels and their executive labels}
-\label{tab:maturity-levels}
+
 \end{table}
 
 The five maturity levels and their executive labels are illustrated as an ascending progression in Figure~\ref{fig:maturity-ladder}.
@@ -500,6 +500,7 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 
 \begin{table}[H]
 \centering
+\caption{Use Case 1: Configure assessment} \label{tab:uc01}
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
 \textbf{Actor} & Assessor \\
@@ -513,12 +514,12 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 \textbf{Postconditions} & The institution profile is recorded and persisted, and the assessment is ready for indicator evaluation. \\
 \hline
 \end{tabular}
-\caption{Use Case 1: Configure assessment}
-\label{tab:uc01}
+
 \end{table}
 
 \begin{table}[H]
 \centering
+\caption{Use Case 2: Score an indicator with evidence} \label{tab:uc02}
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
 \textbf{Actor} & Assessor \\
@@ -532,12 +533,12 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 \textbf{Postconditions} & The indicator carries a score and an evidence text, and the affected dimension score is recomputed. \\
 \hline
 \end{tabular}
-\caption{Use Case 2: Score an indicator with evidence}
-\label{tab:uc02}
+
 \end{table}
 
 \begin{table}[H]
 \centering
+\caption{Use Case 3: Skip a non-regulatory indicator} \label{tab:uc03}
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
 \textbf{Actor} & Assessor \\
@@ -551,12 +552,12 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 \textbf{Postconditions} & The indicator is either excluded from scoring or left unchanged when a rule refuses the skip. \\
 \hline
 \end{tabular}
-\caption{Use Case 3: Skip a non-regulatory indicator}
-\label{tab:uc03}
+
 \end{table}
 
 \begin{table}[H]
 \centering
+\caption{Use Case 4: View maturity results} \label{tab:uc04}
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
 \textbf{Actor} & Assessor, Management \\
@@ -570,12 +571,12 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 \textbf{Postconditions} & The maturity profile is displayed for interpretation. \\
 \hline
 \end{tabular}
-\caption{Use Case 4: View maturity results}
-\label{tab:uc04}
+
 \end{table}
 
 \begin{table}[H]
 \centering
+\caption{Use Case 5: Review improvement roadmap} \label{tab:uc05}
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
 \textbf{Actor} & Assessor, Management \\
@@ -589,12 +590,12 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 \textbf{Postconditions} & A prioritized, phased set of improvement actions is displayed. \\
 \hline
 \end{tabular}
-\caption{Use Case 5: Review improvement roadmap}
-\label{tab:uc05}
+
 \end{table}
 
 \begin{table}[H]
 \centering
+\caption{Use Case 6: View BCT compliance} \label{tab:uc06}
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
 \textbf{Actor} & Assessor, Management \\
@@ -608,12 +609,12 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 \textbf{Postconditions} & The regulatory posture against the BCT and BCBS 239 requirements is displayed. \\
 \hline
 \end{tabular}
-\caption{Use Case 6: View BCT compliance}
-\label{tab:uc06}
+
 \end{table}
 
 \begin{table}[H]
 \centering
+\caption{Use Case 7: Export evidence package} \label{tab:uc07}
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
 \textbf{Actor} & Assessor \\
@@ -627,12 +628,12 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 \textbf{Postconditions} & An exportable document capturing the assessment or the compliance evidence is produced. \\
 \hline
 \end{tabular}
-\caption{Use Case 7: Export evidence package}
-\label{tab:uc07}
+
 \end{table}
 
 \begin{table}[H]
 \centering
+\caption{Use Case 8: Set target maturity level} \label{tab:uc08}
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
 \textbf{Actor} & Assessor, Management \\
@@ -646,12 +647,12 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 \textbf{Postconditions} & The target level is persisted and the gap to target is visualized. \\
 \hline
 \end{tabular}
-\caption{Use Case 8: Set target maturity level}
-\label{tab:uc08}
+
 \end{table}
 
 \begin{table}[H]
 \centering
+\caption{Use Case 9: Reset the assessment} \label{tab:uc09}
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
 \textbf{Actor} & Assessor \\
@@ -665,12 +666,12 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 \textbf{Postconditions} & The tool is returned to its initial unconfigured state and a new assessment can begin. \\
 \hline
 \end{tabular}
-\caption{Use Case 9: Reset the assessment}
-\label{tab:uc09}
+
 \end{table}
 
 \begin{table}[H]
 \centering
+\caption{Use Case 10: Undo a skip} \label{tab:uc10}
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
 \textbf{Actor} & Assessor \\
@@ -684,12 +685,12 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 \textbf{Postconditions} & The indicator is pending again; once scored it re-enters the denominators of its sub-dimension and dimension. \\
 \hline
 \end{tabular}
-\caption{Use Case 10: Undo a skip}
-\label{tab:uc10}
+
 \end{table}
 
 \begin{table}[H]
 \centering
+\caption{Use Case 11: Resume a persisted session} \label{tab:uc11}
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
 \textbf{Actor} & Assessor \\
@@ -703,12 +704,12 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 \textbf{Postconditions} & The session state is identical to the state at the moment it was suspended, and all derived scores recompute to the same values. \\
 \hline
 \end{tabular}
-\caption{Use Case 11: Resume a persisted session}
-\label{tab:uc11}
+
 \end{table}
 
 \begin{table}[H]
 \centering
+\caption{Use Case 12: Invite a user (per-role)} \label{tab:uc12}
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
 \textbf{Actor} & EY Admin (owner), Super Admin, or Admin \\
@@ -722,12 +723,12 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 \textbf{Postconditions} & The new account exists in the inviter's bank (or the named bank), with no identity typed by the invitee. \\
 \hline
 \end{tabular}
-\caption{Use Case 12: Invite a user (per-role)}
-\label{tab:uc12}
+
 \end{table}
 
 \begin{table}[H]
 \centering
+\caption{Use Case 13: Edit the bank questionnaire} \label{tab:uc13}
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
 \textbf{Actor} & Admin (bank copy) or EY Admin (owner) (master template) \\
@@ -741,12 +742,12 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 \textbf{Postconditions} & The bank's bank copy is what its analysts see, and all scores are computed live against it. \\
 \hline
 \end{tabular}
-\caption{Use Case 13: Edit the bank questionnaire}
-\label{tab:uc13}
+
 \end{table}
 
 \begin{table}[H]
 \centering
+\caption{Use Case 14: Map dimensions to departments and launch a group assessment} \label{tab:uc14}
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
 \textbf{Actor} & Admin or Super Admin (coordinator) \\
@@ -760,12 +761,12 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 \textbf{Postconditions} & The draft is live and department contributions can begin. \\
 \hline
 \end{tabular}
-\caption{Use Case 14: Map dimensions to departments and launch a group assessment}
-\label{tab:uc14}
+
 \end{table}
 
 \begin{table}[H]
 \centering
+\caption{Use Case 15: Contribute assigned dimensions} \label{tab:uc15}
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
 \textbf{Actor} & Analyst (with a department) \\
@@ -779,12 +780,12 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 \textbf{Postconditions} & The department's part of the shared answer map is complete, and the coordinator can finalize. \\
 \hline
 \end{tabular}
-\caption{Use Case 15: Contribute assigned dimensions}
-\label{tab:uc15}
+
 \end{table}
 
 \begin{table}[H]
 \centering
+\caption{Use Case 16: Finalize and submit a group assessment} \label{tab:uc16}
 \begin{tabular}{|p{3cm}|p{12cm}|}
 \hline
 \textbf{Actor} & Admin or Super Admin (coordinator) \\
@@ -798,8 +799,7 @@ The interactions summarized in the use case diagram of Figure~\ref{fig:usecase} 
 \textbf{Postconditions} & The answers are locked read-only at the data layer, and the submission appears in the bank's submissions review and to EY. \\
 \hline
 \end{tabular}
-\caption{Use Case 16: Finalize and submit a group assessment}
-\label{tab:uc16}
+
 \end{table}
 
 \subsection{Conclusion}

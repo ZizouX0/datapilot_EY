@@ -37,6 +37,7 @@ DSR was applied to this project through four iterations, each a complete turn of
 
 \begin{table}[H]
 \centering
+\caption{Summary of the DSR regulative cycle across the four iterations} \label{tab:dsr-iterations}
 
 \footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -53,14 +54,14 @@ DSR was applied to this project through four iterations, each a complete turn of
 4 & Can one assessment be produced by many contributors across a bank, under EY oversight, without weakening confidentiality or auditability? & Four-role hierarchy with a top-down invite chain, departments with dimension-to-department assignments, per-bank copies of the EY master template, and enforcement split across two disjoint layers by operation class: ordinary data reads and writes guarded by database row-level security, and a small set of privileged operations run through service-role endpoints whose server code is the authoritative check and which bypass row-level security by design & The DataPilot multi-tenant platform & Functional scenarios on the seeded demo bank confirmed the role gates, the tenant isolation, and the immutability of finalized submissions \\
 \hline
 \end{tabular}
-\caption{Summary of the DSR regulative cycle across the four iterations}
-\label{tab:dsr-iterations}
+
 \end{table}
 
 No research question is answered by a single iteration alone. Table~\ref{tab:rq-iterations} makes this explicit by mapping the three research questions of the introduction onto the diagnostic survey and the four iterations. The survey is shown as a distinct column because it belongs to the field diagnostic of Phase~1 and is not itself a DSR iteration; it supplies the evidence that informed the designed artifacts, whereas the iterations produce those artifacts.
 
 \begin{table}[H]
 \centering
+\caption{Mapping of the research questions onto the survey and the four iterations} \label{tab:rq-iterations}
 
 \footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -75,8 +76,7 @@ RQ2 & Design of a maturity assessment framework fitted to the Tunisian banking s
 RQ3 & Extent to which an interactive steering tool supports decision-making and accelerates transformation & & & X & X & X \\
 \hline
 \end{tabular}
-\caption{Mapping of the research questions onto the survey and the four iterations}
-\label{tab:rq-iterations}
+
 \end{table}
 
 The mapping is deliberately honest about where each answer comes from. RQ1 is answered chiefly by the diagnostic survey, with the first iteration supplying the reading grid of dimensions and indicators through which the field evidence is interpreted. RQ2 is answered by the first two iterations, which together produce the framework and the scoring methodology that make it operational, with the survey supplying the field evidence that informed the design. RQ3 is answered by the second, third, and fourth iterations, since the auditability of the score is a property of the scoring engine, its usability a property of the tool that embeds it, and its deployability across a bank a property of the multi-tenant platform.
@@ -107,6 +107,7 @@ Beyond the research and development methodologies, the project itself was conduc
 \begin{landscape}
 \begin{table}[H]
 \centering
+\caption{The six project phases and the transversal workstream: period, focus, and key deliverables} \label{tab:project-phases}
 
 \footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -129,8 +130,7 @@ Phase 5: Deployment & 6 to 31 July 2026 & Final deployment and validation; resul
 Transversal & 16 February to 31 July 2026 & Report writing; risk management; project steering and weekly meetings & Continuous steering; final report (L11) \\
 \hline
 \end{tabular}
-\caption{The six project phases and the transversal workstream: period, focus, and key deliverables}
-\label{tab:project-phases}
+
 \end{table}
 \end{landscape}
 
@@ -147,6 +147,7 @@ Across the six phases, eleven deliverables were planned and labeled L1 to L11, l
 
 \begin{table}[H]
 \centering
+\caption{The eleven project deliverables (L1 to L11)} \label{tab:deliverables}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{|c|p{8.4cm}|p{3.8cm}|}
@@ -176,14 +177,14 @@ L10 & Executive presentation & Phase 5 \\
 L11 & Final report & Phase 5 \\
 \hline
 \end{tabular}
-\caption{The eleven project deliverables (L1 to L11)}
-\label{tab:deliverables}
+
 \end{table}
 
 The six phases and the four DSR iterations are two complementary views of the same work: the phases give the project management timeline of \emph{when} each block of work was done, while the iterations give the research and engineering logic of \emph{what} was designed and evaluated. Table~\ref{tab:phase-iteration-map} makes the correspondence explicit, mapping each phase to the iteration or iterations it carries and to the deliverables it produces. The pre-coding phases carry Iteration~1 and begin Iteration~2, while the build and deployment phases carry Iterations~2 to~4.
 
 \begin{table}[H]
 \centering
+\caption{Mapping of the project phases to the DSR iterations and deliverables} \label{tab:phase-iteration-map}
 
 \footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -204,8 +205,7 @@ Phase 4: Development & Iterations 2 (Measure), 3 (Steer), 4 (Scale) & L7, L8 \\
 Phase 5: Deployment & Iterations 3 (Steer), 4 (Scale) & L9, L10, L11 \\
 \hline
 \end{tabular}
-\caption{Mapping of the project phases to the DSR iterations and deliverables}
-\label{tab:phase-iteration-map}
+
 \end{table}
 
 \subsection{Stakeholder Analysis}
@@ -214,6 +214,7 @@ Because the framework and the tool are intended to be used inside banking instit
 
 \begin{table}[H]
 \centering
+\caption{Stakeholders of the EY mission (the project's own stakeholders)} \label{tab:stakeholders-ey}
 
 \footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -230,12 +231,12 @@ Project team (consultants) & Interviews, scoring, analysis, and development of t
 Sector experts & Banking and regulatory expertise input & Guarantee regulatory relevance \\
 \hline
 \end{tabular}
-\caption{Stakeholders of the EY mission (the project's own stakeholders)}
-\label{tab:stakeholders-ey}
+
 \end{table}
 
 \begin{table}[H]
 \centering
+\caption{Internal stakeholders of a client bank (the instrument's target users)} \label{tab:stakeholders-bank}
 
 \footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -262,8 +263,7 @@ Internal Audit & Independent control of the mechanism & Evaluate the effectivene
 Governing body / Board & Strategic sponsor and budget decision-maker & Obtain a consolidated view of data maturity to orient strategy and prioritize investments \\
 \hline
 \end{tabular}
-\caption{Internal stakeholders of a client bank (the instrument's target users)}
-\label{tab:stakeholders-bank}
+
 \end{table}
 
 To plan engagement, the stakeholders of both groups were positioned on an interest and influence matrix, shown in Figure~\ref{fig:stakeholder-matrix}. The matrix is a classic stakeholder management tool: it places each actor on two axes, the interest the actor has in the outcome and the influence the actor can exert on it, and the resulting quadrant prescribes an engagement strategy, manage closely, keep satisfied, keep informed, or simply monitor. Its role in this project is to decide where attention and communication effort should be concentrated. The actors combining high interest and high influence, namely the Chief Data Officer, the governing body or board, the EY Partner, the Engagement Manager, and the project team, fall in the \emph{manage closely} quadrant, since they both drive the assessment and act on its results. The remaining actors were positioned according to their respective interest and influence and are to be kept satisfied, kept informed, or monitored. The author of this report sits inside the project team, in the high interest and high influence quadrant: as the consultant who designs the framework, builds the tool, and reports the findings, the author is both a producer of the assessment and directly accountable for its methodological soundness, which places the author among the actors to be managed most closely. The resulting stakeholder cartography constitutes deliverable~L1 and was presented in the weekly meeting of 24~February 2026.
@@ -303,6 +303,7 @@ The DataPilot tool is implemented as a single-page web application, and each tec
 
 \begin{table}[H]
 \centering
+\caption{Technology stack of the DataPilot tool} \label{tab:tech-stack}
 
 \footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -333,8 +334,7 @@ Privileged operations & Serverless functions (\texttt{api/}) & Invitations, role
 Internationalization & Hand-rolled EN/FR dictionary & Bilingual English and French application and report chrome; the language preference follows the user across devices \\
 \hline
 \end{tabular}
-\caption{Technology stack of the DataPilot tool}
-\label{tab:tech-stack}
+
 \end{table}
 
 Beyond the individual choices, the stack was selected for the way it keeps the scoring logic separable from the presentation. The client-side single-page architecture was chosen in the third iteration because, at that stage, it kept the assessment data local to the user machine and avoided the need for a back end server; the architecture is retained in the platform because React with a lightweight state store such as Zustand keeps the scoring logic, the aggregation chain, the evidence cap, the skip logic, and the renormalization, expressed as pure selectors that can be reasoned about and tested independently of the user interface. Extracted into a pure function module, the scoring engine is shared unchanged by the solo and the group assessment paths, so both compute their scores identically and remain faithful to the methodology of the second iteration. The fourth iteration then adds a deliberately thin backend, introduced for multi-tenant isolation: the database itself enforces tenant isolation and role scope through row-level security policies, while the small set of serverless endpoints performs only the operations that must not be possible from the browser, and the role-gated endpoints among them re-check the caller's role against the database on every request. This division preserves the separation between the scoring logic and the presentation, which is what allows the same engine to feed the results, the gap analysis, the compliance screens, and the group assessment finalization consistently.
