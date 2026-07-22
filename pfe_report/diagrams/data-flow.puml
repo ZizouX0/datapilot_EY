@@ -1,0 +1,35 @@
+@startuml data-flow
+skinparam backgroundColor white
+skinparam defaultFontSize 13
+skinparam dpi 160
+skinparam activityBackgroundColor #F0EEF8
+skinparam activityBorderColor #3D108A
+skinparam activityDiamondBackgroundColor #E8F8F8
+skinparam activityDiamondBorderColor #27ACAA
+skinparam activityArrowColor #2E2E38
+skinparam activityFontSize 13
+
+start
+:Read a raw indicator response
+(score 1 to 5, evidence text, skipped flag);
+if (Skipped or unanswered?) then (yes)
+  :Exclude the indicator
+  (effective score is null);
+else (no)
+  if (Score >= 3 and no evidence?) then (yes)
+    :Cap the effective score at 2;
+  else (no)
+    :Keep the entered score;
+  endif
+endif
+:Average the effective scores within each sub-dimension
+(null values excluded);
+:Average the sub-dimension scores within each dimension
+(null values excluded);
+:Combine the dimension scores by the weighted sum,
+renormalized over the answered dimension weights,
+to obtain the Global Maturity Index;
+:Convert the index into a percentage
+and a maturity level;
+stop
+@enduml

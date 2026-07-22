@@ -1,0 +1,37 @@
+# LaTeX build artifacts (generated on compile)
+main.aux
+main.bbl
+main.bcf
+main.blg
+main.lof
+main.lot
+main.out
+main.run.xml
+main.toc
+main.log
+main.synctex.gz
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.bbl
+*.bcf
+*.blg
+*.run.xml
+*.synctex.gz
+.baseline/
+
+# PlantUML intermediates
+diagrams/*.svg
+diagrams/*.png
+
+# Figure PDFs must be tracked (root .gitignore ignores *.pdf)
+!images/*.pdf
+
+# Presentation build artifacts (generated from images/*.pdf)
+slide_assets/
+*.pptx
+*.fdb_latexmk
+*.fls

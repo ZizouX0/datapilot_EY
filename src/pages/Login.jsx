@@ -11,7 +11,7 @@ const COPY = {
   en: {
     subtitle: 'Data Maturity Steering Tool',
     leftIntro: 'Secure access for authorized assessors. Sign in with the credentials provided by your DataPilot administrator.',
-    footer: 'EY Advisory Tunisia · PFE 2026 Internship Project',
+    footer: 'EY Consulting Tunisia · PFE 2026 Internship Project',
     signInTitle: 'Sign in',
     signInSub: "Access is invite-only. Contact your administrator if you don't have an account.",
     emailLabel: 'Email',
@@ -28,7 +28,7 @@ const COPY = {
   fr: {
     subtitle: 'Outil de pilotage de la maturité des données',
     leftIntro: 'Accès sécurisé réservé aux évaluateurs autorisés. Connectez-vous avec les identifiants fournis par votre administrateur DataPilot.',
-    footer: 'EY Advisory Tunisie · Projet de stage PFE 2026',
+    footer: 'EY Consulting Tunisie · Projet de stage PFE 2026',
     signInTitle: 'Connexion',
     signInSub: "L’accès se fait sur invitation uniquement. Contactez votre administrateur si vous n’avez pas de compte.",
     emailLabel: 'E-mail',

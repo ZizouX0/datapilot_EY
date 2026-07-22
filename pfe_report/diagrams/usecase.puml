@@ -1,0 +1,71 @@
+@startuml usecase
+left to right direction
+skinparam backgroundColor white
+skinparam defaultFontSize 13
+skinparam dpi 150
+skinparam actorBackgroundColor #F0EEF8
+skinparam actorBorderColor #3D108A
+skinparam actorFontSize 13
+skinparam usecaseBackgroundColor #F0EEF8
+skinparam usecase {
+  BorderColor #3D108A
+  FontSize 12
+}
+skinparam rectangleBorderColor #2E2E38
+skinparam rectangleFontStyle bold
+skinparam rectangleFontSize 14
+skinparam packageStyle rectangle
+skinparam arrowColor #2E2E38
+
+actor "EY Admin\n(owner)" as owner
+actor "Super Admin" as sadmin
+actor "Admin" as admin
+actor "Analyst" as analyst
+
+' Relationship between the actors: the top-down invite chain,
+' each role invites exactly one rank below itself.
+owner --> sadmin : invites
+sadmin --> admin : invites
+admin --> analyst : invites
+
+rectangle "DataPilot platform" {
+  rectangle "Administration" {
+    usecase "Invite a user\n(one rank down)" as UCinvite
+    usecase "Manage roles\nand accounts" as UCroles
+    usecase "Manage\ndepartments" as UCdept
+    usecase "Edit the EY\nmaster template" as UCmaster
+    usecase "Edit the bank\nquestionnaire copy" as UCbank
+    usecase "Map dimensions and\nlaunch group assessment" as UCmap
+    usecase "Finalize and submit\ngroup assessment" as UCfinal
+    usecase "Review\nsubmissions" as UCreview
+  }
+  rectangle "Assessment" {
+    usecase "Run solo\nassessment" as UCsolo
+    usecase "Submit solo result\nfor review" as UCsubmit
+    usecase "Contribute assigned\ndimensions" as UCcontrib
+    usecase "View results, gap\nanalysis, compliance" as UCviews
+    usecase "Manage own account" as UCacct
+  }
+}
+
+owner --> UCmaster
+owner --> UCroles
+owner --> UCreview
+
+sadmin --> UCroles
+sadmin --> UCmap
+sadmin --> UCfinal
+
+admin --> UCdept
+admin --> UCbank
+admin --> UCmap
+admin --> UCfinal
+
+analyst --> UCsolo
+analyst --> UCcontrib
+analyst --> UCviews
+analyst --> UCacct
+
+UCinvite -[hidden]down-> UCroles
+UCsubmit .> UCsolo : <<extend>>
+@enduml

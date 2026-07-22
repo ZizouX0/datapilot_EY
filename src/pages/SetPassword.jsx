@@ -9,7 +9,7 @@ const COPY = {
   en: {
     subtitle: 'Data Maturity Steering Tool',
     leftIntro: 'Welcome aboard. Set a password to finish activating your account.',
-    footer: 'EY Advisory Tunisia · PFE 2026 Internship Project',
+    footer: 'EY Consulting Tunisia · PFE 2026 Internship Project',
     title: 'Set your password',
     invalidLink: 'This link is invalid or has expired. Please open the most recent invitation email, or ask an administrator to re-send your invite.',
     doneMsg: 'Password set. Taking you to DataPilot…',
@@ -24,7 +24,7 @@ const COPY = {
   fr: {
     subtitle: 'Outil de pilotage de la maturité des données',
     leftIntro: 'Bienvenue. Définissez un mot de passe pour finaliser l’activation de votre compte.',
-    footer: 'EY Advisory Tunisie · Projet de stage PFE 2026',
+    footer: 'EY Consulting Tunisie · Projet de stage PFE 2026',
     title: 'Définir votre mot de passe',
     invalidLink: 'Ce lien est invalide ou a expiré. Veuillez ouvrir l’e-mail d’invitation le plus récent, ou demander à un administrateur de renvoyer votre invitation.',
     doneMsg: 'Mot de passe défini. Redirection vers DataPilot…',

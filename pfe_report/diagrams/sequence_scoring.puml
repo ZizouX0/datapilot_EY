@@ -1,0 +1,61 @@
+@startuml sequence
+skinparam backgroundColor white
+skinparam defaultFontSize 13
+skinparam sequenceParticipantBackgroundColor #F0EEF8
+skinparam sequenceParticipantBorderColor #3D108A
+skinparam sequenceParticipantFontSize 13
+skinparam sequenceArrowColor #2E2E38
+skinparam sequenceArrowFontSize 12
+skinparam noteBorderColor #27ACAA
+skinparam noteBackgroundColor #E8F8F8
+skinparam noteFontSize 12
+
+actor "User" as U
+participant "Questionnaire\n(page)" as Q
+participant "useAppStore\n(Zustand)" as S
+participant "Results\n(page)" as R
+
+== Capture answers ==
+
+U -> Q: select score (1 to 5)
+Q -> S: setAnswer(indicatorId, score)
+S -> S: answers[id] =\n{score, skipped:false}
+
+U -> Q: enter evidence text
+Q -> S: setEvidence(indicatorId, text)
+S -> S: answers[id].evidence = text
+
+note right of S: State persisted to localStorage\n(key: datapilot-assessment)
+
+== Aggregate scores on Results mount ==
+
+R -> S: read scores on mount
+
+S -> S: getEffectiveScore(indicatorId)
+note right of S
+  if skipped or unanswered: null.
+  if score >= 3 and no evidence:
+  cap effective score at 2.
+end note
+
+S -> S: getSubDimScore(subDim)
+note right of S: average of effective scores\n(nulls excluded)
+
+S -> S: getDimScore(dim)
+note right of S: average of sub-dimension scores\n(nulls excluded)
+
+S -> S: getGlobalScore()
+note right of S
+  weighted average of dimension
+  scores, renormalized over the
+  weight of answered dimensions.
+  Rounded to 2 decimals.
+end note
+
+S -> S: getPercentage(score)\ngetMaturityLevel(score)
+note right of S: percentage = round(score x 20)\nGMI 2.19 gives 44 percent, Level 2 Emerging
+
+S --> R: globalScore, dimScores,\npercentage, maturityLevel
+R -> R: render RadarChart,\nDimensionBars, MaturityBadge
+
+@enduml

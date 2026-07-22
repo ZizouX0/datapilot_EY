@@ -1,0 +1,55 @@
+@startuml assessment-lifecycle
+skinparam backgroundColor white
+skinparam defaultFontSize 13
+skinparam stateBackgroundColor #F0EEF8
+skinparam stateBorderColor #3D108A
+skinparam stateArrowColor #2E2E38
+skinparam stateFontSize 13
+skinparam noteBackgroundColor #E8F8F8
+skinparam noteBorderColor #27ACAA
+skinparam noteFontSize 12
+
+[*] --> Idle : session created
+
+Idle --> InProgress : setAnswer or skipIndicator\n(first indicator answered)
+
+InProgress --> InProgress : setAnswer, setEvidence,\nskipIndicator (more indicators)
+
+InProgress --> Complete : all 47 indicators answered\nor validly skipped\n[isAssessmentComplete()]
+
+Complete --> InProgress : setAnswer(null)\n(an indicator cleared)
+
+state "Unlocked Screens" as Unlocked {
+  state "Results" as Res
+  state "Gap Analysis" as Gap
+  state "Compliance" as Comp
+}
+
+Complete --> Unlocked : completion gate opens\n(RequireComplete allows\n/results, /gap-analysis,\n/compliance)
+
+Unlocked --> Complete : return to assessment
+
+Complete --> Idle : resetAll()
+InProgress --> Idle : resetAll()
+Unlocked --> Idle : resetAll()
+
+note right of InProgress
+  Completion gate is closed.
+  RequireComplete redirects
+  /results, /gap-analysis and
+  /compliance back to
+  /assessment.
+  13 BCT indicators cannot
+  be skipped; per dimension
+  at most floor(0.20 x n)
+  skips are allowed.
+end note
+
+note bottom of Unlocked
+  Reached only when every
+  dimension is complete.
+  Screens read the scoring
+  selectors from the store.
+end note
+
+@enduml
