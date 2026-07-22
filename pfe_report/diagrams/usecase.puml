@@ -41,6 +41,10 @@ rectangle "DataPilot platform" {
   }
 }
 
+owner -[hidden]down-> sadmin
+sadmin -[hidden]down-> admin
+admin -[hidden]down-> analyst
+
 owner --> UCmaster
 owner --> UCroles
 owner --> UCreview
