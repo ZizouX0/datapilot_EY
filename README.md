@@ -149,6 +149,8 @@ The deep dive — every store, route guard, table, RLS policy, and the Model B f
 
 | Document | What's inside |
 | -------- | ------------- |
+| **[docs/USER_GUIDE.md](docs/USER_GUIDE.md)** | **Plain‑language guide for end users** — how the roles work, how to invite people down the chain (EY → Super Admin → Admin → Analyst), how to run and read an assessment. Start here for the business/company handoff. |
+| **[docs/GUIDE_UTILISATEUR.md](docs/GUIDE_UTILISATEUR.md)** | 🇫🇷 The same end‑user guide in **French**. |
 | **[docs/SETUP.md](docs/SETUP.md)** | Step‑by‑step backend setup: every migration in order, env vars, AI provider, deployment, and creating the first EY owner. |
 | **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | Frontend (routes, guards, stores), the serverless API layer, data flow, and the Model B collaborative‑assessment design. |
 | **[docs/DATABASE.md](docs/DATABASE.md)** | Every table, the RLS policies and `SECURITY DEFINER` helpers, the migration history, and the multi‑tenant isolation model. |

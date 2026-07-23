@@ -19,10 +19,6 @@ const useAppStore = create(
   targetLevel: 3,
   activeDimension: 'D1',
   activeSubDim: '1.1',
-  // Whether the "Skip evaluation" auto-fill is currently applied, plus a stash
-  // of the user's real answers so toggling it off restores their work.
-  autoFilled: false,
-  _preFillStash: null,
   // The auth user id this persisted assessment belongs to. Guards against a
   // shared browser leaking one user's answers to the next: when a different user
   // signs in (or a session is swapped without an explicit sign-out), claimForUser
@@ -309,34 +305,11 @@ const useAppStore = create(
     set({ activeSubDim: sub });
   },
 
-  // "Skip evaluation" — a toggle. ON fills every indicator with a random score
-  // (stashing the user's real answers first); OFF removes the auto-fill and
-  // restores whatever the user had entered before. The bank is NOT touched — it
-  // is inherited from the user's account, not invented here.
-  toggleAutoFill() {
-    const state = get();
-    if (state.autoFilled) {
-      set({ answers: state._preFillStash || {}, autoFilled: false, _preFillStash: null });
-      return;
-    }
-    const answers = {};
-    INDICATORS.forEach(ind => {
-      const score = 1 + Math.floor(Math.random() * 5); // 1..5
-      answers[ind.id] = {
-        score,
-        skipped: false,
-        // Scores >= 3 need evidence or they get capped to 2 by getEffectiveScore.
-        evidence: score >= 3 ? 'Auto-generated test evidence.' : '',
-      };
-    });
-    set({ answers, autoFilled: true, _preFillStash: state.answers });
-  },
-
   // Clear every answer so the assessment is "all not done" again, while keeping
   // the profile/bank and target level. Used by the top-bar Reset control so an
-  // analyst can start filling from scratch (e.g. after a test auto-fill).
+  // analyst can start filling from scratch.
   resetAnswers() {
-    set({ answers: {}, autoFilled: false, _preFillStash: null, activeDimension: 'D1', activeSubDim: '1.1' });
+    set({ answers: {}, activeDimension: 'D1', activeSubDim: '1.1' });
   },
 
   resetAll() {
@@ -346,8 +319,6 @@ const useAppStore = create(
       targetLevel: 3,
       activeDimension: 'D1',
       activeSubDim: '1.1',
-      autoFilled: false,
-      _preFillStash: null,
       _ownerUserId: null,
     });
   },
@@ -369,13 +340,9 @@ const useAppStore = create(
       version: 1,
       storage: createJSONStorage(() => localStorage),
       // Only persist user data — selectors/actions are recreated by the store.
-      // NEVER persist the "Skip evaluation" auto-fill: if it's active we persist
-      // the user's REAL answers (the stash), not the random ones, and we drop the
-      // autoFilled/_preFillStash flags entirely. So a test auto-fill can't survive
-      // a reload as a complete, submittable assessment.
       partialize: (state) => ({
         profile: state.profile,
-        answers: state.autoFilled ? (state._preFillStash || {}) : state.answers,
+        answers: state.answers,
         targetLevel: state.targetLevel,
         activeDimension: state.activeDimension,
         activeSubDim: state.activeSubDim,

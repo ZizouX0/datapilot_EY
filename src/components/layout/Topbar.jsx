@@ -9,14 +9,12 @@ import LanguageToggle from '../ui/LanguageToggle';
 export default function Topbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  // Reset/Skip act on the SOLO assessment (useAppStore), so they only belong on
-  // the solo assessment page. Anywhere else (results, gap, compliance, account,
-  // guide, the group draft) they'd silently mutate unrelated solo state — e.g.
+  // Reset acts on the SOLO assessment (useAppStore), so it only belongs on the
+  // solo assessment page. Anywhere else (results, gap, compliance, account,
+  // guide, the group draft) it would silently mutate unrelated solo state — e.g.
   // Reset on /results empties the answers and bounces the analyst out via
-  // RequireComplete. Show them on /assessment only.
+  // RequireComplete. Show it on /assessment only.
   const onAssessment = location.pathname === '/assessment';
-  const toggleAutoFill = useAppStore(s => s.toggleAutoFill);
-  const autoFilled = useAppStore(s => s.autoFilled);
   const resetAnswers = useAppStore(s => s.resetAnswers);
 
   const user = useAuthStore(s => s.user);
@@ -59,21 +57,6 @@ export default function Topbar() {
               className="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded text-xs font-medium"
             >
               {t('top.reset')}
-            </button>
-
-            {/* Skip evaluation — a test helper that auto-fills every indicator
-                (toggle off restores the analyst's own answers). */}
-            <button
-              onClick={toggleAutoFill}
-              title={autoFilled ? t('top.skipTitleOn') : t('top.skipTitleOff')}
-              className={
-                (autoFilled
-                  ? 'bg-ey-yellow text-ey-charcoal hover:brightness-95'
-                  : 'bg-gray-700 hover:bg-gray-600 text-gray-200') +
-                ' px-3 py-1 rounded text-xs font-medium'
-              }
-            >
-              {autoFilled ? t('top.skipOn') : t('top.skip')}
             </button>
 
             {bankName && (
