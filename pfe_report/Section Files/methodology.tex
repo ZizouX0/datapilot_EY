@@ -12,7 +12,7 @@ Design Science Research (DSR) is a methodology widely adopted in information sys
 
 \subsubsection{The DSR Regulative Cycle}
 
-DSR structures each iteration through the regulative cycle, which organizes the work into five activities. Problem investigation characterizes the problem the iteration addresses, its stakeholders, and the criteria a satisfactory solution must meet. Solution design defines the artifact or component expected to address the problem, together with its design decisions. Design validation checks the design against the requirements and the knowledge base before significant effort is committed to building it. Solution implementation builds the artifact, whether a documented framework component or a piece of the tool. Solution evaluation assesses the result against evidence and against the criteria set during problem investigation, and its findings feed the problem investigation of the following iteration.
+DSR structures each iteration through the regulative cycle \cite{wieringa2014}, which organizes the work into five activities. Problem investigation characterizes the problem the iteration addresses, its stakeholders, and the criteria a satisfactory solution must meet. Solution design defines the artifact or component expected to address the problem, together with its design decisions. Design validation checks the design against the requirements and the knowledge base before significant effort is committed to building it. Solution implementation builds the artifact, whether a documented framework component or a piece of the tool. Solution evaluation assesses the result against evidence and against the criteria set during problem investigation, and its findings feed the problem investigation of the following iteration.
 
 This structure gives the project a repeatable and auditable rhythm. Because evaluation feeds directly into the next problem investigation, the framework and the tool are not designed once and frozen but progressively corrected as field evidence and regulatory requirements are confronted. For example, a validation finding such as the risk that a respondent overstates maturity without proof is carried forward as a problem for the following iteration, where it becomes the evidence cap rule implemented in the scoring engine. Figure~\ref{fig:dsr-cycle} illustrates the regulative cycle and its application across the four iterations.
 
@@ -97,13 +97,6 @@ The four project iterations map onto the DSR design cycle, and development insid
 
 Beyond the research and development methodologies, the project was conducted as a structured consulting engagement over a roughly 26-week plan at EY Tunisia. The work was organized into six phases, a framing phase numbered~0 followed by five delivery phases numbered~1 to~5. Phases~0 to~3 constitute the pre-coding intellectual work, in which the problem is framed, the existing situation analyzed, the needs identified, and the hybrid framework designed. Phases~4 and~5 cover the build and deployment of the DataPilot tool. The project started on 2~February 2026 with the framing phase, and the kickoff presentation was delivered on 12~February 2026. Development began on 11~May 2026, and the project closed with the deployment phase ending on 31~July 2026. A transversal workstream covered report writing, risk management, and project steering with weekly meetings throughout the engagement. Figure~\ref{fig:phases-overview} gives an overview of the six phases, and Table~\ref{tab:project-phases} details, for each, its period, focus and key tasks, and key deliverables.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{images/phases-overview.pdf}
-\caption{The six project phases from framing to deployment}
-\label{fig:phases-overview}
-\end{figure}
-
 \begin{landscape}
 \begin{table}[H]
 \centering
@@ -133,6 +126,13 @@ Transversal & 16 February to 31 July 2026 & Report writing; risk management; pro
 
 \end{table}
 \end{landscape}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\textwidth]{images/phases-overview.pdf}
+\caption{The six project phases from framing to deployment}
+\label{fig:phases-overview}
+\end{figure}
 
 The overall schedule is visualized as a Gantt chart in Figure~\ref{fig:gantt}. Of the planned tasks, the scenario and business-gain simulation was realized in the delivered tool as target-level setting and gap-to-target visualization; the quantitative what-if simulation of business gains was identified as future work, as stated in the results and the conclusion.
 

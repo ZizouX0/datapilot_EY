@@ -174,9 +174,9 @@ ax.text(13.85, L4_cy + L4_h / 2 - 0.26, 'new in Iteration 4',
         ha='right', va='center', fontsize=9.5, color=GRAY, style='italic')
 
 box(4.05, 2.18, 6.3, 1.75, 'Serverless API (api/)',
-    'six POST endpoints: invite, set-role, manage-user,\n'
-    'set-department, update-self, roadmap\n'
-    'holds the server-only service key; re-reads the\ncaller\'s role on every request',
+    'five privileged POST endpoints: invite, set-role,\n'
+    'manage-user, set-department, update-self\n'
+    'hold the server-only service key and re-read the\ncaller\'s role; roadmap is an optional AI layer, off by default',
     BLUE, fs_t=12, fs_s=8.8)
 box(11.15, 2.18, 6.6, 1.75, 'Supabase',
     'Postgres under row-level security: profiles, per-bank\n'

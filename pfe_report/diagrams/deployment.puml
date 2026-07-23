@@ -24,7 +24,7 @@ node "User Device" as device {
 }
 
 node "Serverless Host" as host {
-  node "Serverless API functions (api/*)\ninvite, set-role, manage-user,\nset-department, update-self" as api
+  node "Serverless API functions (api/*)\ninvite, set-role, manage-user,\nset-department, update-self,\nroadmap (optional AI, off by default)" as api
   artifact "Static assets\n(HTML, JS, CSS)" as assets
 }
 
