@@ -1,0 +1,185 @@
+@startuml class-model
+skinparam backgroundColor white
+skinparam defaultFontSize 13
+skinparam classFontSize 13
+skinparam classAttributeFontSize 12
+skinparam classBackgroundColor #F0EEF8
+skinparam classBorderColor #3D108A
+skinparam classArrowColor #2E2E38
+skinparam classFontColor #2E2E38
+skinparam classAttributeIconSize 0
+skinparam noteBackgroundColor #FFFDE0
+skinparam noteBorderColor #2E2E38
+skinparam packageStyle rectangle
+skinparam packageBorderColor #2E2E38
+skinparam packageFontSize 14
+skinparam packageFontStyle bold
+skinparam shadowing false
+
+
+package "Tenancy and roles" {
+  class Profile {
+    +id : UUID
+    +email : String
+    +fullName : String
+    +role : {owner, superadmin, admin, analyst}
+    +bankName : String <<tenant key>>
+    +departmentId : UUID
+    +disabled : Boolean
+    +invitedBy : UUID
+  }
+
+  class Department {
+    +id : UUID
+    +bankName : String <<tenant key>>
+    +name : String
+  }
+}
+
+package "Questionnaire content (per bank)" {
+  class Dimension {
+    +bankName : String <<tenant key>>
+    +code : String
+    +name : String
+    +weight : Float
+    +proxy : Boolean
+  }
+
+  class SubDimension {
+    +id : String
+    +name : String
+  }
+
+  class Indicator {
+    +bankName : String <<tenant key>>
+    +id : String
+    +dim : String
+    +sub : String
+    +bct : Boolean
+    +question : String
+    +hint : String
+    +rubric : String[5]
+  }
+}
+
+package "Group assessment" {
+  class Assessment {
+    +id : UUID
+    +bankName : String <<tenant key>>
+    +title : String
+    +status : {draft, finalized}
+    +targetLevel : Integer
+    +createdBy : UUID
+    +finalizedAt : Date
+  }
+
+  class AssessmentAssignment {
+    +assessmentId : UUID
+    +dimCode : String
+    +departmentId : UUID
+  }
+
+  class AssessmentAnswer {
+    +assessmentId : UUID
+    +indicatorId : String
+    +score : Integer
+    +evidence : String
+    +skipped : Boolean
+    +answeredBy : UUID
+  }
+}
+
+package "Solo assessment (browser)" {
+  class Answer {
+    +indicatorId : String
+    +score : Integer
+    +evidence : String
+    +skipped : Boolean
+  }
+}
+
+package "Results" {
+  class Submission {
+    +analystId : UUID
+    +bankName : String <<tenant key>>
+    +globalScore : Float
+    +maturityLevel : Integer
+    +bctRate : Integer
+    +dimensionScores : JSON
+    +answers : JSON
+    +profile : JSON
+    +createdAt : Date
+  }
+
+  class MaturityLevel {
+    +level : Integer
+    +cmmiLabel : String
+    +gartnerLabel : String
+    +min : Float
+    +max : Float
+  }
+
+  class Recommendation {
+    +dim : String
+    +band : String
+    +actions : String[3]
+  }
+}
+
+Profile "0..*" --> "0..1" Department : belongs to
+Profile "0..*" --> "0..1" Profile : invited by
+
+Dimension "1" *-- "1..*" SubDimension : contains
+SubDimension "1" *-- "1..*" Indicator : groups
+
+Indicator "1" --> "0..1" Answer : solo answer
+
+Assessment "1" *-- "0..*" AssessmentAssignment : maps
+AssessmentAssignment "0..*" --> "1" Department : assigns to
+AssessmentAssignment "0..*" --> "1" Dimension : covers
+Assessment "1" *-- "0..*" AssessmentAnswer : collects
+AssessmentAnswer "0..*" --> "1" Indicator : scores
+AssessmentAnswer "0..*" --> "1" Profile : answered by
+
+Assessment "1" --> "0..1" Submission : finalized into
+Profile "1" --> "0..*" Submission : submits solo result
+Submission "0..*" --> "1" MaturityLevel : classified as
+Dimension "1" --> "1..*" Recommendation : yields
+
+note as NTenant
+  bankName is the tenant key: there is no
+  separate Bank table. Every scoped row
+  carries its bank name, and row-level
+  security confines it to that bank.
+  On Dimension and Indicator the empty
+  bank name marks the EY master template;
+  each bank tailors its own copy.
+end note
+NTenant .. Profile
+
+note bottom of Indicator
+  EY master template: 47 indicators
+  across 12 sub-dimensions, 13 with
+  bct = true (cannot be skipped).
+end note
+
+note bottom of Answer
+  Evidence cap: a score of 3
+  or higher with no evidence
+  is reduced to 2.
+end note
+
+note bottom of Submission
+  Immutable snapshot written by a solo
+  submit or a group finalization: scores,
+  answers, and profile are frozen and
+  cannot be updated afterwards.
+end note
+
+note bottom of MaturityLevel
+  Five bands from Initial to
+  Optimized. Level 2 is Emerging
+  (1.80 to 2.59).
+end note
+
+@enduml

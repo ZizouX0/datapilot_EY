@@ -1,0 +1,56 @@
+@startuml deployment
+skinparam backgroundColor white
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam nodeBackgroundColor #F0EEF8
+skinparam nodeBorderColor #3D108A
+skinparam databaseBackgroundColor #E6F4F1
+skinparam databaseBorderColor #27ACAA
+skinparam cloudBackgroundColor #EAF4FD
+skinparam cloudBorderColor #188CE5
+skinparam artifactBackgroundColor #FFFFFF
+skinparam artifactBorderColor #2E2E38
+skinparam arrowColor #2E2E38
+skinparam noteBackgroundColor #FFFBD6
+skinparam noteBorderColor #2E2E38
+skinparam noteFontSize 12
+
+
+node "User Device" as device {
+  node "Web Browser" as browser {
+    artifact "DataPilot SPA\n(React 19, Vite build)" as spa
+    database "localStorage\n(solo in-progress\nanswers only)" as ls
+  }
+}
+
+node "Serverless Host" as host {
+  node "Serverless API functions (api/*)\ninvite, set-role, manage-user,\nset-department, update-self" as api
+  artifact "Static assets\n(HTML, JS, CSS)" as assets
+}
+
+cloud "Supabase" as supa {
+  database "Postgres\n(all tenant data under\nrow-level security)" as pg
+  node "Auth\n(email and password,\ninvite emails)" as auth
+  node "Storage\n(avatars bucket)" as storage
+}
+
+
+assets -left-> spa : serves the built\nSPA over HTTPS
+spa -down-> ls : autosaves solo\nin-progress answers
+spa -down-> supa : public anon key,\nevery row filtered by\nrow-level security
+spa -right-> api : bearer access token,\nprivileged operations only
+api -down-> supa : service role key;\nre-reads the caller's role\nand rank on every request
+
+note bottom of supa
+  Tenant isolation policy on every table:
+  owner, or same bank as the caller
+  (the bank name is the tenant key)
+end note
+
+note bottom of host
+  Rank checks server-side: invites are
+  one rank down, no self role change,
+  disabled accounts always refused
+end note
+
+@enduml

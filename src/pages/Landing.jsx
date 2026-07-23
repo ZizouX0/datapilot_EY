@@ -25,7 +25,7 @@ const COPY = {
     ctaTitle: 'Ready to begin?',
     ctaBody: 'Use the email where you received your invite — accounts are created by your administrator.',
     ctaButton: 'Sign in to get started →',
-    footer: 'EY Advisory Tunisia · PFE 2026 Internship Project',
+    footer: 'EY Consulting Tunisia · PFE 2026 Internship Project',
     steps: [
       { title: 'Sign in', desc: 'Your administrator gives you an account — nothing to install.' },
       { title: 'Answer simple questions', desc: `Go through ${INDICATORS.length} short questions about how your bank handles its data, grouped into ${Object.keys(DIMENSIONS).length} clear themes.` },
@@ -63,7 +63,7 @@ const COPY = {
     ctaTitle: 'Prêt à commencer ?',
     ctaBody: 'Utilisez l’e-mail sur lequel vous avez reçu votre invitation — les comptes sont créés par votre administrateur.',
     ctaButton: 'Se connecter pour commencer →',
-    footer: 'EY Advisory Tunisie · Projet de stage PFE 2026',
+    footer: 'EY Consulting Tunisie · Projet de stage PFE 2026',
     steps: [
       { title: 'Se connecter', desc: 'Votre administrateur vous donne un compte — rien à installer.' },
       { title: 'Répondre à des questions simples', desc: `Parcourez ${INDICATORS.length} courtes questions sur la gestion des données de votre banque, regroupées en ${Object.keys(DIMENSIONS).length} thèmes clairs.` },

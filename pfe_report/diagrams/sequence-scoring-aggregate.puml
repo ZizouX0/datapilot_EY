@@ -1,0 +1,34 @@
+@startuml sequence-scoring-aggregate
+skinparam backgroundColor white
+skinparam defaultFontSize 13
+skinparam dpi 150
+skinparam sequenceParticipantBackgroundColor #F0EEF8
+skinparam sequenceParticipantBorderColor #3D108A
+skinparam sequenceActorBorderColor #3D108A
+skinparam sequenceArrowColor #2E2E38
+skinparam sequenceArrowFontSize 12
+skinparam noteBorderColor #27ACAA
+skinparam noteBackgroundColor #E8F8F8
+skinparam noteFontSize 12
+
+actor "Analyst" as U
+participant "Results\nscreen" as R
+participant "Scoring engine\n(application store)" as S
+
+U -> R: open the Results screen
+R -> S: request the maturity results
+activate S
+S -> S: compute each effective score
+note right of S
+  null if skipped or unanswered;
+  capped at 2 if the score is 3 or
+  more without evidence.
+end note
+S -> S: average within each sub-dimension
+S -> S: average within each dimension
+S -> S: weighted, renormalized Global Maturity Index
+note right of S: GMI 2.19 gives 44 percent, Level 2 Emerging
+S --> R: global score, dimension scores,\npercentage, maturity level
+deactivate S
+R -> R: render the radar chart, the dimension bars,\nand the maturity badge
+@enduml

@@ -1,0 +1,90 @@
+@startuml group-assessment-flow
+skinparam backgroundColor white
+skinparam defaultFontSize 13
+skinparam activityBackgroundColor #F0EEF8
+skinparam activityBorderColor #3D108A
+skinparam activityArrowColor #2E2E38
+skinparam activityFontSize 13
+skinparam activityDiamondBackgroundColor #FFFBD6
+skinparam activityDiamondBorderColor #2E2E38
+skinparam activityDiamondFontSize 13
+skinparam noteBackgroundColor #E8F8F8
+skinparam noteBorderColor #27ACAA
+skinparam noteFontSize 12
+skinparam swimlaneTitleFontSize 14
+skinparam swimlaneBorderColor #2E2E38
+
+
+|#F0EEF8|Coordinator (Admin or Super Admin)|
+start
+:Create the bank's departments;
+note right
+  One-click seed of the five
+  standard Tunisian departments
+end note
+:Invite Analysts, assigning
+each to a department;
+:Create the shared group
+assessment draft;
+|#E8F8F8|Platform (Postgres under RLS)|
+:Enforce at most one
+open draft per bank;
+|#F0EEF8|Coordinator (Admin or Super Admin)|
+:Map each dimension to
+exactly one department;
+note right
+  Suggested Tunisian
+  mapping available
+end note
+|#EAF4FD|Department Analysts|
+:Open the group assessment view;
+:See only the dimensions
+assigned to their department;
+repeat
+  :Score an indicator (1 to 5)
+  with evidence, or skip;
+  note right
+    Solo rules still apply:
+    evidence cap (score of 3 or
+    more without evidence
+    computes as 2), skip ceiling
+    of 20% per dimension,
+    regulatory (BCT) indicators
+    cannot be skipped
+  end note
+  |#E8F8F8|Platform (Postgres under RLS)|
+  :Auto-save to the shared answer map;
+  note right
+    Write accepted only if: same bank,
+    draft still open, and the indicator's
+    true dimension is assigned to the
+    analyst's department
+  end note
+  |#EAF4FD|Department Analysts|
+repeat while (All assigned indicators\nanswered or skipped?) is (No)
+-> Yes;
+:"Your part is complete" banner;
+|#F0EEF8|Coordinator (Admin or Super Admin)|
+:Monitor per-dimension progress
+and live headline scores;
+:Confirm finalization;
+|#E8F8F8|Platform (Postgres under RLS)|
+:Re-read all answers and compute scores
+with the shared scoring engine;
+if (At least one indicator scored?) then (No)
+  :Refuse finalization;
+  stop
+else (Yes)
+endif
+:Insert one immutable submission row
+(snapshot of scores, answers, profile);
+:Atomically flip the draft to finalized;
+:Answers become read-only
+at the database layer;
+note right
+  Unfilled dimensions drop out of the
+  GMI through weight renormalization
+end note
+stop
+
+@enduml

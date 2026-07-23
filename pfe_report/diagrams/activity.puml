@@ -1,0 +1,84 @@
+@startuml activity
+skinparam backgroundColor white
+skinparam defaultFontSize 13
+skinparam activityBackgroundColor #F0EEF8
+skinparam activityBorderColor #3D108A
+skinparam activityArrowColor #2E2E38
+skinparam activityFontSize 13
+skinparam noteBackgroundColor #E8F8F8
+skinparam noteBorderColor #27ACAA
+skinparam noteFontSize 12
+
+start
+:Welcome screen (/);
+note right: Start or resume assessment
+
+:Profile screen (/profile);
+note right: Bank name, date, respondent name, role
+
+:Questionnaire screen (/assessment);
+note right: ProgressBar and Scoring Rules shown
+
+repeat
+  :Answer indicator (score 1 to 5);
+  note right
+    47 indicators across 5 dimensions
+    and 12 sub-dimensions
+  end note
+  if (Regulatory (BCT) indicator?) then (yes)
+    :Answer required (cannot skip);
+  else (no)
+    if (Skip this indicator?) then (yes)
+      :Skip (subject to 20% per-dimension cap);
+    else (no)
+      :Add optional evidence text;
+    endif
+  endif
+repeat while (All 47 indicators addressed?) is (No)
+-> Yes;
+
+:Compute scores;
+note right
+  Evidence cap: raw score of 3 or more
+  without evidence is capped at 2.
+  Sub-dimension = average of indicators.
+  Dimension = average of sub-dimensions.
+  Skipped or unanswered are excluded.
+end note
+
+:Compute Global Maturity Index (GMI);
+note right
+  Weighted average of dimension scores
+  (25/20/20/20/15), renormalized over the
+  weight of answered dimensions.
+  Maturity level from GMI band.
+end note
+
+note right: RequireComplete gate unlocked
+
+fork
+  :Results screen (/results);
+  note right
+    GMI, maturity badge, RadarChart,
+    DimensionBars, set target level
+  end note
+fork again
+  :Gap Analysis screen (/gap-analysis);
+  note right
+    Recommended improvement roadmap,
+    prioritized by dimension band
+  end note
+fork again
+  :Compliance screen (/compliance);
+  note right
+    13 BCT indicators: compliant,
+    non-compliant or pending;
+    rate and exposure
+  end note
+end fork
+
+:Export PDF (react-to-print);
+
+stop
+
+@enduml

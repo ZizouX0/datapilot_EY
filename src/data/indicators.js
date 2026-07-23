@@ -34,11 +34,11 @@ const DEFAULT_INDICATORS = [
     subName: 'Strategy & data policy',
     bct: true,
     q: 'Is there a formally approved and dated data strategy document?',
-    hint: 'BCT Art. 7.2 — The strategy must be formally approved by executive management, dated, and accessible to all relevant stakeholders. An informal or verbal strategy does not satisfy this requirement.',
+    hint: 'BCT Art. 6 — The strategy must be formally approved by executive management, dated, and accessible to all relevant stakeholders. An informal or verbal strategy does not satisfy this requirement.',
     rubric: [
       'No data strategy document exists. Data direction is entirely informal and undocumented. Individual decisions made ad hoc with no shared direction.',
       'A draft or informal strategy exists but has not been formally approved, dated, or signed by executive management. Not officially communicated.',
-      'Strategy document exists, formally approved by executive management, dated, and shared with all relevant teams. BCT Art. 7.2 satisfied.',
+      'Strategy document exists, formally approved by executive management, dated, and shared with all relevant teams. BCT Art. 6 satisfied.',
       'Strategy actively tracked via KPIs, reviewed at least quarterly, and formally updated with a documented revision history and change log.',
       'Strategy fully embedded in corporate planning cycles, benchmarked against sector peers, and drives measurable business outcomes enterprise-wide.',
     ],
@@ -82,7 +82,7 @@ const DEFAULT_INDICATORS = [
     subName: 'Strategy & data policy',
     bct: true,
     q: 'Is there a periodic review process for the data policy in place?',
-    hint: 'The data policy must be formally reviewed on a defined schedule (at least annually), with a documented change log, and approved by the governance committee after each review cycle.',
+    hint: 'BCT Art. 6 — The data policy must be formally reviewed on a defined schedule (at least annually), with a documented change log, and approved by the governance committee after each review cycle.',
     rubric: [
       'Data policy has never been reviewed since its creation — or no policy exists at all. No review process defined anywhere.',
       'Ad hoc reviews occur when major incidents happen or regulations change, but no scheduled cycle or change log exists.',
@@ -100,7 +100,7 @@ const DEFAULT_INDICATORS = [
     subName: 'Ownership & responsibilities',
     bct: true,
     q: 'Are data owners formally identified for each critical business domain?',
-    hint: 'BCT Art. 7.4 — Data owners must be named individuals with documented accountability per domain (credit, risk, compliance, finance, operations). A RACI matrix must exist and be communicated.',
+    hint: 'BCT Art. 6 — Data owners must be named individuals with documented accountability per domain (credit, risk, compliance, finance, operations). A RACI matrix must exist and be communicated.',
     rubric: [
       'No data owners identified anywhere. Accountability for data assets completely unclear. No one formally responsible for data quality in any domain.',
       'Some informal stewards exist but ownership not formally documented. No RACI. Coverage incomplete and dependent on key individuals.',
@@ -166,7 +166,7 @@ const DEFAULT_INDICATORS = [
     subName: 'Regulatory compliance',
     bct: true,
     q: 'Is there a formal mapping to BCT Circular N°2025-08 requirements?',
-    hint: 'BCT Art. 12.1 — This is a mandatory BCT indicator. Cannot be skipped. Must include article-by-article mapping with evidence status and responsible owner per article.',
+    hint: 'BCT Art. 6 — This is a mandatory BCT indicator. Cannot be skipped. Must include article-by-article mapping with evidence status and responsible owner per article.',
     rubric: [
       'No mapping to BCT Circular 2025-08 exists. The bank has not begun to assess its compliance obligations under this regulation.',
       'Informal awareness of BCT requirements exists but no structured article-by-article mapping completed. No evidence package exists.',
@@ -182,7 +182,7 @@ const DEFAULT_INDICATORS = [
     subName: 'Regulatory compliance',
     bct: true,
     q: 'Is the bank audit-ready for BCT inspections — documentary evidence available?',
-    hint: 'BCT Art. 12.1 — Audit readiness means having a pre-assembled evidence package per article: approved documents, system logs, dashboards, and named responsible owners — all accessible within 48 hours.',
+    hint: 'BCT Art. 6 — Audit readiness means having a pre-assembled evidence package per article: approved documents, system logs, dashboards, and named responsible owners, all accessible within 48 hours.',
     rubric: [
       'Not ready for audit. Key documents do not exist or cannot be located. An inspection today would result in significant non-compliance findings.',
       'Partial documentation exists but is scattered, inconsistent, and would require weeks to compile. Not audit-ready in any practical sense.',
@@ -198,9 +198,9 @@ const DEFAULT_INDICATORS = [
     subName: 'Regulatory compliance',
     bct: true,
     q: 'Is BCBS 239 data traceability maintained for risk reporting?',
-    hint: 'BCBS 239 Principle 2 — Every critical risk data element used in regulatory reports must have documented lineage from source to report. Traceability must be auditable and current.',
+    hint: 'BCBS 239 — Every critical risk data element used in regulatory reports must have documented lineage from source to report. Traceability must be auditable and current.',
     rubric: [
-      'No traceability whatsoever. Origin of risk data completely unknown. BCBS 239 Principle 2 not met. Significant regulatory risk.',
+      'No traceability whatsoever. Origin of risk data completely unknown. BCBS 239 not met. Significant regulatory risk.',
       'Partial coverage — some critical flows are traced informally but lineage is incomplete, outdated, and not systematically maintained.',
       'Full traceability documented for all critical risk data flows in a dedicated tool. Source, transformations, and targets mapped and current.',
       'Lineage maintained automatically by ETL tooling. Changes trigger lineage updates. Impact analysis available for any data element.',
@@ -214,7 +214,7 @@ const DEFAULT_INDICATORS = [
     subName: 'Regulatory compliance',
     bct: true,
     q: 'Is a data retention and classification policy formally adopted?',
-    hint: 'The policy must define retention periods per data category, classification levels (public/internal/confidential/restricted), and enforcement mechanisms. It must be formally approved and communicated.',
+    hint: 'BCT Art. 6 — The policy must define retention periods per data category, classification levels (public/internal/confidential/restricted), and enforcement mechanisms. It must be formally approved and communicated.',
     rubric: [
       'No retention or classification policy exists. Data kept indefinitely by default or deleted randomly. No classification of sensitive data.',
       'Informal rules exist based on system defaults or individual team practices. Nothing formally documented, approved, or communicated.',
@@ -236,7 +236,7 @@ const DEFAULT_INDICATORS = [
     subName: 'Quality dimensions',
     bct: true,
     q: 'Is the completeness rate of critical datasets measured and actively tracked?',
-    hint: 'Completeness must be measured programmatically — not estimated. A dashboard or monitoring report must show trends over time for each critical dataset. Manual spot-checks do not qualify.',
+    hint: 'BCBS 239 — Completeness must be measured programmatically, not estimated. A dashboard or monitoring report must show trends over time for each critical dataset. Manual spot-checks do not qualify.',
     rubric: [
       'No completeness measurement exists. Data gaps discovered reactively when reports fail or users notice missing values. No metrics defined.',
       'Ad hoc spot-checks performed when issues arise. No systematic tracking. No defined thresholds or SLAs for any dataset.',
@@ -302,7 +302,7 @@ const DEFAULT_INDICATORS = [
     subName: 'Controls & processes',
     bct: true,
     q: 'Are automated data validation rules documented and applied in production?',
-    hint: 'BCT Art. 9.1 — Rules must be automated (not manual), documented with owner and last-review date, and actively applied to incoming data flows in production systems.',
+    hint: 'BCT Art. 6 — Rules must be automated (not manual), documented with owner and last-review date, and actively applied to incoming data flows in production systems.',
     rubric: [
       'No validation rules exist. Data enters systems without any automated checks. Errors discovered downstream by business users or in reports.',
       'Some manual validation steps exist in operational processes but no automated rules deployed. Rules not documented.',
@@ -368,9 +368,9 @@ const DEFAULT_INDICATORS = [
     subName: 'Lineage & traceability',
     bct: true,
     q: 'Is end-to-end data lineage documented for critical data flows?',
-    hint: 'BCBS 239 Principle 2 — Lineage must cover source-to-report for all critical risk reporting data flows. A dedicated lineage tool or catalog should be in use — Word documents are insufficient.',
+    hint: 'BCBS 239 — Lineage must cover source-to-report for all critical risk reporting data flows. A dedicated lineage tool or catalog should be in use; Word documents are insufficient.',
     rubric: [
-      'No lineage documentation exists. The origin and transformation history of critical data is completely unknown. BCBS 239 P2 not met.',
+      'No lineage documentation exists. The origin and transformation history of critical data is completely unknown. BCBS 239 not met.',
       'Partial lineage exists for some flows, typically documented informally. Not systematically maintained or current after system changes.',
       'End-to-end lineage documented for all critical flows in a dedicated tool or catalog. Source, transformations, and targets mapped.',
       'Lineage maintained automatically by ETL/ELT tooling. Changes trigger lineage updates. Impact analysis available for any data element.',
@@ -470,7 +470,7 @@ const DEFAULT_INDICATORS = [
     subName: 'Centralization & integration',
     bct: true,
     q: 'Is there a single source of truth (Golden Record) for critical data entities?',
-    hint: 'A Golden Record is the authoritative, consolidated record for a data entity (e.g. client, counterparty, product) — one version, trusted by all systems, no conflicting copies across departments.',
+    hint: 'BCT Art. 6 — A Golden Record is the authoritative, consolidated record for a data entity (e.g. client, counterparty, product): one version, trusted by all systems, with no conflicting copies across departments.',
     rubric: [
       'No Golden Record concept exists. Multiple conflicting versions of the same entity across systems. No authority defined for any data element.',
       'Golden Record identified as a need but no implementation underway. Data conflicts resolved ad hoc when discovered.',
@@ -536,7 +536,7 @@ const DEFAULT_INDICATORS = [
     subName: 'Pipelines & infrastructure',
     bct: true,
     q: 'Are access rights managed through RBAC with complete audit trails?',
-    hint: 'BCT requires role-based access control (RBAC) for all critical data systems. Every access grant or revoke must be logged. Access reviews must be conducted at least annually and documented.',
+    hint: 'BCT Art. 6 — Role-based access control (RBAC) is required for all critical data systems. Every access grant or revoke must be logged. Access reviews must be conducted at least annually and documented.',
     rubric: [
       'No access controls beyond basic system logins. Anyone with system access can view any data. No audit trail. Major security risk.',
       'Basic user management (usernames and passwords) but no role-based structure. Access granted ad hoc. No audit log maintained.',
@@ -672,7 +672,7 @@ const DEFAULT_INDICATORS = [
     subName: 'Data usage',
     bct: true,
     q: 'Are regulatory reports to BCT fully automated with validation trails?',
-    hint: 'BCT regulatory reports must be produced automatically from source data — not assembled manually. A complete validation trail (data source → calculation → output) must exist and be auditable.',
+    hint: 'BCT Art. 6 — Regulatory reports to the BCT must be produced automatically from source data, not assembled manually. A complete validation trail (from source data to calculation to output) must exist and be auditable.',
     rubric: [
       'All regulatory reports prepared fully manually. High error risk. No audit trail. Production takes several days before each deadline.',
       'Some steps partially automated (e.g. data extraction automated but calculations manual). No end-to-end automation. No validation trail.',

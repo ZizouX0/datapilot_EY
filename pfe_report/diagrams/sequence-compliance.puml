@@ -1,0 +1,54 @@
+@startuml sequence-compliance
+skinparam backgroundColor white
+skinparam defaultFontSize 13
+skinparam dpi 150
+skinparam sequenceParticipantBackgroundColor #F0EEF8
+skinparam sequenceParticipantBorderColor #3D108A
+skinparam sequenceParticipantFontSize 13
+skinparam sequenceActorBorderColor #3D108A
+skinparam sequenceArrowColor #2E2E38
+skinparam sequenceArrowFontSize 12
+skinparam noteBorderColor #27ACAA
+skinparam noteBackgroundColor #E8F8F8
+skinparam noteFontSize 12
+
+actor "Analyst" as A
+participant "Compliance screen" as C
+participant "Scoring engine\n(application store)" as S
+
+A -> C: open the Compliance screen
+C -> S: request the compliance summary
+activate S
+
+S -> S: select the 13 regulatory indicators
+note right of S: the indicators flagged as regulatory
+
+loop for each of the 13 regulatory indicators
+  S -> S: evaluate the effective score
+  note right of S
+    null if skipped or unanswered;
+    capped at 2 if the score is 3 or
+    more without evidence.
+  end note
+  alt score is null
+    S -> S: count as pending
+  else score >= 3
+    S -> S: count as compliant
+  else score < 3
+    S -> S: count as non-compliant
+  end
+end
+
+S -> S: compliance rate = compliant out of 13
+S -> S: classify the regulatory exposure
+note right of S
+  rate >= 80 gives Low,
+  rate >= 50 gives Medium,
+  otherwise High.
+end note
+
+S --> C: compliant, non-compliant, pending,\nrate, exposure
+deactivate S
+C -> A: indicator table, compliance rate,\nand regulatory exposure badge
+
+@enduml

@@ -1,0 +1,39 @@
+@startuml state
+skinparam backgroundColor white
+skinparam defaultFontSize 13
+skinparam dpi 150
+skinparam stateBackgroundColor #F0EEF8
+skinparam stateBorderColor #3D108A
+skinparam stateArrowColor #2E2E38
+skinparam stateFontSize 13
+skinparam noteBackgroundColor #E8F8F8
+skinparam noteBorderColor #27ACAA
+skinparam noteFontSize 12
+
+[*] --> Unanswered : **START** — indicator loaded
+
+Unanswered --> Answered : score entered (1 to 5)
+Answered --> Answered : score changed
+
+Answered --> EvidenceCapped : score >= 3 and no evidence
+EvidenceCapped --> Answered : evidence provided
+
+Unanswered --> Skipped : skipped\n[not regulatory; under 20% cap]
+Answered --> Skipped : skipped\n[not regulatory; under 20% cap]
+Skipped --> Unanswered : skip undone
+
+note right of EvidenceCapped
+  Effective score forced
+  to 2 in the aggregation.
+  Provide evidence to
+  restore the true score.
+end note
+
+note right of Skipped
+  Score set to null and
+  excluded from the denominators.
+  Regulatory indicators
+  cannot be skipped.
+end note
+
+@enduml
