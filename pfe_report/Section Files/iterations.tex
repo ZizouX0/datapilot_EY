@@ -205,6 +205,15 @@ For the framework and its scoring methodology to be usable by bank management, t
 DataPilot was designed around six screens---Welcome, Profile, Questionnaire, Results, Gap Analysis, and Compliance---structured as a layered front end whose page components live in \texttt{src/pages}, shared and reusable interface components in \texttt{src/components}, and charts in \texttt{src/charts}. At this stage the framework content was stored as a structured data module rather than an external database, a choice Iteration 4 revisits by moving the content into per-bank data seeded from the EY master template. The module \texttt{src/data/indicators.js} declares the five dimensions with their weights, the twelve sub-dimensions, and the 47 indicators, each carrying its identifier, dimension and sub-dimension, a regulatory flag marking the thirteen regulatory indicators, the question, a guidance hint, and a five level rubric; \texttt{src/data/recommendations.js} stores the improvement actions proposed for each dimension at three maturity bands. The application state is held in a single Zustand store, \texttt{src/store/useAppStore.js}, which records the profile, answers, and target level, exposes the scoring selectors of Iteration 2, and persists the assessment to browser local storage under the key \texttt{datapilot-assessment} so work in progress survives reloads. From each indicator's regulatory flag the selector \texttt{getBCTCompliance} derives the compliant, non compliant, and pending counts, an overall compliance rate, and an exposure level. The scoring engine applies the aggregation logic and business rules automatically, feeding the Results, Gap Analysis, and Compliance screens detailed below.
 \end{sloppypar}
 
+The primary actor of the tool is the Analyst, the person who runs an assessment and reads its results. Figure~\ref{fig:analyst-usecase} isolates the Analyst's interactions before the full scope is shown. Running a solo assessment includes answering each indicator, and optionally attaching evidence or skipping a non-regulatory item; the Analyst then views the results and dashboards, the gap analysis and roadmap, and the compliance status, prints the report, submits the result for review, contributes to a group assessment, and manages their own account. The results screens are reachable only once the completion gate opens.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.78\textwidth]{images/analyst-usecase.pdf}
+\caption{Use case diagram of the Analyst, the tool's primary actor}
+\label{fig:analyst-usecase}
+\end{figure}
+
 The full functional scope of the tool, and of the platform that later extends it, is summarized in the use case diagram of Figure~\ref{fig:usecase}. The four platform roles that appear as actors alongside the Assessor and Management are introduced in Iteration~4, and each use case is specified in detail in Section~\ref{sec:usecases}.
 
 \begin{figure}[p]
@@ -416,7 +425,16 @@ On the client, the state layer grew from the single store of Iteration 3 to eigh
 \label{fig:architecture-layers}
 \end{figure}
 
-The domain model grew accordingly: the assessment entities of Iteration 3 (dimensions, sub-dimensions, indicators, and answers) are joined by the platform entities of the eight tables above---the profile, the department, the assessment with its draft or finalized status and target level, the dimension-to-department assignment, the shared answer recording its author, and the immutable submission snapshotting the scores, answers, and profile. The bank is not a table but the tenant key carried by every scoped entity, with the empty key denoting the EY master template.
+The domain model grew accordingly: the assessment entities of Iteration 3 (dimensions, sub-dimensions, indicators, and answers) are joined by the platform entities of the eight tables above---the profile, the department, the assessment with its draft or finalized status and target level, the dimension-to-department assignment, the shared answer recording its author, and the immutable submission snapshotting the scores, answers, and profile. The bank is not a table but the tenant key carried by every scoped entity, with the empty key denoting the EY master template. This consolidated domain model is shown as a UML class diagram in Figure~\ref{fig:class-model}. Each entity carries its attributes and, where it has behaviour, its operations: the abstract \texttt{Answer} generalizes the solo and group answers, and the stateless \texttt{ScoringEngine} service reads the answers and the dimension weights to produce the submission, its maturity level, and the roadmap recommendations. Composition binds each dimension to its sub-dimensions and indicators, and each assessment to its assignments and answers, while the bank-name tenant key scopes every row.
+
+\begin{landscape}
+\begin{figure}[p]
+\centering
+\includegraphics[width=\linewidth,height=0.92\textwidth,keepaspectratio]{images/class-model.pdf}
+\caption{Domain model of DataPilot as a UML class diagram}
+\label{fig:class-model}
+\end{figure}
+\end{landscape}
 
 The screen set grew with the roles. A public landing page and the login screen front the platform, and a set-password screen realizes invitation acceptance. The Welcome screen is role-aware and identifies the analyst from the account, and an Account screen replaces the Profile page of Iteration 3, since identity is now account-driven and read-only where it is administered. A role-aware Guide serves as the handbook, and a group contributor screen carries the analyst's part of a group assessment. Finally, an administration hub gathers five role-filtered panels: Submissions, Group assessment, the Questionnaire editor, Departments, and Users and roles.
 

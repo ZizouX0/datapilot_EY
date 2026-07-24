@@ -1,0 +1,56 @@
+@startuml analyst-usecase
+left to right direction
+skinparam backgroundColor white
+skinparam defaultFontSize 13
+skinparam dpi 150
+skinparam actorBackgroundColor #F0EEF8
+skinparam actorBorderColor #3D108A
+skinparam actorFontSize 13
+skinparam usecaseBackgroundColor #F0EEF8
+skinparam usecase {
+  BorderColor #3D108A
+  FontSize 12
+}
+skinparam rectangleBorderColor #2E2E38
+skinparam rectangleFontStyle bold
+skinparam rectangleFontSize 14
+skinparam packageStyle rectangle
+skinparam arrowColor #2E2E38
+
+actor "Analyst" as analyst
+
+rectangle "DataPilot -- Analyst's view" {
+  usecase "Run solo\nassessment" as UCsolo
+  usecase "Answer an\nindicator" as UCanswer
+  usecase "Attach\nevidence" as UCevidence
+  usecase "Skip a non-regulatory\nindicator" as UCskip
+  usecase "View results\nand dashboards" as UCresults
+  usecase "View gap analysis\nand roadmap" as UCgap
+  usecase "View compliance\nstatus" as UCcompliance
+  usecase "Print the\nassessment report" as UCprint
+  usecase "Submit result\nfor review" as UCsubmit
+  usecase "Contribute assigned\ndimensions (group)" as UCcontrib
+  usecase "Manage own\naccount" as UCacct
+}
+
+analyst --> UCsolo
+analyst --> UCresults
+analyst --> UCgap
+analyst --> UCcompliance
+analyst --> UCprint
+analyst --> UCsubmit
+analyst --> UCcontrib
+analyst --> UCacct
+
+UCsolo ..> UCanswer : <<include>>
+UCevidence ..> UCanswer : <<extend>>
+UCskip ..> UCanswer : <<extend>>
+UCsubmit ..> UCsolo : <<extend>>
+
+note bottom of UCresults
+  Reachable only after the
+  completion gate: all 47 indicators
+  answered or lawfully skipped.
+end note
+
+@enduml

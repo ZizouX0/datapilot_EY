@@ -16,7 +16,6 @@ skinparam packageFontSize 14
 skinparam packageFontStyle bold
 skinparam shadowing false
 
-
 package "Tenancy and roles" {
   class Profile {
     +id : UUID
@@ -27,6 +26,9 @@ package "Tenancy and roles" {
     +departmentId : UUID
     +disabled : Boolean
     +invitedBy : UUID
+    --
+    +rank() : Integer
+    +canInvite(role) : Boolean
   }
 
   class Department {
@@ -62,6 +64,26 @@ package "Questionnaire content (per bank)" {
   }
 }
 
+package "Answers" {
+  abstract class Answer {
+    +indicatorId : String
+    +score : Integer
+    +evidence : String
+    +skipped : Boolean
+    --
+    +effectiveScore() : Integer
+    +isCapped() : Boolean
+  }
+
+  class SoloAnswer {
+  }
+
+  class AssessmentAnswer {
+    +assessmentId : UUID
+    +answeredBy : UUID
+  }
+}
+
 package "Group assessment" {
   class Assessment {
     +id : UUID
@@ -71,6 +93,9 @@ package "Group assessment" {
     +targetLevel : Integer
     +createdBy : UUID
     +finalizedAt : Date
+    --
+    +assign(dim, department)
+    +finalize() : Submission
   }
 
   class AssessmentAssignment {
@@ -78,28 +103,21 @@ package "Group assessment" {
     +dimCode : String
     +departmentId : UUID
   }
-
-  class AssessmentAnswer {
-    +assessmentId : UUID
-    +indicatorId : String
-    +score : Integer
-    +evidence : String
-    +skipped : Boolean
-    +answeredBy : UUID
-  }
 }
 
-package "Solo assessment (browser)" {
-  class Answer {
-    +indicatorId : String
-    +score : Integer
-    +evidence : String
-    +skipped : Boolean
+package "Scoring and results" {
+  class "ScoringEngine" as Engine <<service>> {
+    +effectiveScore(answer) : Integer
+    +subDimScore(sub) : Float
+    +dimScore(dim) : Float
+    +globalScore() : Float
+    +maturityLevel(score) : MaturityLevel
+    +bctRate() : Integer
+    +buildRoadmap() : Recommendation[]
   }
-}
 
-package "Results" {
   class Submission {
+    +id : UUID
     +analystId : UUID
     +bankName : String <<tenant key>>
     +globalScore : Float
@@ -126,60 +144,35 @@ package "Results" {
   }
 }
 
+' --- Generalization (inheritance) ---
+Answer <|-- SoloAnswer
+Answer <|-- AssessmentAnswer
+
+' --- Associations and multiplicities ---
 Profile "0..*" --> "0..1" Department : belongs to
 Profile "0..*" --> "0..1" Profile : invited by
 
+' --- Composition (whole owns its parts) ---
 Dimension "1" *-- "1..*" SubDimension : contains
 SubDimension "1" *-- "1..*" Indicator : groups
 
-Indicator "1" --> "0..1" Answer : solo answer
-
+Indicator "1" --> "0..1" SoloAnswer : solo answer
 Assessment "1" *-- "0..*" AssessmentAssignment : maps
 AssessmentAssignment "0..*" --> "1" Department : assigns to
 AssessmentAssignment "0..*" --> "1" Dimension : covers
 Assessment "1" *-- "0..*" AssessmentAnswer : collects
-AssessmentAnswer "0..*" --> "1" Indicator : scores
-AssessmentAnswer "0..*" --> "1" Profile : answered by
 
-Assessment "1" --> "0..1" Submission : finalized into
-Profile "1" --> "0..*" Submission : submits solo result
-Submission "0..*" --> "1" MaturityLevel : classified as
-Dimension "1" --> "1..*" Recommendation : yields
+' --- Dependencies of the scoring service ---
+Engine ..> Answer : reads
+Engine ..> Dimension : weights
+Engine ..> Submission : produces
+Engine ..> MaturityLevel : classifies with
+Engine ..> Recommendation : builds
 
-note as NTenant
-  bankName is the tenant key: there is no
-  separate Bank table. Every scoped row
-  carries its bank name, and row-level
-  security confines it to that bank.
-  On Dimension and Indicator the empty
-  bank name marks the EY master template;
-  each bank tailors its own copy.
-end note
-NTenant .. Profile
-
-note bottom of Indicator
-  EY master template: 47 indicators
-  across 12 sub-dimensions, 13 with
-  bct = true (cannot be skipped).
-end note
-
-note bottom of Answer
-  Evidence cap: a score of 3
-  or higher with no evidence
-  is reduced to 2.
-end note
-
-note bottom of Submission
-  Immutable snapshot written by a solo
-  submit or a group finalization: scores,
-  answers, and profile are frozen and
-  cannot be updated afterwards.
-end note
-
-note bottom of MaturityLevel
-  Five bands from Initial to
-  Optimized. Level 2 is Emerging
-  (1.80 to 2.59).
+note bottom of Profile
+  <<tenant key>>: the bank name scopes every row;
+  the empty key denotes the EY master template.
+  Row-level security confines each row to its bank.
 end note
 
 @enduml
